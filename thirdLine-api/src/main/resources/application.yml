@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: thirdLine-api
+  profiles:
+    active: local   # 切换环境：local / dev
+  # 文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 50MB        # 单个文件最大大小
+      max-request-size: 100MB    # 单次请求最大大小
+
+server:
+  port: 8080
+
+# ============ MyBatis-Plus 公共配置 ============
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true              # 开启下划线转驼峰
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 打印 SQL
+  mapper-locations: classpath*:/mapper/**/*.xml     # Mapper XML 位置
+  type-aliases-package: com.god.thirdLine.domain.entity    # 实体类别名包
+
+# ============ JWT 配置 ============
+jwt:
+  secret: thirdLine-blog-secret-key-please-change-in-production-2026   # 签名密钥，长度不少于 32 字节
+  expiration: 86400000         # token 过期时间，单位毫秒（24 小时）
+  refresh-threshold: 21600000 # 滑动续期阈值：剩余有效期不足 6 小时时自动签发新 token
+  header: Authorization        # 存放 token 的请求头
+  token-prefix: "Bearer "      # token 前缀
+  refresh-header: X-Refresh-Token  # 续期后新 token 的响应头名称
+
+# ============ 阿里云 OSS 配置（请自行填写）============
+aliyun:
+  oss:
+    endpoint: https://oss-cn-wuhan-lr.aliyuncs.com             # 地域节点 Endpoint
+    access-key-id: LTAI5t8dFKjYfFDV5tXHmnEZ                       # 访问密钥 ID
+    access-key-secret: ${ALI_ACE_KEY_SECRET}                      # 访问密钥 Secret
+    bucket-name: third-line                                       # 存储空间名称
+    url-prefix:                                                   # 访问域名前缀，留空则使用 https://{bucket}.{endpoint}；绑定自定义域名时填写
+    dir: blog                                                     # 上传文件的目录前缀

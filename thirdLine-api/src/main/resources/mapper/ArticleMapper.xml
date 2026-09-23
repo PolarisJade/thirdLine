@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.god.thirdLine.mapper.ArticleMapper">
+
+    <!-- 文章列表/详情通用查询字段（含作者昵称、分类名称） -->
+    <sql id="articleVoColumns">
+        a.id, a.title, a.summary, a.cover_image, a.author_id, a.category_id,
+        a.is_top, a.is_original, a.status, a.published_time, a.created_time, a.updated_time,
+        u.nickname AS author_name, c.name AS category_name
+    </sql>
+
+    <!-- 游标分页查询：按 id 倒序，游标为上一页最后一条 id -->
+    <select id="selectArticlePage" resultType="com.god.thirdLine.domain.vo.ArticleVO">
+        SELECT
+        <include refid="articleVoColumns"/>
+        FROM tl_article a
+        LEFT JOIN tl_user u ON u.id = a.author_id
+        LEFT JOIN tl_category c ON c.id = a.category_id
+        <where>
+            <if test="q.keyword != null and q.keyword != ''">
+                AND (a.title LIKE CONCAT('%', #{q.keyword}, '%')
+                     OR a.summary LIKE CONCAT('%', #{q.keyword}, '%'))
+            </if>
+            <if test="q.categoryId != null">
+                AND a.category_id = #{q.categoryId}
+            </if>
+            <if test="q.status != null">
+                AND a.status = #{q.status}
+            </if>
+            <if test="q.tagId != null">
+                AND EXISTS (
+                    SELECT 1 FROM tl_article_tag atg
+                    WHERE atg.article_id = a.id AND atg.tag_id = #{q.tagId}
+                )
+            </if>
+            <if test="q.cursor != null">
+                AND a.id &lt; #{q.cursor}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 文章详情（含正文） -->
+    <select id="selectArticleDetail" resultType="com.god.thirdLine.domain.vo.ArticleVO">
+        SELECT
+        a.id, a.title, a.content, a.summary, a.cover_image, a.author_id, a.category_id,
+        a.is_top, a.is_original, a.status, a.published_time, a.created_time, a.updated_time,
+        u.nickname AS author_name, c.name AS category_name
+        FROM tl_article a
+        LEFT JOIN tl_user u ON u.id = a.author_id
+        LEFT JOIN tl_category c ON c.id = a.category_id
+        WHERE a.id = #{id}
+    </select>
+
+</mapper>

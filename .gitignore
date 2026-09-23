@@ -1,0 +1,22 @@
+# IDE
+.idea/
+.vscode/
+.qoder/
+skills-lock.json
+
+# Java / Maven
+target/
+*.class
+*.jar
+
+# Node / 前端
+node_modules/
+dist/
+*.tsbuildinfo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# 日志
+*.log

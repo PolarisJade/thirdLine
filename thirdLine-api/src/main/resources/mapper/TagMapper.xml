@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.god.thirdLine.mapper.TagMapper">
+
+    <!-- 批量查询文章关联的标签 -->
+    <select id="selectArticleTags" resultType="com.god.thirdLine.domain.vo.ArticleTagVO">
+        SELECT atg.article_id AS article_id, t.id AS tag_id, t.name AS tag_name
+        FROM tl_article_tag atg
+        INNER JOIN tl_tag t ON t.id = atg.tag_id
+        WHERE atg.article_id IN
+        <foreach collection="articleIds" item="articleId" open="(" separator="," close=")">
+            #{articleId}
+        </foreach>
+    </select>
+
+</mapper>
