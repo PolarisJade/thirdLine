@@ -208,3 +208,52 @@ export const PHOTO_STATUS = {
   HIDDEN: 0,
   VISIBLE: 1,
 } as const
+
+/** 作品集展示对象 */
+export interface PortfolioVO {
+  id: number
+  title: string
+  summary: string | null
+  coverImage: string | null
+  /** 技术栈/工具，逗号分隔原始字符串 */
+  techStack: string | null
+  role: string | null
+  period: string | null
+  demoUrl: string | null
+  repoUrl: string | null
+  status: number
+  publishTime: string | null
+  createTime: string
+  updateTime: string | null
+}
+
+/** 作品集新增 / 修改请求参数 */
+export interface PortfolioDTO {
+  id?: number
+  /** 作品标题：新增必填（后端校验），局部更新（如切换发布状态）时可不传 */
+  title?: string
+  summary?: string
+  coverImage?: string
+  /** 技术栈/工具，逗号分隔 */
+  techStack?: string
+  role?: string
+  period?: string
+  demoUrl?: string
+  repoUrl?: string
+  status?: number
+}
+
+/** 作品集分页查询条件 */
+export interface PortfolioQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  status?: number
+}
+
+/** 作品状态枚举（与文章一致） */
+export const PORTFOLIO_STATUS = {
+  DRAFT: 0,
+  PUBLISHED: 1,
+  DELETED: 2,
+} as const

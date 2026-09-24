@@ -103,6 +103,22 @@ export default function PublicLayout() {
             >
               相册
             </NavLink>
+            <NavLink
+              to="/portfolio"
+              className={({ isActive }) =>
+                `font-mono text-sm uppercase tracking-widest transition ${
+                  onHero
+                    ? isActive
+                      ? 'text-white'
+                      : 'text-white/75 hover:text-white'
+                    : isActive
+                      ? 'text-ink'
+                      : 'text-muted hover:text-ink'
+                }`
+              }
+            >
+              作品集
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-3">

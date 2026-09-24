@@ -48,7 +48,11 @@ public enum ResultCode {
     
     /* 照片模块 5xxx */
     PHOTO_NOT_FOUND(5001, "照片不存在"),
-    PHOTO_URL_REQUIRED(5002, "照片图片不能为空");
+    PHOTO_URL_REQUIRED(5002, "照片图片不能为空"),
+
+    /* 作品集模块 6xxx */
+    PORTFOLIO_NOT_FOUND(6001, "作品不存在"),
+    PORTFOLIO_TITLE_REQUIRED(6002, "作品标题不能为空");
 
     private final Integer code;
     private final String message;
