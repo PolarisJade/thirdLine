@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { Button, Form, Input } from 'antd'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Button, Form, Input, message } from 'antd'
 import { login } from '@/api/user'
 import { useAuthStore } from '@/store/authStore'
 import type { LoginDTO } from '@/types'
@@ -18,6 +18,12 @@ export default function Login() {
     try {
       const data = await login(values)
       setAuth(data.token, data.userInfo)
+      // 普通注册用户误入后台登录：保留登录态，带回首页
+      if (data.userInfo.role !== 0) {
+        message.info('当前为普通用户账号，已返回首页')
+        navigate('/', { replace: true })
+        return
+      }
       navigate(from, { replace: true })
     } catch {
       // 错误提示由拦截器处理
@@ -61,7 +67,9 @@ export default function Login() {
         </div>
 
         <p className="mt-6 text-center font-mono text-xs text-muted">
-          仅站点管理员可登录
+          仅站点管理员可登录 ·
+          <Link to="/register" className="ml-1 underline underline-offset-4 hover:text-ink">注册账号</Link>
+          <Link to="/" className="ml-1 underline underline-offset-4 hover:text-ink">返回首页</Link>
         </p>
       </div>
     </div>

@@ -28,6 +28,12 @@ public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /** 角色：站点管理员（可访问 /admin/**） */
+    public static final Integer ROLE_ADMIN = 0;
+
+    /** 角色：普通注册用户 */
+    public static final Integer ROLE_USER = 1;
+
     /**
      * 主键
      */
@@ -63,6 +69,11 @@ public class User implements Serializable {
      * 状态：0禁用/1正常
      */
     private Integer status;
+
+    /**
+     * 角色：0管理员 / 1普通用户
+     */
+    private Integer role;
 
     private LocalDateTime createTime;
 

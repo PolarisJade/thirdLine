@@ -30,6 +30,8 @@ export interface UserVO {
   avatar: string | null
   email: string | null
   status: number
+  /** 角色：0 管理员 / 1 普通用户 */
+  role: number
   createTime: string
 }
 
@@ -72,10 +74,19 @@ export interface ArticleVO {
   tags: TagVO[]
 }
 
-/** 登录请求参数 */
+/** 登录请求参数（账号支持用户名或注册邮箱） */
 export interface LoginDTO {
   username: string
   password: string
+}
+
+/** 邮箱验证码注册请求参数 */
+export interface RegisterDTO {
+  email: string
+  code: string
+  username: string
+  password: string
+  nickname?: string
 }
 
 /** 修改用户信息请求参数 */
@@ -144,6 +155,16 @@ export interface SiteStatsVO {
   articleCount: number
   categoryCount: number
   tagCount: number
+  /** 相册照片总数（仅统计显示状态） */
+  photoCount: number
+}
+
+/** 站主个人介绍（信息来自后端配置文件 tl.host.*） */
+export interface SiteProfileVO {
+  nickname: string
+  email: string
+  github: string
+  avatar: string
 }
 
 /** 照片展示对象 */

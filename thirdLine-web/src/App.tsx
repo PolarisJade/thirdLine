@@ -14,8 +14,9 @@ import CategoryBrowse from '@/pages/public/CategoryBrowse'
 import TagBrowse from '@/pages/public/TagBrowse'
 import Search from '@/pages/public/Search'
 import Album from '@/pages/public/Album'
+import Auth from '@/pages/public/Auth'
 
-import Login from '@/pages/admin/Login'
+import AdminLogin from '@/pages/admin/Login'
 import ArticleList from '@/pages/admin/ArticleList'
 import ArticleEdit from '@/pages/admin/ArticleEdit'
 import CategoryManage from '@/pages/admin/CategoryManage'
@@ -36,10 +37,13 @@ export default function App() {
             <Route path="tag/:id" element={<TagBrowse />} />
             <Route path="search" element={<Search />} />
             <Route path="album" element={<Album />} />
+            {/* 用户端登录 / 注册合一页，路径决定初始视图 */}
+            <Route path="login" element={<Auth />} />
+            <Route path="register" element={<Auth />} />
           </Route>
 
           {/* 后台登录 */}
-          <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* 后台管理区（需登录） */}
           <Route

@@ -8,6 +8,20 @@ spring:
     multipart:
       max-file-size: 50MB        # 单个文件最大大小
       max-request-size: 100MB    # 单次请求最大大小
+  # ============ 邮件 SMTP 配置（请自行填写，QQ/163 等邮箱需开启 SMTP 并使用授权码）============
+  mail:
+    host: smtp.163.com           # SMTP 服务器地址，如 smtp.qq.com / smtp.163.com
+    port: 465                    # 465(SSL) 或 587(STARTTLS)
+    username: ${tl.mail.username}  # 发件邮箱账号
+    password: ${tl.mail.password}            # 发件邮箱 SMTP 授权码（非登录密码）
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true         # port=465 时开启 SSL；改用 587 时改为 starttls.enable: true
+
 
 server:
   port: 8080
@@ -38,3 +52,9 @@ aliyun:
     bucket-name: third-line                                       # 存储空间名称
     url-prefix:                                                   # 访问域名前缀，留空则使用 https://{bucket}.{endpoint}；绑定自定义域名时填写
     dir: blog                                                     # 上传文件的目录前缀
+
+# ============ 注册邮箱验证码配置 ============
+email-code:
+  subject: 【thirdLine】邮箱验证码   # 验证码邮件主题
+  expire-minutes: 10               # 验证码有效期（分钟）
+  send-interval-seconds: 60        # 同一邮箱两次发送的最小间隔（秒）

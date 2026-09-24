@@ -1,6 +1,7 @@
 package com.god.thirdLine.util;
 
 import com.god.thirdLine.config.JwtProperties;
+import com.god.thirdLine.domain.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,6 +23,7 @@ public class JwtUtil {
 
     private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_USERNAME = "username";
+    private static final String CLAIM_ROLE = "role";
 
     private final JwtProperties jwtProperties;
 
@@ -34,14 +36,16 @@ public class JwtUtil {
      *
      * @param userId   用户ID
      * @param username 用户名
+     * @param role     用户角色（0管理员/1普通用户），随 token 携带供拦截器鉴权
      */
-    public String generateToken(Long userId, String username) {
+    public String generateToken(Long userId, String username, Integer role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtProperties.getExpiration());
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim(CLAIM_USER_ID, userId)
                 .claim(CLAIM_USERNAME, username)
+                .claim(CLAIM_ROLE, role)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSecretKey())
@@ -78,6 +82,21 @@ public class JwtUtil {
     public String getUsername(Claims claims) {
         Object username = claims.get(CLAIM_USERNAME);
         return username == null ? "" : username.toString();
+    }
+
+    /**
+     * 从 claims 中获取角色，缺失或无法解析（如升级前的字符串角色旧 token）时回退为普通用户
+     */
+    public Integer getRole(Claims claims) {
+        Object role = claims.get(CLAIM_ROLE);
+        if (role == null) {
+            return User.ROLE_USER;
+        }
+        try {
+            return Integer.valueOf(role.toString());
+        } catch (NumberFormatException e) {
+            return User.ROLE_USER;
+        }
     }
 
     /**

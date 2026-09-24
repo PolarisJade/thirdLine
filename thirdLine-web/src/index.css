@@ -132,6 +132,36 @@ img {
   transform: translateY(0);
 }
 
+/* 登录/注册卡片表单切换：淡入 + 轻微上移 */
+@keyframes auth-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.auth-fade-in {
+  animation: auth-fade-in 260ms ease-out;
+}
+
+/* 登录/注册卡片表单切换：淡出（动画结束后再替换表单并淡入） */
+@keyframes auth-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.auth-fade-out {
+  animation: auth-fade-out 160ms ease-in forwards;
+}
+
 /* ============ Markdown 正文渲染 ============ */
 .markdown-body {
   font-family: var(--font-sans);

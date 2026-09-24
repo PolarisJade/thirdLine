@@ -139,7 +139,7 @@ export default function Home() {
         <div className="bg-canvas">
           {/* 分类栏：滚到文章列表时滑入视野，吸顶停在导航下方；点击即时过滤列表 */}
           <Reveal className="sticky top-16 z-30 border-b border-line bg-canvas/90 backdrop-blur">
-            <div className="mx-auto flex max-w-5xl items-center gap-1 overflow-x-auto px-6 py-3">
+            <div className="mx-auto flex max-w-[1440px] items-center gap-1 overflow-x-auto px-6 py-3">
               <button
                 onClick={() => setActiveId(null)}
                 className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition ${
@@ -161,7 +161,7 @@ export default function Home() {
               ))}
             </div>
           </Reveal>
-          <div className="mx-auto max-w-5xl px-6 pb-16 pt-6 md:pb-20 md:pt-8">
+          <div className="mx-auto max-w-[1440px] px-6 pb-16 pt-6 md:pb-20 md:pt-8">
             <div className="flex items-start gap-8">
               {/* 左列：文章列表 */}
               <div className="min-w-0 flex-1">

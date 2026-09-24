@@ -26,7 +26,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-1.5 p-4 sm:order-1 md:p-5">
+      <div className="flex flex-1 flex-col gap-1 px-4 py-3 sm:order-1 md:px-5 md:py-3.5">
         <div className="flex flex-wrap items-center gap-2">
           {article.isTop === 1 && (
             <span className="mui-pill" style={{ background: '#FBF3DB', color: '#956400' }}>

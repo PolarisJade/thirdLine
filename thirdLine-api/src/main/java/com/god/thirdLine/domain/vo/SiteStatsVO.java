@@ -24,4 +24,7 @@ public class SiteStatsVO implements Serializable {
 
     /** 标签总数 */
     private Long tagCount;
+
+    /** 相册照片总数（仅统计显示状态） */
+    private Long photoCount;
 }

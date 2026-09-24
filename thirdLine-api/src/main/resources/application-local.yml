@@ -4,3 +4,13 @@ spring:
     url: jdbc:mysql://localhost:3306/third_line?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 134679
+tl:
+  mail:
+    username: lunarriverside@163.com
+    password: QBh2aYcwQYcAe7Rb
+  host:
+    nickname: ParlisJade
+    email: lunarriverside@163.com
+    github: https://github.com/PolarisJade
+    avatar: https://third-line.oss-cn-wuhan-lr.aliyuncs.com/blog/avatar/2026/09/21/46117d08f680456ba8cb9661832c16ca.jpg
+

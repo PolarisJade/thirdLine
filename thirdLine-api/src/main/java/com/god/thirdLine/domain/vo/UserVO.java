@@ -29,5 +29,8 @@ public class UserVO implements Serializable {
 
     private Integer status;
 
+    /** 角色：0管理员 / 1普通用户 */
+    private Integer role;
+
     private LocalDateTime createTime;
 }

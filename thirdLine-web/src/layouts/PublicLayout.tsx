@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { MagnifyingGlass } from '@phosphor-icons/react'
+import { Avatar, Dropdown } from 'antd'
 import { useAuthStore } from '@/store/authStore'
 
 /** 前台公开布局：极简顶部导航 + 内容区 + 页脚（分类栏已移至首页文章列表上方） */
@@ -9,6 +10,8 @@ export default function PublicLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
+  const isAdmin = user?.role === 0
 
   // 首页未滚动时导航透明悬浮在 hero 背景图上，滚过阈值后恢复实底
   const isHome = location.pathname === '/'
@@ -35,6 +38,19 @@ export default function PublicLayout() {
     const kw = keyword.trim()
     navigate(kw ? `/search?keyword=${encodeURIComponent(kw)}` : '/')
   }
+
+  const onLogout = () => {
+    logout()
+    navigate('/', { replace: true })
+  }
+
+  /** 悬浮在 hero 图上与实底导航下的按钮样式 */
+  const ghostBtn = onHero
+    ? 'rounded-md border border-white/60 bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur transition hover:bg-white/25'
+    : 'rounded-md border border-line bg-surface px-4 py-1.5 text-sm text-charcoal transition hover:border-charcoal'
+  const primaryBtn = onHero
+    ? 'rounded-md border border-white bg-white px-4 py-1.5 text-sm text-ink transition hover:bg-white/85'
+    : 'mui-btn-primary !py-1.5 !px-4 text-sm'
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
@@ -108,16 +124,45 @@ export default function PublicLayout() {
                 }`}
               />
             </form>
-            <Link
-              to={user ? '/admin/article' : '/admin/login'}
-              className={
-                onHero
-                  ? 'rounded-md border border-white/60 bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur transition hover:bg-white/25'
-                  : 'mui-btn-primary !py-1.5 !px-4 text-sm'
-              }
-            >
-              {user ? '管理后台' : '登录'}
-            </Link>
+            {/* 未登录：登录 + 注册；管理员：入口按钮；普通用户：头像 + 昵称下拉 */}
+            {!user ? (
+              <div className="flex items-center gap-3">
+                <Link to="/register" className={ghostBtn}>
+                  注册
+                </Link>
+                <Link to="/login" className={primaryBtn}>
+                  登录
+                </Link>
+              </div>
+            ) : isAdmin ? (
+              <Link to="/admin/article" className={primaryBtn}>
+                管理后台
+              </Link>
+            ) : (
+              <Dropdown
+                placement="bottomRight"
+                menu={{
+                  items: [{ key: 'logout', label: '退出登录' }],
+                  onClick: ({ key }) => {
+                    if (key === 'logout') onLogout()
+                  },
+                }}
+              >
+                <button
+                  type="button"
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm transition ${
+                    onHero
+                      ? 'border-white/60 bg-white/15 text-white backdrop-blur hover:bg-white/25'
+                      : 'border-line bg-surface text-charcoal hover:border-charcoal'
+                  }`}
+                >
+                  <Avatar src={user.avatar || undefined} size={24} className="!bg-bone !text-charcoal">
+                    {(user.nickname || user.username).slice(0, 1).toUpperCase()}
+                  </Avatar>
+                  <span className="max-w-[6rem] truncate">{user.nickname || user.username}</span>
+                </button>
+              </Dropdown>
+            )}
           </div>
         </div>
       </header>

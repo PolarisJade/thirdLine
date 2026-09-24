@@ -3,6 +3,7 @@ package com.god.thirdLine.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.god.thirdLine.domain.dto.LoginDTO;
 import com.god.thirdLine.domain.dto.PasswordUpdateDTO;
+import com.god.thirdLine.domain.dto.RegisterDTO;
 import com.god.thirdLine.domain.dto.UserUpdateDTO;
 import com.god.thirdLine.domain.entity.User;
 import com.god.thirdLine.domain.vo.LoginVO;
@@ -19,12 +20,20 @@ import com.god.thirdLine.domain.vo.UserVO;
 public interface IUserService extends IService<User> {
 
     /**
-     * 用户登录：根据账号查询用户并校验密码，成功后签发 JWT
+     * 用户登录：根据用户名或邮箱查询用户并校验密码，成功后签发 JWT
      *
      * @param dto 登录参数
      * @return 令牌与用户信息
      */
     LoginVO login(LoginDTO dto);
+
+    /**
+     * 用户注册：校验邮箱验证码后创建普通用户，成功即自动登录
+     *
+     * @param dto 注册参数
+     * @return 令牌与用户信息
+     */
+    LoginVO register(RegisterDTO dto);
 
     /**
      * 修改用户信息

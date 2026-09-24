@@ -3,6 +3,7 @@ package com.god.thirdLine.interceptor;
 import com.god.thirdLine.common.ResultCode;
 import com.god.thirdLine.config.JwtProperties;
 import com.god.thirdLine.context.UserContext;
+import com.god.thirdLine.domain.entity.User;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -17,8 +18,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * JWT 登录拦截器。
  * <p>
  * 仅注册在后台管理命名空间 {@code /admin/**} 上：访问管理端的读、写接口
- * 均必须携带有效 token（仅放行跨域预检 OPTIONS 请求）；
- * 前台公开接口位于 {@code /user/**}，不进入本拦截器。
+ * 均必须携带有效 token，且 token 中的角色必须为管理员（仅放行跨域预检
+ * OPTIONS 请求）；前台公开接口位于 {@code /user/**}，不进入本拦截器。
  *
  * @author ParlisJade
  */
@@ -56,9 +57,15 @@ public class JwtInterceptor implements HandlerInterceptor {
             throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
 
-        // 滑动续期：剩余有效期不足阈值时签发新 token，通过响应头返回给前端更新
+        // 本拦截器只拦 /admin/**，非管理员角色（role != 0）的 token 一律拒绝
+        Integer role = jwtUtil.getRole(claims);
+        if (!User.ROLE_ADMIN.equals(role)) {
+            throw new BusinessException(ResultCode.FORBIDDEN, "无管理后台权限");
+        }
+
+        // 滑动续期：剩余有效期不足阈值时签发新 token（保留角色声明），通过响应头返回给前端更新
         if (jwtUtil.needRefresh(claims)) {
-            String newToken = jwtUtil.generateToken(userId, jwtUtil.getUsername(claims));
+            String newToken = jwtUtil.generateToken(userId, jwtUtil.getUsername(claims), role);
             response.setHeader(jwtProperties.getRefreshHeader(), newToken);
         }
 

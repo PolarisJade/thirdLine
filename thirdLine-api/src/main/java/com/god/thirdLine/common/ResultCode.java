@@ -23,6 +23,11 @@ public enum ResultCode {
     USER_DISABLED(1003, "账号已被禁用"),
     OLD_PASSWORD_ERROR(1004, "旧密码不正确"),
     SAME_PASSWORD(1005, "新密码不能与旧密码相同"),
+    EMAIL_ALREADY_REGISTERED(1006, "该邮箱已被注册"),
+    USERNAME_ALREADY_EXISTS(1007, "该用户名已被占用"),
+    EMAIL_CODE_ERROR(1008, "验证码错误或已过期"),
+    EMAIL_CODE_SEND_TOO_FREQUENT(1009, "验证码发送过于频繁，请稍后再试"),
+    EMAIL_SEND_FAILED(1010, "验证邮件发送失败，请稍后再试"),
 
     /* 文章模块 2xxx */
     ARTICLE_NOT_FOUND(2001, "文章不存在"),
