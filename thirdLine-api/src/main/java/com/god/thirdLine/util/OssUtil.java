@@ -29,7 +29,10 @@ import java.util.UUID;
 public class OssUtil {
 
     /** 允许上传的图片扩展名 */
-    private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "gif", "bmp", "webp");
+    private static final Set<String> ALLOWED_IMAGE_EXT = Set.of("jpg", "jpeg", "png", "gif", "bmp", "webp");
+
+    /** 允许上传的音频扩展名 */
+    private static final Set<String> ALLOWED_AUDIO_EXT = Set.of("mp3", "wav", "flac", "m4a", "aac", "ogg");
 
     private static final DateTimeFormatter DATE_PATH = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
@@ -44,12 +47,63 @@ public class OssUtil {
      * @return 文件的可访问 URL
      */
     public String uploadImage(MultipartFile file, String module) {
+        return doUpload(file, module, ALLOWED_IMAGE_EXT);
+    }
+
+    /**
+     * 上传音频文件（音乐模块）
+     *
+     * @param file   上传的文件
+     * @param module 业务模块目录，如 music（音乐）
+     * @return 文件的可访问 URL
+     */
+    public String uploadAudio(MultipartFile file, String module) {
+        return doUpload(file, module, ALLOWED_AUDIO_EXT);
+    }
+
+    /**
+     * 删除 OSS 上的文件（按上传时返回的访问 URL 反推对象键）。
+     * 仅处理属于本 OSS 的文件，手填的第三方外链自动跳过；
+     * 删除失败仅记录警告，不阻塞业务（数据库记录已删除，清理属尽力而为）。
+     *
+     * @param url 文件访问 URL
+     */
+    public void deleteByUrl(String url) {
+        if (!StringUtils.hasText(url)) {
+            return;
+        }
+        String prefix = getUrlPrefix();
+        // 非本 OSS 地址（如手填外链）不处理，避免误删第三方资源
+        if (!url.startsWith(prefix + "/")) {
+            return;
+        }
+        String objectKey = url.substring(prefix.length() + 1);
+        // 带查询参数等异常地址不处理
+        if (!StringUtils.hasText(objectKey) || objectKey.contains("?") || objectKey.contains("#")) {
+            return;
+        }
+        try {
+            ossClient.deleteObject(ossProperties.getBucketName(), objectKey);
+        } catch (Exception e) {
+            log.warn("删除 OSS 文件失败, objectKey={}", objectKey, e);
+        }
+    }
+
+    /**
+     * 通用上传：按允许的扩展名校验后写入 OSS，返回可访问 URL
+     *
+     * @param file      上传的文件
+     * @param module    业务模块目录
+     * @param allowedExt 允许的扩展名集合
+     * @return 文件的可访问 URL
+     */
+    private String doUpload(MultipartFile file, String module, Set<String> allowedExt) {
         // 1. 基础校验
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ResultCode.FILE_EMPTY);
         }
         String ext = getExtension(file.getOriginalFilename());
-        if (!ALLOWED_EXT.contains(ext)) {
+        if (!allowedExt.contains(ext)) {
             throw new BusinessException(ResultCode.FILE_TYPE_NOT_ALLOWED);
         }
 
@@ -94,13 +148,19 @@ public class OssUtil {
      * 拼接文件访问 URL，优先使用配置的自定义域名前缀
      */
     private String buildUrl(String objectKey) {
+        return getUrlPrefix() + "/" + objectKey;
+    }
+
+    /**
+     * 获取文件访问 URL 前缀：优先自定义域名，缺省为 https://{bucketName}.{endpoint 去协议}
+     */
+    private String getUrlPrefix() {
         String prefix = ossProperties.getUrlPrefix();
         if (!StringUtils.hasText(prefix)) {
-            // 默认使用 https://{bucketName}.{endpoint 去协议}
-            String endpoint = ossProperties.getEndpoint().replaceFirst("^https?://", "");
-            prefix = "https://" + ossProperties.getBucketName() + "." + endpoint;
+            prefix = "https://" + ossProperties.getBucketName() + "."
+                    + ossProperties.getEndpoint().replaceFirst("^https?://", "");
         }
-        return trimSlash(prefix) + "/" + objectKey;
+        return trimSlash(prefix);
     }
 
     /**

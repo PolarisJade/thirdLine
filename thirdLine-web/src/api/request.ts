@@ -5,10 +5,7 @@ import axios, {
 } from 'axios'
 import { message } from 'antd'
 import type { Result } from '@/types'
-
-/** localStorage 中存放 token / 用户信息的键，authStore 与此保持一致 */
-export const TOKEN_KEY = 'thirdline_token'
-export const USER_KEY = 'thirdline_user'
+import { TOKEN_KEY, useAuthStore } from '@/store/authStore'
 
 const instance: AxiosInstance = axios.create({
   // 开发环境走 Vite 代理（相对路径），生产可用 VITE_API_BASE 指定后端地址
@@ -62,12 +59,10 @@ instance.interceptors.response.use(
 )
 
 function handleUnauthorized() {
-  localStorage.removeItem(TOKEN_KEY)
-  localStorage.removeItem(USER_KEY)
-  const loginPath = '/admin/login'
-  if (window.location.pathname !== loginPath) {
-    window.location.href = loginPath
-  }
+  // 清除本地登录态并通过 zustand 状态驱动 UI 响应式更新：
+  // 后台 ProtectedRoute 会重定向到 /admin/login，前台右上角会回到未登录。
+  // 不再硬跳转，避免前台普通用户被错误拽到后台登录页。
+  useAuthStore.getState().logout()
 }
 
 /** 业务请求方法，返回值即后端 Result.data */

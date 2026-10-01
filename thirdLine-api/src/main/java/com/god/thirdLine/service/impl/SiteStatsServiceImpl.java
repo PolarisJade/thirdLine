@@ -56,6 +56,7 @@ public class SiteStatsServiceImpl implements ISiteStatsService {
         vo.setEmail(hostProperties.getEmail());
         vo.setGithub(hostProperties.getGithub());
         vo.setAvatar(hostProperties.getAvatar());
+        vo.setStartTime(hostProperties.getStartTime());
         return vo;
     }
 }

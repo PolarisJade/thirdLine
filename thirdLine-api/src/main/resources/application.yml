@@ -30,7 +30,7 @@ server:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true              # 开启下划线转驼峰
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 打印 SQL
+    log-impl:    # 打印 SQL
   mapper-locations: classpath*:/mapper/**/*.xml     # Mapper XML 位置
   type-aliases-package: com.god.thirdLine.domain.entity    # 实体类别名包
 
@@ -56,5 +56,5 @@ aliyun:
 # ============ 注册邮箱验证码配置 ============
 email-code:
   subject: 【thirdLine】邮箱验证码   # 验证码邮件主题
-  expire-minutes: 10               # 验证码有效期（分钟）
+  expire-minutes: 5               # 验证码有效期（分钟）
   send-interval-seconds: 60        # 同一邮箱两次发送的最小间隔（秒）

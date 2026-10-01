@@ -36,6 +36,14 @@ public interface IUserService extends IService<User> {
     LoginVO register(RegisterDTO dto);
 
     /**
+     * 查询用户信息（用于登录态校验 / 回显）
+     *
+     * @param userId 用户ID
+     * @return 用户信息
+     */
+    UserVO getUserVO(Long userId);
+
+    /**
      * 修改用户信息
      *
      * @param userId 当前登录用户ID

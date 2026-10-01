@@ -70,8 +70,9 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [typed, deleting, textIndex])
 
+  // 根容器 flex + 最小高度（视口高减去顶部导航 4rem）：移除页脚后，内容不足一屏时由白色面板自动拉伸封底，防止底部露出固定背景图
   return (
-    <div>
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
       {/* 固定背景图：钉在视口不随滚动移动，滑动时被下方白色面板遮挡 */}
       <div
         className="fixed inset-0 z-0 bg-charcoal bg-cover bg-center"
@@ -118,8 +119,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 波浪 + 文章列表：白色面板，滚动时整体滑过并遮挡固定背景 */}
-      <section className="relative">
+      {/* 波浪 + 文章列表：白色面板，滚动时整体滑过并遮挡固定背景；flex-1 在内容不足时拉伸封底 */}
+      <section className="relative flex flex-1 flex-col">
         {/* 朝上的波浪：透明底上的白色浪形，随面板一起滑过固定背景图 */}
         <svg
           viewBox="0 0 1440 120"
@@ -136,7 +137,7 @@ export default function Home() {
             fill="#FFFFFF"
           />
         </svg>
-        <div className="bg-canvas">
+        <div className="flex-1 bg-canvas">
           {/* 分类栏：滚到文章列表时滑入视野，吸顶停在导航下方；点击即时过滤列表 */}
           <Reveal className="sticky top-16 z-30 border-b border-line bg-canvas/90 backdrop-blur">
             <div className="mx-auto flex max-w-[1440px] items-center gap-1 overflow-x-auto px-6 py-3">

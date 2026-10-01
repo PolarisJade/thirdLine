@@ -52,7 +52,23 @@ public enum ResultCode {
 
     /* 作品集模块 6xxx */
     PORTFOLIO_NOT_FOUND(6001, "作品不存在"),
-    PORTFOLIO_TITLE_REQUIRED(6002, "作品标题不能为空");
+    PORTFOLIO_TITLE_REQUIRED(6002, "作品标题不能为空"),
+
+    /* 弹幕模块 7xxx */
+    DANMAKU_CONTENT_EMPTY(7001, "弹幕内容不能为空"),
+    DANMAKU_CONTENT_TOO_LONG(7002, "弹幕内容不能超过 100 个字符"),
+    DANMAKU_SENSITIVE(7003, "弹幕含有敏感词，请修改后再发送"),
+    DANMAKU_SEND_TOO_FREQUENT(7004, "发送过于频繁，请稍后再试"),
+    DANMAKU_DISABLED(7005, "弹幕功能已关闭"),
+    DANMAKU_NOT_FOUND(7006, "弹幕不存在或已被删除"),
+    DANMAKU_REPORT_DUPLICATE(7007, "您已举报过该条弹幕"),
+    DANMAKU_REPORT_NOT_FOUND(7008, "举报记录不存在"),
+    DANMAKU_REPORT_SELF(7009, "不能举报自己发送的弹幕"),
+
+    /* 音乐模块 8xxx */
+    MUSIC_NOT_FOUND(8001, "音乐不存在"),
+    MUSIC_TITLE_REQUIRED(8002, "歌曲名不能为空"),
+    MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空");
 
     private final Integer code;
     private final String message;

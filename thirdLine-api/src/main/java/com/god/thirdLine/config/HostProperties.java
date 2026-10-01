@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 /**
  * 站主个人介绍配置，对应 application-local.yml 中 tl.host.* 配置项
  *
@@ -25,4 +27,7 @@ public class HostProperties {
 
     /** 头像 URL */
     private String avatar;
+
+    /** 本站运行起始日期 */
+    private LocalDate startTime;
 }

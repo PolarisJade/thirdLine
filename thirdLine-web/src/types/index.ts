@@ -165,6 +165,8 @@ export interface SiteProfileVO {
   email: string
   github: string
   avatar: string
+  /** 本站运行起始日期（yyyy-MM-dd，来自后端配置 tl.host.start_time） */
+  startTime: string | null
 }
 
 /** 照片展示对象 */
@@ -256,4 +258,105 @@ export const PORTFOLIO_STATUS = {
   DRAFT: 0,
   PUBLISHED: 1,
   DELETED: 2,
+} as const
+
+/* ==================== 弹幕模块 ==================== */
+
+/** 弹幕展示对象（前台滚动 & 后台列表复用） */
+export interface DanmakuVO {
+  id: number
+  userId: number
+  /** 发送者昵称 */
+  nickname: string | null
+  content: string
+  /** 文字颜色，如 #FFFFFF */
+  color: string
+  /** 状态：0隐藏 1显示 */
+  status: number
+  /** 累计被举报次数（仅后台列表返回） */
+  reportCount?: number
+  createTime: string
+}
+
+/** 弹幕池：全局开关 + 可见弹幕列表 */
+export interface DanmakuPoolVO {
+  enabled: boolean
+  items: DanmakuVO[]
+}
+
+/** 发送弹幕请求参数 */
+export interface DanmakuSendDTO {
+  content: string
+  color?: string
+}
+
+/** 举报弹幕请求参数 */
+export interface DanmakuReportDTO {
+  danmakuId: number
+  reason?: string
+}
+
+/** 弹幕举报记录展示对象（后台） */
+export interface DanmakuReportVO {
+  id: number
+  danmakuId: number
+  danmakuContent: string | null
+  danmakuNickname: string | null
+  reporterNickname: string | null
+  reason: string | null
+  /** 处理状态：0待处理 1已处理 */
+  status: number
+  createTime: string
+}
+
+/** 弹幕分页查询条件（后台） */
+export interface DanmakuQuery {
+  page?: number
+  size?: number
+  status?: number
+}
+
+/* ==================== 音乐模块 ==================== */
+
+/** 音乐展示对象（前台悬浮播放器 & 后台列表复用） */
+export interface MusicVO {
+  id: number
+  title: string
+  artist: string | null
+  coverImage: string | null
+  /** 音频文件URL（OSS 上传地址或第三方外链） */
+  audioUrl: string
+  /** 排序权重，越小越靠前 */
+  sort: number
+  /** 状态：0下架 1上架 */
+  status: number
+  createTime: string
+  updateTime: string | null
+}
+
+/** 音乐新增 / 修改请求参数 */
+export interface MusicDTO {
+  id?: number
+  /** 歌曲名：新增必填（后端校验），局部更新时可不传 */
+  title?: string
+  artist?: string
+  coverImage?: string
+  /** 音频地址：新增必填（后端校验），局部更新（如上下架）时可不传 */
+  audioUrl?: string
+  sort?: number
+  status?: number
+}
+
+/** 音乐分页查询条件 */
+export interface MusicQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  status?: number
+}
+
+/** 音乐状态枚举 */
+export const MUSIC_STATUS = {
+  DISABLED: 0,
+  ENABLED: 1,
 } as const

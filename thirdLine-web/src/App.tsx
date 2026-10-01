@@ -15,6 +15,7 @@ import TagBrowse from '@/pages/public/TagBrowse'
 import Search from '@/pages/public/Search'
 import Album from '@/pages/public/Album'
 import Portfolio from '@/pages/public/Portfolio'
+import Danmaku from '@/pages/public/Danmaku'
 import Auth from '@/pages/public/Auth'
 
 import AdminLogin from '@/pages/admin/Login'
@@ -24,6 +25,8 @@ import CategoryManage from '@/pages/admin/CategoryManage'
 import TagManage from '@/pages/admin/TagManage'
 import PhotoManage from '@/pages/admin/PhotoManage'
 import PortfolioManage from '@/pages/admin/PortfolioManage'
+import DanmakuManage from '@/pages/admin/DanmakuManage'
+import MusicManage from '@/pages/admin/MusicManage'
 import Profile from '@/pages/admin/Profile'
 
 export default function App() {
@@ -40,6 +43,7 @@ export default function App() {
             <Route path="search" element={<Search />} />
             <Route path="album" element={<Album />} />
             <Route path="portfolio" element={<Portfolio />} />
+            <Route path="danmaku" element={<Danmaku />} />
             {/* 用户端登录 / 注册合一页，路径决定初始视图 */}
             <Route path="login" element={<Auth />} />
             <Route path="register" element={<Auth />} />
@@ -65,6 +69,8 @@ export default function App() {
             <Route path="tag" element={<TagManage />} />
             <Route path="photo" element={<PhotoManage />} />
             <Route path="portfolio" element={<PortfolioManage />} />
+            <Route path="danmaku" element={<DanmakuManage />} />
+            <Route path="music" element={<MusicManage />} />
             <Route path="profile" element={<Profile />} />
           </Route>
 

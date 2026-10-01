@@ -2,12 +2,15 @@ package com.god.thirdLine.controller.user;
 
 
 import com.god.thirdLine.common.Result;
+import com.god.thirdLine.context.UserContext;
 import com.god.thirdLine.domain.dto.LoginDTO;
 import com.god.thirdLine.domain.dto.RegisterDTO;
 import com.god.thirdLine.domain.vo.LoginVO;
+import com.god.thirdLine.domain.vo.UserVO;
 import com.god.thirdLine.service.EmailCodeService;
 import com.god.thirdLine.service.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +34,15 @@ public class UserController {
 
     private final IUserService userService;
     private final EmailCodeService emailCodeService;
+
+    /**
+     * 获取当前登录用户信息（用于前端打开页面时校验登录态）。
+     * 由 UserJwtInterceptor 拦截：无 token 或过期返回 401，前端据此切换右上角登录态。
+     */
+    @GetMapping("/info")
+    public Result<UserVO> info() {
+        return Result.success(userService.getUserVO(UserContext.getUserId()));
+    }
 
     /**
      * 用户登录（放行，无需 token）；账号支持用户名或注册邮箱

@@ -8,11 +8,14 @@ import {
   Tag as TagIcon,
   Images,
   Briefcase,
+  ChatDots,
+  MusicNotes,
   UserCircle,
   SignOut,
   ArrowSquareOut,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '@/store/authStore'
+import logo from '@/assets/logo.png'
 
 const { Sider, Header, Content } = Layout
 
@@ -31,6 +34,8 @@ export default function AdminLayout() {
       { key: '/admin/tag', icon: <TagIcon size={18} weight="bold" />, label: '标签管理' },
       { key: '/admin/photo', icon: <Images size={18} weight="bold" />, label: '相册管理' },
       { key: '/admin/portfolio', icon: <Briefcase size={18} weight="bold" />, label: '作品集管理' },
+      { key: '/admin/danmaku', icon: <ChatDots size={18} weight="bold" />, label: '弹幕管理' },
+      { key: '/admin/music', icon: <MusicNotes size={18} weight="bold" />, label: '音乐管理' },
       { key: '/admin/profile', icon: <UserCircle size={18} weight="bold" />, label: '个人资料' },
     ],
     [],
@@ -50,8 +55,8 @@ export default function AdminLayout() {
     <Layout className="min-h-screen">
       <Sider width={230} theme="light" className="!border-r border-line">
         <div className="flex h-16 items-center border-b border-line px-6">
-          <Link to="/" className="font-serif text-xl font-semibold tracking-tightest text-ink">
-            thirdLine
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="thirdLine" className="h-10 w-auto" />
           </Link>
         </div>
         <Menu

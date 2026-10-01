@@ -1,6 +1,19 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://开发服务器地址:3306/third_line?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: 开发环境用户名
-    password: 开发环境密码
+    url: jdbc:mysql://127.0.0.1:3306/third_line?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: thirdLineUser
+    password: ${DB_PWD}
+
+tl:
+  mail:
+    username: lunarriverside@163.com
+    password: ${MAIL_PWD}
+
+  host:
+    nickname: ParlisJade
+    email: lunarriverside@163.com
+    github: https://github.com/PolarisJade
+    avatar: https://third-line.oss-cn-wuhan-lr.aliyuncs.com/blog/avatar/2026/09/21/46117d08f680456ba8cb9661832c16ca.jpg
+    # 本站运行起始日期（yyyy-MM-dd，引号固定为字符串，避免被 YAML 解析成时间）
+    start_time: '2026-10-01'

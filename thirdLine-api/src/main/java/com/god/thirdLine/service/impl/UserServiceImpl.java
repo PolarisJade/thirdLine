@@ -125,6 +125,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
+    public UserVO getUserVO(Long userId) {
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+        return toVO(user);
+    }
+
+    @Override
     public UserVO updateUser(Long userId, UserUpdateDTO dto) {
         User user = this.getById(userId);
         if (user == null) {

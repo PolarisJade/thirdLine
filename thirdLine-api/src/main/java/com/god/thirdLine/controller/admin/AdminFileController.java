@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
  * <p>
  * 文件上传 后台管理控制器（阿里云 OSS）
  * </p>
- * 用于上传用户头像、文章封面、相册图片等，返回可访问 URL。
+ * 用于上传用户头像、文章封面、相册图片、音乐音频等，返回可访问 URL。
  * 位于 /admin/** 命名空间，须登录方可上传。
  *
  * @author ParlisJade
@@ -37,5 +37,18 @@ public class AdminFileController {
     public Result<String> upload(@RequestParam("file") MultipartFile file,
                                  @RequestParam(value = "module", required = false, defaultValue = "common") String module) {
         return Result.success(ossUtil.uploadImage(file, module));
+    }
+
+    /**
+     * 上传音频（音乐模块）
+     *
+     * @param file   音频文件（mp3 / wav / flac / m4a / aac / ogg）
+     * @param module 业务模块目录，如 music（音乐），默认 common
+     * @return 音频访问 URL
+     */
+    @PostMapping("/upload-audio")
+    public Result<String> uploadAudio(@RequestParam("file") MultipartFile file,
+                                      @RequestParam(value = "module", required = false, defaultValue = "common") String module) {
+        return Result.success(ossUtil.uploadAudio(file, module));
     }
 }

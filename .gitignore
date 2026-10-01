@@ -8,6 +8,7 @@ skills-lock.json
 target/
 *.class
 *.jar
+application-dev.yml
 
 # Node / 前端
 node_modules/

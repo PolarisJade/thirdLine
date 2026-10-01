@@ -12,6 +12,9 @@ import type {
 export const login = (data: LoginDTO) =>
   request.post<LoginVO>('/user/user/login', data)
 
+/** 获取当前登录用户信息（用于打开页面时校验登录态；无 token / 过期返回 401） */
+export const getCurrentUser = () => request.get<UserVO>('/user/user/info')
+
 /** 发送注册邮箱验证码 */
 export const sendEmailCode = (email: string) =>
   request.post<void>(`/user/user/email/code?email=${encodeURIComponent(email)}`)

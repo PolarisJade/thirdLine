@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Form, Input, message } from 'antd'
 import { login } from '@/api/user'
 import { useAuthStore } from '@/store/authStore'
+import logo from '@/assets/logo.png'
 import type { LoginDTO } from '@/types'
 
 /** 后台登录页（极简卡片） */
@@ -36,7 +37,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-bone px-6">
       <div className="w-full max-w-sm">
         <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl font-semibold tracking-tightest text-ink">thirdLine</h1>
+          <img src={logo} alt="thirdLine" className="mx-auto h-12 w-auto" />
           <p className="mt-3 font-mono text-xs uppercase tracking-widest text-muted">
             Admin Console
           </p>

@@ -657,3 +657,65 @@ img {
     font-size: 24px;
   }
 }
+
+/* ============ 弹幕页：滚动弹幕 + 悬停举报 ============ */
+/* 弹幕舞台：铺满容器，裁剪溢出，背景图由内联 style 设置 */
+.danmaku-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 单条弹幕：绝对定位，从右向左无限滚动 */
+.danmaku-item {
+  position: absolute;
+  white-space: nowrap;
+  will-change: transform;
+  padding: 2px 12px;
+  border-radius: 9999px;
+  background: rgba(17, 17, 17, 0.32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  font-size: 15px;
+  line-height: 1.8;
+  cursor: default;
+  user-select: none;
+  transition: background-color 240ms ease;
+  animation-name: danmaku-move;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+/* 鼠标悬停：该条弹幕悬停，阴影背景向后延伸，露出举报按钮 */
+.danmaku-item:hover {
+  animation-play-state: paused;
+  background: rgba(17, 17, 17, 0.6);
+  z-index: 20;
+}
+/* 举报按钮：默认完全收起（不占位不显示），悬停时随阴影背景平滑向后展开 */
+.danmaku-item .danmaku-report {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 1.2;
+  vertical-align: -3px;
+  opacity: 0;
+  margin-left: 0;
+  pointer-events: none;
+  cursor: pointer;
+  transition: max-width 240ms ease, margin-left 240ms ease, opacity 200ms ease;
+}
+.danmaku-item:hover .danmaku-report {
+  max-width: 96px;
+  opacity: 1;
+  margin-left: 10px;
+  pointer-events: auto;
+}
+
+@keyframes danmaku-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100vw - 120%));
+  }
+}

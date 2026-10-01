@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * 站主个人介绍 VO（信息来自配置文件 tl.host.*）
@@ -27,4 +28,7 @@ public class SiteProfileVO implements Serializable {
 
     /** 头像 URL */
     private String avatar;
+
+    /** 本站运行起始日期（yyyy-MM-dd） */
+    private LocalDate startTime;
 }

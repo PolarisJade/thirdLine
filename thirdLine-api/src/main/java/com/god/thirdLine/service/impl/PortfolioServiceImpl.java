@@ -12,6 +12,7 @@ import com.god.thirdLine.domain.vo.PortfolioVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PortfolioMapper;
 import com.god.thirdLine.service.IPortfolioService;
+import com.god.thirdLine.util.OssUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,8 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
 
     /** 已发布状态 */
     private static final int STATUS_PUBLISHED = 1;
+
+    private final OssUtil ossUtil;
 
     @Override
     public Long savePortfolio(PortfolioDTO dto) {
@@ -113,10 +116,13 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
         if (id == null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "作品ID不能为空");
         }
-        if (this.getById(id) == null) {
+        Portfolio portfolio = this.getById(id);
+        if (portfolio == null) {
             throw new BusinessException(ResultCode.PORTFOLIO_NOT_FOUND);
         }
         this.removeById(id);
+        // 同步清理 OSS 上的封面图（手填外链自动跳过）
+        ossUtil.deleteByUrl(portfolio.getCoverImage());
     }
 
     @Override

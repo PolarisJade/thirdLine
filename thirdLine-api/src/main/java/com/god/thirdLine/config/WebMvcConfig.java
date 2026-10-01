@@ -1,6 +1,7 @@
 package com.god.thirdLine.config;
 
 import com.god.thirdLine.interceptor.JwtInterceptor;
+import com.god.thirdLine.interceptor.UserJwtInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -17,12 +18,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final JwtInterceptor jwtInterceptor;
+    private final UserJwtInterceptor userJwtInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 仅拦截后台管理命名空间；前台公开接口 /user/** 不注册拦截器，天然放行
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/admin/**");
+        // 前台需登录才能访问的接口：发送/举报弹幕，以及登录态校验
+        registry.addInterceptor(userJwtInterceptor)
+                .addPathPatterns("/user/danmaku/send", "/user/danmaku/report", "/user/user/info");
     }
 
     @Override

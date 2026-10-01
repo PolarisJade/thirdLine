@@ -111,6 +111,13 @@
             <version>2.3.3</version>
         </dependency>
 
+        <!-- 敏感词校验（弹幕等 UGC 内容过滤，DFA 内存词库） -->
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>sensitive-word</artifactId>
+            <version>0.23.0</version>
+        </dependency>
+
         <!-- redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

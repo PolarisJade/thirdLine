@@ -12,6 +12,7 @@ import com.god.thirdLine.domain.vo.PhotoVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.service.IPhotoService;
+import com.god.thirdLine.util.OssUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
+
+    private final OssUtil ossUtil;
 
     @Override
     public Long savePhoto(PhotoDTO dto) {
@@ -98,10 +101,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (id == null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "照片ID不能为空");
         }
-        if (this.getById(id) == null) {
+        Photo photo = this.getById(id);
+        if (photo == null) {
             throw new BusinessException(ResultCode.PHOTO_NOT_FOUND);
         }
         this.removeById(id);
+        // 同步清理 OSS 上的原图（手填外链自动跳过）
+        ossUtil.deleteByUrl(photo.getUrl());
     }
 
     @Override
