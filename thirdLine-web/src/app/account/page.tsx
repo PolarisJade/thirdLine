@@ -1,0 +1,9 @@
+'use client';
+import Link from 'next/link';
+import { useState, type FormEvent } from 'react';
+import { useAuth } from '@/components/providers';
+import { Loading, PageTitle, Unfinished } from '@/components/ui';
+import { write } from '@/lib/api';
+export default function Page() { const { user, loading, logout } = useAuth(); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
+ async function password(e: FormEvent<HTMLFormElement>) { e.preventDefault(); setBusy(true); setMessage(''); try { await write('/admin/user/password', 'PUT', Object.fromEntries(new FormData(e.currentTarget))); logout(); setMessage('密码已更新，请重新登录。'); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); } }
+ if (loading) return <Loading/>; return <><PageTitle title="个人中心" description="你好，欢迎回到自己的小角落。"/>{!user ? <div className="state"><p>{message || '请先登录，再查看你的账户。'}</p><Link href="/auth" className="button">前往登录</Link></div> : <div className="account-panel"><h2>{user.nickname || user.username}</h2><p className="muted">{user.email}</p><p>账户身份：{user.role === 0 ? '站主 / 管理员' : '读者'}</p><div className="actions"><Link href="/danmaku" className="button secondary">去发一条弹幕</Link>{user.role === 0 ? <Link href="/admin" className="button">管理小站</Link> : null}<button className="text-button" onClick={logout}>退出登录</button></div>{user.role !== 0 ? <div className="account-features"><Unfinished name="修改个人资料"/><Unfinished name="修改密码"/><p className="muted">普通用户的资料修改服务暂未开放。</p></div> : <form className="form-stack compact-form" onSubmit={password}><h3>修改密码</h3><label>原密码<input type="password" name="oldPassword" autoComplete="current-password" required/></label><label>新密码<input type="password" name="newPassword" autoComplete="new-password" minLength={6} required/></label><button className="button" disabled={busy}>{busy ? '保存中…' : '更新密码'}</button>{message ? <p role="status">{message}</p> : null}</form>}</div>}</>; }

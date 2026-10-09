@@ -1,41 +1,32 @@
 {
-  "name": "thirdline-web",
-  "private": true,
+  "name": "thirdline-blog",
   "version": "1.0.0",
-  "type": "module",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@phosphor-icons/react": "^2.1.7",
-    "@uiw/react-md-editor": "^4.0.4",
-    "@wangeditor/editor": "^5.1.23",
-    "@wangeditor/editor-for-react": "^1.0.6",
-    "antd": "^5.20.6",
-    "axios": "^1.7.7",
-    "dayjs": "^1.11.13",
-    "dompurify": "^3.4.15",
-    "highlight.js": "^11.10.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-markdown": "^9.0.1",
-    "react-pageflip": "^2.0.3",
-    "react-router-dom": "^6.26.2",
-    "rehype-highlight": "^7.0.0",
-    "remark-gfm": "^4.0.0",
-    "zustand": "^4.5.5"
+    "next": "^15.5.12",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "swr": "^2.3.6",
+    "dompurify": "^3.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.16.5",
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.6"
+    "typescript": "^5.9.3",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@playwright/test": "^1.56.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
   }
 }

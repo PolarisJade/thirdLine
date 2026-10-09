@@ -1,8 +1,8 @@
-node_modules
-dist
-dist-ssr
-*.local
-.DS_Store
-.vite
-.env
-.env.*
+node_modules/
+.next/
+.next-dev/
+out/
+*.tsbuildinfo
+.env*.local
+playwright-report/
+test-results/

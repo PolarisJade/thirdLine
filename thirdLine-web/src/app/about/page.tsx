@@ -1,0 +1,7 @@
+'use client';
+import useSWR from 'swr';
+import { EnvelopeSimple, GithubLogo, Leaf } from '@phosphor-icons/react';
+import { PageTitle, Loading, State } from '@/components/ui';
+import { safeUrl } from '@/lib/api';
+import type { Profile, Stats } from '@/lib/types';
+export default function Page() { const { data, error, mutate } = useSWR<Profile>('/user/site/profile'); const { data: stats } = useSWR<Stats>('/user/site/stats'); return <><PageTitle title="很高兴，在这里遇见你。" description="关于这个小站，和文字背后的那个人。"/>{error ? <State error={error} retry={() => mutate()}/> : !data ? <Loading/> : <section className="about-layout"><div className="about-portrait">{safeUrl(data.avatar) ? <img src={safeUrl(data.avatar)} alt={data.nickname}/> : <Leaf size={90} weight="duotone"/>}</div><div className="about-copy"><h2>你好，我是 {data.nickname}。</h2><p>欢迎来到第三行。这是一个用来记录、分享和回望的地方。把学习时的思考写下来，把生活里的小事留下来，让每一段经历都有迹可循。</p><p>希望这个小站能陪你度过一段自在的时光。也欢迎你通过下面的方式与我联系。</p><div className="actions">{data.email ? <a className="button" href={`mailto:${data.email}`}><EnvelopeSimple size={18}/>写一封信</a> : null}{safeUrl(data.github) ? <a className="button secondary" target="_blank" rel="noreferrer" href={safeUrl(data.github)}><GithubLogo size={20}/>GitHub</a> : null}</div><div className="about-stats"><span>{stats?.articleCount ?? '·'} 篇文章</span><span>{stats?.photoCount ?? '·'} 张照片</span>{data.startTime ? <span>从 {data.startTime} 开始记录</span> : null}</div></div></section>}</>; }
