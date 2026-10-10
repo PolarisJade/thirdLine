@@ -22,6 +22,27 @@ spring:
           ssl:
             enable: true         # port=465 时开启 SSL；改用 587 时改为 starttls.enable: true
 
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${tl.db.url}
+    username: ${tl.db.username}
+    password: ${tl.db.password}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: ThirdLineHikariCP
+
+  data:
+    redis:
+      host: ${tl.redis.host}
+      port: 6379
+      password: ${tl.redis.password}
+      database: ${tl.redis.database}
+      timeout: 3000ms
+
 
 server:
   port: 8080

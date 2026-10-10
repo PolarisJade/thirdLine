@@ -1,8 +1,8 @@
-node_modules/
-.next/
-.next-dev/
-out/
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+*.log
 *.tsbuildinfo
-.env*.local
-playwright-report/
-test-results/

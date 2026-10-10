@@ -1,0 +1,173 @@
+/* ============================================================================
+   thirdLine 设计令牌（Design Tokens）
+   ---------------------------------------------------------------------------
+   主色调：暖阳橘 / 奶茶色 —— 温暖的奶油底 + 橘调高光
+   玻璃质感：靠三层叠加实现"液态玻璃"：
+     1) 半透明暖色底色（--glass-bg）
+     2) backdrop-filter 模糊 + 提高饱和度（--glass-blur / --glass-saturate）
+     3) 顶部内高光 + 外描边（--glass-inner / --glass-border）
+   暗色模式整体改成暖炭灰，避免纯黑把玻璃质感压死。
+   ========================================================================== */
+
+:root {
+  /* ---------------------------------------------------------- 品牌暖色阶 */
+  --brand-50: #fff8f0;
+  --brand-100: #ffeccf;
+  --brand-200: #ffd9a0;
+  --brand-300: #ffc178;
+  --brand-400: #f7a072;
+  --brand-500: #ec8a5a;
+  --brand-600: #d9704a;
+  --brand-700: #b85737;
+  --brand-800: #8f4229;
+  --brand-900: #66301e;
+
+  /* 辅助暖色：蜜桃粉 / 暖奶油，用于渐变氛围球 */
+  --accent-peach: #ffb7a0;
+  --accent-honey: #ffd98e;
+  --accent-rose: #f7a8b8;
+  --accent-sage: #b7c9a8;
+
+  /* ------------------------------------------------------------ 语义状态色 */
+  --success: #4f9d69;
+  --success-soft: rgba(79, 157, 105, 0.14);
+  --warning: #d99a2b;
+  --warning-soft: rgba(217, 154, 43, 0.14);
+  --danger: #d9614f;
+  --danger-soft: rgba(217, 97, 79, 0.14);
+  --info: #5b8db8;
+  --info-soft: rgba(91, 141, 184, 0.14);
+
+  /* ---------------------------------------------------------------- 圆角 */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-pill: 999px;
+
+  /* -------------------------------------------------------------- 间距节奏 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---------------------------------------------------------------- 动效 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 140ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+
+  /* ------------------------------------------------------------ 布局尺寸 */
+  --header-height: 68px;
+  --content-width: 1200px;
+  --sidebar-width: 236px;
+  /* 底部悬浮组件（音乐播放器 / 弹幕输入框）预留空间，避免遮住正文 */
+  --floating-clearance: 108px;
+  /* 弹幕第一条轨道距容器顶部的距离 */
+  --danmaku-top: 20px;
+  /* 弹幕横向扫过的基准距离（容器内模式下约等于 Hero 宽度） */
+  --danmaku-travel: 1160px;
+  /* 弹幕发送框占用的高度，用于 Hero 底部留白 */
+  --danmaku-sender-space: 60px;
+
+  --font-sans: 'Inter', 'HarmonyOS Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
+    system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', Consolas, 'Courier New', monospace;
+}
+
+/* ==========================================================================
+   亮色主题：奶油米白底 + 橘调玻璃
+   ========================================================================== */
+:root,
+:root[data-theme='light'] {
+  --bg-base: #fdf6ee;
+  --bg-gradient-1: rgba(255, 193, 120, 0.5);
+  --bg-gradient-2: rgba(255, 183, 160, 0.42);
+  --bg-gradient-3: rgba(255, 217, 142, 0.4);
+  --bg-gradient-4: rgba(247, 168, 184, 0.3);
+
+  --surface: #fffdfa;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f8efe4;
+
+  --text-primary: #35281f;
+  --text-secondary: #6d5a4c;
+  --text-tertiary: #9a8878;
+  --text-inverse: #fffaf4;
+
+  --line: rgba(120, 88, 62, 0.13);
+  --line-strong: rgba(120, 88, 62, 0.22);
+
+  /* 液态玻璃 */
+  --glass-bg: rgba(255, 252, 248, 0.58);
+  --glass-bg-strong: rgba(255, 253, 250, 0.76);
+  --glass-bg-weak: rgba(255, 252, 248, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-border-outer: rgba(190, 150, 118, 0.16);
+  --glass-inner: rgba(255, 255, 255, 0.85);
+  --glass-blur: 18px;
+  --glass-saturate: 168%;
+  --glass-shadow: 0 10px 30px -12px rgba(126, 85, 55, 0.22), 0 2px 8px -4px rgba(126, 85, 55, 0.12);
+  --glass-shadow-hover: 0 22px 52px -16px rgba(126, 85, 55, 0.3), 0 4px 14px -6px rgba(126, 85, 55, 0.16);
+
+  /* 玻璃高光扫掠（liquid sheen） */
+  --sheen: linear-gradient(115deg, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0.72) 48%, rgba(255, 255, 255, 0) 62%);
+
+  --overlay: rgba(53, 40, 31, 0.36);
+  --noise-opacity: 0.035;
+
+  --scroll-thumb: rgba(190, 150, 118, 0.42);
+}
+
+/* ==========================================================================
+   暗色主题：暖炭灰底，保留玻璃透光感
+   ========================================================================== */
+:root[data-theme='dark'] {
+  --bg-base: #191310;
+  --bg-gradient-1: rgba(217, 112, 74, 0.3);
+  --bg-gradient-2: rgba(255, 183, 160, 0.16);
+  --bg-gradient-3: rgba(255, 193, 120, 0.18);
+  --bg-gradient-4: rgba(120, 88, 62, 0.28);
+
+  --surface: #221a15;
+  --surface-raised: #2b211b;
+  --surface-sunken: #171210;
+
+  --text-primary: #f7ede2;
+  --text-secondary: #c8b4a2;
+  --text-tertiary: #94806f;
+  --text-inverse: #221a15;
+
+  --line: rgba(255, 219, 186, 0.12);
+  --line-strong: rgba(255, 219, 186, 0.22);
+
+  --glass-bg: rgba(60, 44, 34, 0.44);
+  --glass-bg-strong: rgba(66, 49, 38, 0.62);
+  --glass-bg-weak: rgba(60, 44, 34, 0.28);
+  --glass-border: rgba(255, 224, 196, 0.16);
+  --glass-border-outer: rgba(0, 0, 0, 0.4);
+  --glass-inner: rgba(255, 232, 208, 0.14);
+  --glass-blur: 20px;
+  --glass-saturate: 150%;
+  --glass-shadow: 0 12px 34px -14px rgba(0, 0, 0, 0.62), 0 2px 8px -4px rgba(0, 0, 0, 0.4);
+  --glass-shadow-hover: 0 24px 58px -18px rgba(0, 0, 0, 0.7), 0 4px 16px -6px rgba(0, 0, 0, 0.5);
+
+  --sheen: linear-gradient(115deg, rgba(255, 255, 255, 0) 34%, rgba(255, 226, 196, 0.18) 50%, rgba(255, 255, 255, 0) 64%);
+
+  --overlay: rgba(10, 7, 5, 0.62);
+  --noise-opacity: 0.05;
+
+  --scroll-thumb: rgba(255, 219, 186, 0.22);
+
+  --success: #6fb98a;
+  --warning: #e6b055;
+  --danger: #e07f6d;
+  --info: #7aa8cd;
+}

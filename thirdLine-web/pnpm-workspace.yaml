@@ -1,0 +1,6 @@
+# pnpm 构建脚本白名单：
+#  - esbuild 需要 postinstall 安装平台二进制，vite 依赖它，必须放行
+#  - es5-ext 的构建脚本（仅是捐赠提示）无实际作用，保持禁用
+allowBuilds:
+  esbuild: true
+  es5-ext: false
