@@ -7,7 +7,10 @@ export interface PaginatedList<T> {
   total: number
   page: number
   size: number
+  /** 首屏加载（尚无数据）：页面应展示骨架屏 */
   loading: boolean
+  /** 后台刷新（已有数据）：旧数据保持在屏，页面不应卸载表格换骨架屏 */
+  refreshing: boolean
   error: string | null
   setPage: (page: number) => void
   setSize: (size: number) => void
@@ -69,5 +72,18 @@ export function usePaginatedList<T>(
     setPage(1)
   }, [])
 
-  return { records, total, page, size, loading, error, setPage: changePage, setSize: changeSize, reload }
+  return {
+    records,
+    total,
+    page,
+    size,
+    // 仅在没有任何数据时才算 loading（首屏骨架屏）；
+    // reload/翻页时旧数据仍在屏上，避免表格↔骨架屏整体替换导致页面高度突变抖动
+    loading: loading && records.length === 0,
+    refreshing: loading && records.length > 0,
+    error,
+    setPage: changePage,
+    setSize: changeSize,
+    reload,
+  }
 }

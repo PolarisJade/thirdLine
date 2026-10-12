@@ -54,6 +54,11 @@ public enum ResultCode {
     PORTFOLIO_NOT_FOUND(6001, "作品不存在"),
     PORTFOLIO_TITLE_REQUIRED(6002, "作品标题不能为空"),
 
+    /* 技术栈字典 61xx（作品集子模块） */
+    TECH_STACK_NOT_FOUND(6101, "技术栈不存在"),
+    TECH_STACK_IN_USE(6102, "技术栈已关联作品，无法删除"),
+    TECH_STACK_NAME_DUPLICATE(6103, "技术栈名称已存在"),
+
     /* 弹幕模块 7xxx */
     DANMAKU_CONTENT_EMPTY(7001, "弹幕内容不能为空"),
     DANMAKU_CONTENT_TOO_LONG(7002, "弹幕内容不能超过 100 个字符"),

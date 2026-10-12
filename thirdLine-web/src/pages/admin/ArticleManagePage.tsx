@@ -1,22 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { articleApi, categoryApi, tagApi, type ArticleVO } from '@/api'
 import { useAsync, useDebounced } from '@/hooks/useAsync'
+import { usePaginatedList } from '@/hooks/usePaginatedList'
 import { useToast } from '@/components/ToastContext'
 import { Glass } from '@/components/Glass'
 import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { Badge, Input, Select } from '@/components/Form'
 import { ConfirmDialog } from '@/components/Modal'
-import { EmptyState, TableSkeleton } from '@/components/Feedback'
+import { EmptyState, Pagination, TableSkeleton } from '@/components/Feedback'
 import { errorMessage, formatDateTime, resolveSummary } from '@/utils/format'
 import { articleCover, withFallback } from '@/utils/placeholder'
 
 /**
  * 文章管理（后台）。
- * 列表：GET /admin/article/page（游标分页，支持 keyword / status / categoryId / tagId）
+ * 列表：GET /admin/article/page-list（标准分页，支持 keyword / status / categoryId / tagId）
  * 删除：DELETE /admin/article/{id}
  * 发布/转草稿：PUT /admin/article（只提交 id 与 status，后端按非 null 字段更新）
+ * 说明：后端仍保留游标分页 /admin/article/page（前台文章流使用），管理端表格改用标准分页。
  */
 export function ArticleManagePage() {
   const toast = useToast()
@@ -26,64 +28,32 @@ export function ArticleManagePage() {
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [tagId, setTagId] = useState<number | undefined>(undefined)
 
-  const [records, setRecords] = useState<ArticleVO[]>([])
-  const [cursor, setCursor] = useState<number | undefined>(undefined)
-  const [hasMore, setHasMore] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   const [pendingDelete, setPendingDelete] = useState<ArticleVO | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [statusUpdating, setStatusUpdating] = useState<number | null>(null)
 
-  const requestIdRef = useRef(0)
   const debouncedKeyword = useDebounced(keyword, 420)
 
   const categories = useAsync(() => categoryApi.adminList(), [])
   const tags = useAsync(() => tagApi.adminList(), [])
 
-  const fetchPage = useCallback(
-    async (nextCursor: number | undefined, reset: boolean) => {
-      const requestId = requestIdRef.current + 1
-      requestIdRef.current = requestId
-
-      if (reset) {
-        setLoading(true)
-        setError(null)
-      } else {
-        setLoadingMore(true)
-      }
-
-      try {
-        const page = await articleApi.adminPage({
-          size: 10,
-          keyword: debouncedKeyword.trim() || undefined,
-          status,
-          categoryId,
-          tagId,
-          cursor: nextCursor,
-        })
-
-        if (requestId !== requestIdRef.current) return
-
-        setRecords((prev) => (reset ? page.records : [...prev, ...page.records]))
-        setCursor(page.nextCursor ?? undefined)
-        setHasMore(Boolean(page.hasMore))
-      } catch (fetchError) {
-        if (requestId === requestIdRef.current) setError(errorMessage(fetchError))
-      } finally {
-        if (requestId === requestIdRef.current) {
-          setLoading(false)
-          setLoadingMore(false)
-        }
-      }
-    },
+  const list = usePaginatedList<ArticleVO>(
+    (page, size) =>
+      articleApi.adminPageList({
+        page,
+        size,
+        keyword: debouncedKeyword.trim() || undefined,
+        status,
+        categoryId,
+        tagId,
+      }),
     [debouncedKeyword, status, categoryId, tagId],
+    10,
   )
 
+  /** 筛选条件变化时回到第一页，避免停留在上一组条件下的空页 */
   useEffect(() => {
-    void fetchPage(undefined, true)
+    list.setPage(1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedKeyword, status, categoryId, tagId])
 
@@ -93,18 +63,8 @@ export function ArticleManagePage() {
     setStatusUpdating(article.id)
     try {
       await articleApi.update({ id: article.id, status: nextStatus })
-      setRecords((prev) =>
-        prev.map((item) =>
-          item.id === article.id
-            ? {
-                ...item,
-                status: nextStatus,
-                publishedTime: nextStatus === 1 && !item.publishedTime ? new Date().toISOString() : item.publishedTime,
-              }
-            : item,
-        ),
-      )
       toast.success(nextStatus === 1 ? '已发布' : '已转为草稿')
+      list.reload()
     } catch (updateError) {
       toast.error(errorMessage(updateError))
     } finally {
@@ -119,8 +79,8 @@ export function ArticleManagePage() {
     try {
       await articleApi.remove(pendingDelete.id)
       toast.success('文章已删除')
-      setRecords((prev) => prev.filter((item) => item.id !== pendingDelete.id))
       setPendingDelete(null)
+      list.reload()
     } catch (deleteError) {
       toast.error(errorMessage(deleteError))
     } finally {
@@ -142,9 +102,7 @@ export function ArticleManagePage() {
       <div className="admin-page-head">
         <div>
           <h1 className="admin-page-head__title">文章管理</h1>
-          <p className="admin-page-head__desc">
-            共 {records.length} 篇{hasMore ? '（还有更多）' : ''} · 支持草稿与已发布状态切换
-          </p>
+          <p className="admin-page-head__desc">共 {list.total} 篇 · 支持草稿与已发布状态切换</p>
         </div>
         <Link to="/admin/articles/new" className="btn btn--primary">
           <Icon name="plus" size={16} />
@@ -201,20 +159,20 @@ export function ArticleManagePage() {
 
       {/* ------------------------------------------------------------ 列表 */}
       <Glass className="panel panel--flush" variant="strong">
-        {loading ? (
+        {list.loading ? (
           <TableSkeleton rows={6} columns={5} />
-        ) : error ? (
+        ) : list.error ? (
           <EmptyState
             icon="alert"
             title="加载失败"
-            desc={error}
+            desc={list.error}
             action={
-              <Button variant="primary" icon="refresh" onClick={() => void fetchPage(undefined, true)}>
+              <Button variant="primary" icon="refresh" onClick={list.reload}>
                 重试
               </Button>
             }
           />
-        ) : records.length === 0 ? (
+        ) : list.records.length === 0 ? (
           <EmptyState
             icon={hasFilter ? 'search' : 'article'}
             title={hasFilter ? '没有符合条件的文章' : '还没有文章'}
@@ -246,7 +204,7 @@ export function ArticleManagePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((article) => (
+                  {list.records.map((article) => (
                     <tr key={article.id}>
                       <td>
                         <div className="cell-row">
@@ -349,18 +307,13 @@ export function ArticleManagePage() {
               </table>
             </div>
 
-            {(hasMore || loadingMore) && (
-              <div className="load-more">
-                <Button
-                  variant="glass"
-                  loading={loadingMore}
-                  icon={loadingMore ? undefined : 'chevronDown'}
-                  onClick={() => void fetchPage(cursor, false)}
-                >
-                  {loadingMore ? '正在加载…' : '加载更多'}
-                </Button>
-              </div>
-            )}
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>

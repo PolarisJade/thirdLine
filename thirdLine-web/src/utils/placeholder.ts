@@ -9,11 +9,11 @@
 /** 占位图服务：picsum.photos 支持 seed 稳定出图（同一 seed 每次都是同一张） */
 const PICSUM = 'https://picsum.photos/seed'
 
-/** 站点主视觉大图（首页 Hero 背景） */
-export const HERO_IMAGE = 'https://picsum.photos/seed/thirdline-hero/1600/900'
+/** 站点主视觉大图（首页 Hero 背景）：使用 public/hero.jpg，Vite 构建后原样输出到站点根目录 */
+export const HERO_IMAGE = '/hero.jpg'
 
-/** 关于/个人介绍区的配图 */
-export const ABOUT_IMAGE = 'https://picsum.photos/seed/thirdline-about/900/900'
+/** 关于/个人介绍区的配图：使用 public/about.jpg，Vite 构建后原样输出到站点根目录 */
+export const ABOUT_IMAGE = '/about.jpg'
 
 /** 文章无封面时的兜底图，按文章 id 稳定取图 */
 export function articleCover(seed: string | number | null | undefined): string {

@@ -3,7 +3,7 @@
    ---------------------------------------------------------------------------
    一个 .glass 元素由四层视觉叠加而成：
      ① ::before  —— 顶部高光到透明的白色渐变（模拟玻璃受光面）
-     ② ::after   —— 悬浮时斜向扫过的"液面反光"
+     ② ::after   —— 液面反光层（已停用悬停扫光，保持静止隐藏）
      ③ 元素本身   —— 半透明暖底 + backdrop-filter 模糊
      ④ box-shadow —— 顶部 inset 白色高光 + 外部柔和暖色投影
    ========================================================================== */
@@ -39,7 +39,8 @@
   pointer-events: none;
 }
 
-/* ② 液面反光扫掠 */
+/* ② 液面反光扫掠：默认静止隐藏，鼠标悬停不再触发扫光（如需恢复高光闪光，
+   重新启用下方 .glass:hover::after 规则即可） */
 .glass::after {
   content: '';
   position: absolute;
@@ -52,20 +53,6 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-base) var(--ease-soft);
-}
-
-.glass:hover::after {
-  opacity: 1;
-  animation: glass-sheen 900ms var(--ease-out);
-}
-
-@keyframes glass-sheen {
-  from {
-    background-position: 130% 0;
-  }
-  to {
-    background-position: -30% 0;
-  }
 }
 
 /* ------------------------------------------------------------- 玻璃强度变体 */

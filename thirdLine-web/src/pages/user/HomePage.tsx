@@ -10,7 +10,7 @@ import { ArticleCardSkeleton, EmptyState, SectionHead } from '@/components/Feedb
 import { DanmakuStage } from '@/components/Danmaku'
 import { Avatar } from '@/components/Form'
 import { daysSince, formatDate, formatNumber } from '@/utils/format'
-import { ABOUT_IMAGE, HERO_IMAGE, avatarPlaceholder, photoPlaceholder, withFallback } from '@/utils/placeholder'
+import { HERO_IMAGE, avatarPlaceholder, photoPlaceholder, withFallback } from '@/utils/placeholder'
 
 /**
  * 首页。
@@ -36,35 +36,6 @@ export function HomePage() {
             <img src={HERO_IMAGE} alt="" aria-hidden="true" />
           </div>
 
-          <div className="hero__inner">
-            <span className="hero__badge">
-              <Icon name="sparkles" size={13} />
-              第 {formatNumber(runningDays)} 天，仍在记录
-            </span>
-
-            <h1 className="hero__title">
-              你好，我是 <em>{profile?.nickname || 'PolarisJade'}</em>
-              <br />
-              在第三条线上写代码
-            </h1>
-
-            <p className="hero__desc">
-              白天与需求周旋，夜里和光标作伴。这里放着我的技术笔记、做过的项目，
-              还有一些不想忘记的瞬间。
-            </p>
-
-            <div className="hero__actions">
-              <Link to="/articles" className="btn btn--primary btn--lg">
-                <Icon name="book" size={17} />
-                开始阅读
-              </Link>
-              <Link to="/portfolio" className="btn btn--glass btn--lg">
-                <Icon name="grid" size={17} />
-                看看作品
-              </Link>
-            </div>
-          </div>
-
           {/* 弹幕层：放在 Hero 内部（Hero 为 position: relative + overflow: hidden），
               弹幕只在首屏大图区域飘过，不会盖住顶部导航，也不会干扰下方内容 */}
           <DanmakuStage />
@@ -77,7 +48,7 @@ export function HomePage() {
               <Icon name="article" size={19} />
             </span>
             <span className="stat-card__value">{formatNumber(stats?.articleCount ?? 0)}</span>
-            <span className="stat-card__label">篇已发布文章</span>
+            <span className="stat-card__label">文章</span>
           </Glass>
 
           <Glass className="stat-card" hoverable>
@@ -85,7 +56,7 @@ export function HomePage() {
               <Icon name="folder" size={19} />
             </span>
             <span className="stat-card__value">{formatNumber(stats?.categoryCount ?? 0)}</span>
-            <span className="stat-card__label">个分类</span>
+            <span className="stat-card__label">分类</span>
           </Glass>
 
           <Glass className="stat-card" hoverable>
@@ -93,7 +64,7 @@ export function HomePage() {
               <Icon name="tag" size={19} />
             </span>
             <span className="stat-card__value">{formatNumber(stats?.tagCount ?? 0)}</span>
-            <span className="stat-card__label">个标签</span>
+            <span className="stat-card__label">标签</span>
           </Glass>
 
           <Glass className="stat-card" hoverable>
@@ -101,7 +72,7 @@ export function HomePage() {
               <Icon name="image" size={19} />
             </span>
             <span className="stat-card__value">{formatNumber(stats?.photoCount ?? 0)}</span>
-            <span className="stat-card__label">张相册照片</span>
+            <span className="stat-card__label">照片</span>
           </Glass>
         </div>
       </section>
@@ -245,8 +216,7 @@ export function HomePage() {
                 关于 <em style={{ fontStyle: 'normal', color: 'var(--brand-500)' }}>{profile?.nickname || '我'}</em>
               </h2>
               <p style={{ fontSize: 15, lineHeight: 1.9, color: 'var(--text-secondary)', maxWidth: 560 }}>
-                一名喜欢把复杂问题拆开揉碎的后端开发者，也偶尔折腾前端与设计。
-                相信好的代码像好的文字，读起来应该顺畅、有节奏。
+                我去，孩子们，这里我该写啥？
                 <br />
                 本站自 {formatDate(profile?.startTime)} 开始运行，已经陪我走过 {formatNumber(runningDays)} 天。
               </p>
@@ -267,18 +237,6 @@ export function HomePage() {
 
             <div className="row" style={{ gap: 16 }}>
               <Avatar size="xl" src={withFallback(profile?.avatar, avatarPlaceholder(profile?.nickname))} name={profile?.nickname} />
-              <img
-                src={ABOUT_IMAGE}
-                alt=""
-                aria-hidden="true"
-                className="hide-under-820"
-                style={{
-                  width: 160,
-                  height: 160,
-                  objectFit: 'cover',
-                  borderRadius: 'var(--radius-xl)',
-                }}
-              />
             </div>
           </div>
         </Glass>

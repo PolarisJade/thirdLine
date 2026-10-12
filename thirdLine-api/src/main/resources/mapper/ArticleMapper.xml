@@ -9,6 +9,26 @@
         u.nickname AS author_name, c.name AS category_name
     </sql>
 
+    <!-- 文章列表通用筛选条件：游标分页与标准分页共用，参数名统一为 q -->
+    <sql id="articleFilterConditions">
+        <if test="q.keyword != null and q.keyword != ''">
+            AND (a.title LIKE CONCAT('%', #{q.keyword}, '%')
+                 OR a.summary LIKE CONCAT('%', #{q.keyword}, '%'))
+        </if>
+        <if test="q.categoryId != null">
+            AND a.category_id = #{q.categoryId}
+        </if>
+        <if test="q.status != null">
+            AND a.status = #{q.status}
+        </if>
+        <if test="q.tagId != null">
+            AND EXISTS (
+                SELECT 1 FROM tl_article_tag atg
+                WHERE atg.article_id = a.id AND atg.tag_id = #{q.tagId}
+            )
+        </if>
+    </sql>
+
     <!-- 游标分页查询：按 id 倒序，游标为上一页最后一条 id -->
     <select id="selectArticlePage" resultType="com.god.thirdLine.domain.vo.ArticleVO">
         SELECT
@@ -17,28 +37,26 @@
         LEFT JOIN tl_user u ON u.id = a.author_id
         LEFT JOIN tl_category c ON c.id = a.category_id
         <where>
-            <if test="q.keyword != null and q.keyword != ''">
-                AND (a.title LIKE CONCAT('%', #{q.keyword}, '%')
-                     OR a.summary LIKE CONCAT('%', #{q.keyword}, '%'))
-            </if>
-            <if test="q.categoryId != null">
-                AND a.category_id = #{q.categoryId}
-            </if>
-            <if test="q.status != null">
-                AND a.status = #{q.status}
-            </if>
-            <if test="q.tagId != null">
-                AND EXISTS (
-                    SELECT 1 FROM tl_article_tag atg
-                    WHERE atg.article_id = a.id AND atg.tag_id = #{q.tagId}
-                )
-            </if>
+            <include refid="articleFilterConditions"/>
             <if test="q.cursor != null">
                 AND a.id &lt; #{q.cursor}
             </if>
         </where>
         ORDER BY a.id DESC
         LIMIT #{limit}
+    </select>
+
+    <!-- 标准分页查询（管理端表格）：只写筛选与排序，LIMIT/OFFSET 与 COUNT 由分页插件自动拼装 -->
+    <select id="selectArticlePageList" resultType="com.god.thirdLine.domain.vo.ArticleVO">
+        SELECT
+        <include refid="articleVoColumns"/>
+        FROM tl_article a
+        LEFT JOIN tl_user u ON u.id = a.author_id
+        LEFT JOIN tl_category c ON c.id = a.category_id
+        <where>
+            <include refid="articleFilterConditions"/>
+        </where>
+        ORDER BY a.id DESC
     </select>
 
     <!-- 文章详情（含正文） -->

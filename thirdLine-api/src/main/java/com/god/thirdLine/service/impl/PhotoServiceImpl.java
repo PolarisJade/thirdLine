@@ -11,6 +11,7 @@ import com.god.thirdLine.domain.query.PhotoQuery;
 import com.god.thirdLine.domain.vo.PhotoVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PhotoMapper;
+import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IPhotoService;
 import com.god.thirdLine.util.OssUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
 
     private final OssUtil ossUtil;
+    private final IOssReferenceService ossReferenceService;
 
     @Override
     public Long savePhoto(PhotoDTO dto) {
@@ -67,6 +69,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (photo == null) {
             throw new BusinessException(ResultCode.PHOTO_NOT_FOUND);
         }
+        // 记录旧原图地址：更新成功后清理被替换掉的 OSS 文件
+        String oldUrl = photo.getUrl();
         // 图片、标题、描述、宽高、文件大小按需覆盖
         if (StringUtils.hasText(dto.getUrl())) {
             photo.setUrl(dto.getUrl());
@@ -94,6 +98,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         photo.setUpdateTime(LocalDateTime.now());
         this.updateById(photo);
+
+        // 换图后清理旧原图：确认无人引用才删，手填外链自动跳过
+        if (StringUtils.hasText(dto.getUrl())) {
+            ossReferenceService.deleteIfUnused(oldUrl, dto.getUrl());
+        }
     }
 
     @Override

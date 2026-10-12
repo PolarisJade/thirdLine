@@ -272,7 +272,6 @@
   left: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   padding: 5px 14px;
   border-radius: var(--radius-pill);
   font-size: 14px;
@@ -283,35 +282,42 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   -webkit-backdrop-filter: blur(10px) saturate(160%);
   backdrop-filter: blur(10px) saturate(160%);
-  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.6);
+  /* 默认短阴影，悬停时再延长加深 */
+  box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
   animation: danmaku-move linear forwards;
+  transition:
+    background var(--duration-base) var(--ease-soft),
+    border-color var(--duration-base) var(--ease-soft),
+    box-shadow var(--duration-base) var(--ease-soft);
 }
 
+/* 鼠标悬停：弹幕原地停住，阴影延长加深并展开举报按钮 */
 .danmaku-layer__item:hover {
   background: rgba(30, 18, 10, 0.72);
   border-color: rgba(255, 255, 255, 0.4);
-}
-
-.danmaku-layer__nickname {
-  font-size: 12px;
-  font-weight: 500;
-  opacity: 0.72;
+  box-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.7);
+  animation-play-state: paused;
 }
 
 .danmaku-layer__report {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
+  /* 默认收起不占位，悬停时展开 */
+  width: 0;
   height: 20px;
+  margin-left: 0;
   border-radius: 50%;
   color: rgba(255, 255, 255, 0.7);
   opacity: 0;
-  transition: all var(--duration-fast);
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .danmaku-layer__item:hover .danmaku-layer__report {
+  width: 20px;
+  margin-left: 8px;
   opacity: 1;
 }
 

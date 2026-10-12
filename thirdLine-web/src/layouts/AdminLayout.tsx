@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icon, type IconName } from '@/components/Icon'
 import { Avatar } from '@/components/Form'
 import { Button } from '@/components/Button'
+import { RouteFallback } from '@/components/RouteFallback'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { danmakuApi } from '@/api'
@@ -29,6 +30,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
       { to: '/admin/articles', label: '文章管理', icon: 'article' },
       { to: '/admin/categories', label: '分类管理', icon: 'folder' },
       { to: '/admin/tags', label: '标签管理', icon: 'tag' },
+      { to: '/admin/tech-stacks', label: '技术栈管理', icon: 'code' },
       { to: '/admin/portfolio', label: '作品集管理', icon: 'grid' },
       { to: '/admin/photos', label: '相册管理', icon: 'image' },
       { to: '/admin/music', label: '音乐管理', icon: 'music' },
@@ -178,7 +180,10 @@ export function AdminLayout() {
         </header>
 
         <div className="admin-content">
-          <Outlet />
+          {/* 子路由都是 React.lazy：切页时先显示占位，避免内容区白屏 */}
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
     </div>

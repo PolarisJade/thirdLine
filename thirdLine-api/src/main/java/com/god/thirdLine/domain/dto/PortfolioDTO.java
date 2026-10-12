@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 作品集新增 / 修改请求参数。
@@ -29,8 +30,11 @@ public class PortfolioDTO implements Serializable {
     /** 封面图URL */
     private String coverImage;
 
-    /** 技术栈/工具，逗号分隔，如 React,Spring Boot,MySQL */
-    private String techStack;
+    /**
+     * 关联的技术栈ID集合（对应 tl_portfolio_tech_stack）。
+     * 新增时可为空；修改时不传（null）表示不动已有关系，传空数组表示清空。
+     */
+    private List<Long> techStackIds;
 
     /** 本人担任角色，如 前端负责人/独立开发 */
     private String role;

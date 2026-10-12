@@ -1,7 +1,9 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { UserLayout } from './layouts/UserLayout'
 import { AdminLayout } from './layouts/AdminLayout'
 import { RequireAdmin, RequireAuth } from './routes/guards'
+import { RouteFallback } from './components/RouteFallback'
 
 /* ------------------------------------------------------------------ 用户端 */
 import { HomePage } from './pages/user/HomePage'
@@ -16,19 +18,36 @@ import { LoginPage } from './pages/user/LoginPage'
 import { RegisterPage } from './pages/user/RegisterPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
-/* ------------------------------------------------------------------ 管理端 */
-import { AdminLoginPage } from './pages/admin/AdminLoginPage'
-import { DashboardPage } from './pages/admin/DashboardPage'
-import { ArticleManagePage } from './pages/admin/ArticleManagePage'
-import { ArticleEditorPage } from './pages/admin/ArticleEditorPage'
-import { CategoryManagePage } from './pages/admin/CategoryManagePage'
-import { TagManagePage } from './pages/admin/TagManagePage'
-import { PhotoManagePage } from './pages/admin/PhotoManagePage'
-import { PortfolioManagePage } from './pages/admin/PortfolioManagePage'
-import { MusicManagePage } from './pages/admin/MusicManagePage'
-import { DanmakuManagePage } from './pages/admin/DanmakuManagePage'
-import { ReportManagePage } from './pages/admin/ReportManagePage'
-import { SettingsPage } from './pages/admin/SettingsPage'
+/* ------------------------------------------------------------------ 管理端
+   全部按需加载（React.lazy）：管理端页面与富文本编辑器（约 280KB gzip）
+   不再进入前台首屏包，只有访问 /admin/** 时才下载对应 chunk。 */
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const ArticleManagePage = lazy(() =>
+  import('./pages/admin/ArticleManagePage').then((m) => ({ default: m.ArticleManagePage })),
+)
+const ArticleEditorPage = lazy(() =>
+  import('./pages/admin/ArticleEditorPage').then((m) => ({ default: m.ArticleEditorPage })),
+)
+const CategoryManagePage = lazy(() =>
+  import('./pages/admin/CategoryManagePage').then((m) => ({ default: m.CategoryManagePage })),
+)
+const TagManagePage = lazy(() => import('./pages/admin/TagManagePage').then((m) => ({ default: m.TagManagePage })))
+const TechStackManagePage = lazy(() =>
+  import('./pages/admin/TechStackManagePage').then((m) => ({ default: m.TechStackManagePage })),
+)
+const PhotoManagePage = lazy(() => import('./pages/admin/PhotoManagePage').then((m) => ({ default: m.PhotoManagePage })))
+const PortfolioManagePage = lazy(() =>
+  import('./pages/admin/PortfolioManagePage').then((m) => ({ default: m.PortfolioManagePage })),
+)
+const MusicManagePage = lazy(() => import('./pages/admin/MusicManagePage').then((m) => ({ default: m.MusicManagePage })))
+const DanmakuManagePage = lazy(() =>
+  import('./pages/admin/DanmakuManagePage').then((m) => ({ default: m.DanmakuManagePage })),
+)
+const ReportManagePage = lazy(() =>
+  import('./pages/admin/ReportManagePage').then((m) => ({ default: m.ReportManagePage })),
+)
+const SettingsPage = lazy(() => import('./pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 
 /**
  * 路由表。
@@ -64,7 +83,14 @@ export function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       {/* -------------------------------------------------------- 管理端 */}
-      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin/login"
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <AdminLoginPage />
+          </Suspense>
+        }
+      />
 
       <Route
         path="/admin"
@@ -80,6 +106,7 @@ export function App() {
         <Route path="articles/:id/edit" element={<ArticleEditorPage />} />
         <Route path="categories" element={<CategoryManagePage />} />
         <Route path="tags" element={<TagManagePage />} />
+        <Route path="tech-stacks" element={<TechStackManagePage />} />
         <Route path="photos" element={<PhotoManagePage />} />
         <Route path="portfolio" element={<PortfolioManagePage />} />
         <Route path="music" element={<MusicManagePage />} />

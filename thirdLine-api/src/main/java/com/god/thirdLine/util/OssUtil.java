@@ -69,17 +69,8 @@ public class OssUtil {
      * @param url 文件访问 URL
      */
     public void deleteByUrl(String url) {
-        if (!StringUtils.hasText(url)) {
-            return;
-        }
-        String prefix = getUrlPrefix();
-        // 非本 OSS 地址（如手填外链）不处理，避免误删第三方资源
-        if (!url.startsWith(prefix + "/")) {
-            return;
-        }
-        String objectKey = url.substring(prefix.length() + 1);
-        // 带查询参数等异常地址不处理
-        if (!StringUtils.hasText(objectKey) || objectKey.contains("?") || objectKey.contains("#")) {
+        String objectKey = toObjectKey(url);
+        if (objectKey == null) {
             return;
         }
         try {
@@ -87,6 +78,42 @@ public class OssUtil {
         } catch (Exception e) {
             log.warn("删除 OSS 文件失败, objectKey={}", objectKey, e);
         }
+    }
+
+    /**
+     * 判断访问 URL 是否指向本站 OSS 上的文件。
+     * 用于清理前区分"自己上传的文件"与"手填的第三方外链"。
+     *
+     * @param url 文件访问 URL
+     * @return 本 OSS 文件返回 true，其余（外链 / 空值 / 异常地址）返回 false
+     */
+    public boolean isOwnObject(String url) {
+        return toObjectKey(url) != null;
+    }
+
+    /**
+     * 由访问 URL 反推对象键（bucket 内的相对路径）：
+     * 非本 OSS 地址（如手填外链）、空值、带查询参数或锚点的异常地址一律返回 null，
+     * 避免误删第三方资源或删错对象。
+     *
+     * @param url 文件访问 URL
+     * @return 对象键，无法识别时返回 null
+     */
+    public String toObjectKey(String url) {
+        if (!StringUtils.hasText(url)) {
+            return null;
+        }
+        String prefix = getUrlPrefix();
+        // 非本 OSS 地址（如手填外链）不处理
+        if (!url.startsWith(prefix + "/")) {
+            return null;
+        }
+        String objectKey = url.substring(prefix.length() + 1);
+        // 带查询参数等异常地址不处理
+        if (!StringUtils.hasText(objectKey) || objectKey.contains("?") || objectKey.contains("#")) {
+            return null;
+        }
+        return objectKey;
     }
 
     /**

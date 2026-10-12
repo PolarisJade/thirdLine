@@ -6,8 +6,8 @@ import { Icon } from '@/components/Icon'
 import { Glass } from '@/components/Glass'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Form'
-import { ArticleCard } from '@/components/ArticleCard'
-import { ArticleCardSkeleton, EmptyState } from '@/components/Feedback'
+import { ArticleRow } from '@/components/ArticleCard'
+import { ArticleRowSkeleton, EmptyState } from '@/components/Feedback'
 import { cx, errorMessage } from '@/utils/format'
 
 /**
@@ -190,9 +190,9 @@ export function ArticleListPage() {
 
       {/* ------------------------------------------------------------ 列表 */}
       {loading ? (
-        <div className="grid-cards">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <ArticleCardSkeleton key={index} />
+        <div className="article-rows">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <ArticleRowSkeleton key={index} />
           ))}
         </div>
       ) : error ? (
@@ -225,9 +225,9 @@ export function ArticleListPage() {
         </Glass>
       ) : (
         <>
-          <div className="grid-cards">
+          <div className="article-rows">
             {records.map((article) => (
-              <ArticleCard key={article.id} article={article} />
+              <ArticleRow key={article.id} article={article} />
             ))}
           </div>
 

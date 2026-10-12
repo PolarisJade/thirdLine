@@ -1,13 +1,17 @@
 package com.god.thirdLine.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.god.thirdLine.common.CursorPage;
+import com.god.thirdLine.common.PageResult;
 import com.god.thirdLine.common.ResultCode;
 import com.god.thirdLine.domain.dto.ArticleSaveDTO;
 import com.god.thirdLine.domain.dto.ArticleUpdateDTO;
 import com.god.thirdLine.domain.entity.Article;
 import com.god.thirdLine.domain.entity.ArticleTag;
+import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleTagVO;
 import com.god.thirdLine.domain.vo.ArticleVO;
@@ -18,6 +22,7 @@ import com.god.thirdLine.mapper.ArticleTagMapper;
 import com.god.thirdLine.mapper.CategoryMapper;
 import com.god.thirdLine.mapper.TagMapper;
 import com.god.thirdLine.service.IArticleService;
+import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.util.OssUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,6 +54,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final TagMapper tagMapper;
     private final CategoryMapper categoryMapper;
     private final OssUtil ossUtil;
+    private final IOssReferenceService ossReferenceService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -126,6 +132,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public PageResult<ArticleVO> pageArticlesByNumber(ArticlePageQuery query) {
+        ArticlePageQuery condition = query == null ? new ArticlePageQuery() : query;
+        // 分页参数交给 MyBatis-Plus 分页插件：自动拼 LIMIT，并生成对应的 COUNT 查询
+        Page<ArticleVO> page = new Page<>(condition.getPage(), condition.getSize());
+        IPage<ArticleVO> result = baseMapper.selectArticlePageList(page, condition);
+
+        List<ArticleVO> records = result.getRecords();
+        if (!records.isEmpty()) {
+            // 批量装配标签，避免逐条查询
+            List<Long> ids = records.stream().map(ArticleVO::getId).collect(Collectors.toList());
+            Map<Long, List<TagVO>> tagMap = loadTags(ids);
+            records.forEach(vo -> vo.setTags(tagMap.getOrDefault(vo.getId(), new ArrayList<>())));
+        }
+        return new PageResult<>(records, result.getTotal(), result.getCurrent(), result.getSize());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteArticle(Long id) {
         if (id == null) {
@@ -153,6 +176,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (article == null) {
             throw new BusinessException(ResultCode.ARTICLE_NOT_FOUND);
         }
+        // 记录旧封面与旧正文：更新成功后要清理被替换 / 被删掉的 OSS 文件
+        String oldCoverImage = article.getCoverImage();
+        String oldContent = article.getContent();
 
         if (dto.getCategoryId() != null && !dto.getCategoryId().equals(article.getCategoryId())) {
             if (categoryMapper.selectById(dto.getCategoryId()) == null) {
@@ -193,6 +219,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             articleTagMapper.delete(Wrappers.<ArticleTag>lambdaQuery()
                     .eq(ArticleTag::getArticleId, article.getId()));
             saveArticleTags(article.getId(), dto.getTagIds());
+        }
+
+        // 封面被替换（或清空）后清理旧文件：确认无人引用才删，第三方外链自动跳过
+        if (dto.getCoverImage() != null) {
+            ossReferenceService.deleteIfUnused(oldCoverImage, dto.getCoverImage());
+        }
+        // 正文里被删掉的图片同样清理（只处理本站 OSS 地址）
+        if (dto.getContent() != null) {
+            ossReferenceService.deleteUnusedFromContent(oldContent, dto.getContent());
         }
     }
 

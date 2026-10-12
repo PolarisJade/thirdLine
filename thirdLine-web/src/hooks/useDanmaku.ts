@@ -47,6 +47,8 @@ export function useDanmaku(options: { autoLoad?: boolean } = {}) {
   const [flying, setFlying] = useState<FlyingDanmaku[]>([])
   const trackRef = useRef(0)
   const seedRef = useRef(0)
+  /** 当前正在屏上的弹幕 id 集合：用于去重，避免同一条同时出现两次 */
+  const activeIdsRef = useRef<Set<number>>(new Set())
 
   const load = useCallback(async () => {
     try {
@@ -66,6 +68,10 @@ export function useDanmaku(options: { autoLoad?: boolean } = {}) {
 
   /** 往屏幕上发射一条弹幕 */
   const launch = useCallback((item: { id: number; content: string; color?: string | null; nickname?: string | null; userId?: number | null }) => {
+    // 同一条弹幕正在屏上飘过时，不再重复发射，避免屏幕上出现两个相同的弹幕
+    if (activeIdsRef.current.has(item.id)) return
+    activeIdsRef.current.add(item.id)
+
     seedRef.current += 1
     const track = trackRef.current % MAX_TRACKS
     trackRef.current += 1
@@ -87,7 +93,11 @@ export function useDanmaku(options: { autoLoad?: boolean } = {}) {
 
   /** 动画结束由调用方移除，避免元素堆积 */
   const removeFlying = useCallback((key: string) => {
-    setFlying((prev) => prev.filter((item) => item.key !== key))
+    setFlying((prev) => {
+      const target = prev.find((item) => item.key === key)
+      if (target) activeIdsRef.current.delete(target.id)
+      return prev.filter((item) => item.key !== key)
+    })
   }, [])
 
   /** 定时从弹幕池里取内容循环发射 */
@@ -96,8 +106,9 @@ export function useDanmaku(options: { autoLoad?: boolean } = {}) {
 
     // 首次进入先发射一部分，避免空屏等待
     const initial = pool.items.slice(-6)
+    const timeouts: number[] = []
     initial.forEach((item, index) => {
-      window.setTimeout(() => launch(item), index * 900)
+      timeouts.push(window.setTimeout(() => launch(item), index * 900))
     })
 
     const timer = window.setInterval(() => {
@@ -106,7 +117,11 @@ export function useDanmaku(options: { autoLoad?: boolean } = {}) {
       launch(items[Math.floor(Math.random() * items.length)])
     }, 4200)
 
-    return () => window.clearInterval(timer)
+    return () => {
+      // 一并清理初始批量定时器，避免 StrictMode 或重挂时同一条被重复发射
+      timeouts.forEach((t) => window.clearTimeout(t))
+      window.clearInterval(timer)
+    }
   }, [pool, launch])
 
   /** 发送弹幕：未登录先提示，成功后立即上屏 */

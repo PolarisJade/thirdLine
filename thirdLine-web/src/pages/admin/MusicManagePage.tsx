@@ -321,7 +321,13 @@ export function MusicManagePage() {
               </table>
             </div>
 
-            <Pagination current={list.page} total={list.total} size={list.size} onChange={list.setPage} />
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>

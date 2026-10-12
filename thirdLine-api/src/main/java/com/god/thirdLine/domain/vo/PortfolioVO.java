@@ -5,6 +5,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 作品集展示对象
@@ -25,7 +26,8 @@ public class PortfolioVO implements Serializable {
 
     private String coverImage;
 
-    private String techStack;
+    /** 关联的技术栈（来自 tl_portfolio_tech_stack + tl_tech_stack，按 sort 升序） */
+    private List<TechStackVO> techStacks;
 
     private String role;
 

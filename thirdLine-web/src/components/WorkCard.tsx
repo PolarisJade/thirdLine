@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import type { PortfolioVO } from '@/api'
 import { Icon } from '@/components/Icon'
-import { parseTechStack, formatDate } from '@/utils/format'
+import { formatDate } from '@/utils/format'
 import { portfolioCover, withFallback } from '@/utils/placeholder'
 
 /** 作品卡片：技术栈、担任角色、周期、演示/仓库链接 */
 export function WorkCard({ work }: { work: PortfolioVO }) {
-  const stack = parseTechStack(work.techStack)
+  const stack = work.techStacks ?? []
 
   return (
     <article className="glass glass--hoverable work-card">
@@ -49,9 +49,9 @@ export function WorkCard({ work }: { work: PortfolioVO }) {
         {stack.length > 0 && (
           <div className="tag-list">
             {stack.slice(0, 5).map((tech) => (
-              <span className="tag-chip" key={tech}>
+              <span className="tag-chip" key={tech.id}>
                 <Icon name="code" size={11} />
-                {tech}
+                {tech.name}
               </span>
             ))}
             {stack.length > 5 && <span className="tag-chip">+{stack.length - 5}</span>}
@@ -107,7 +107,7 @@ export function WorkMiniCard({ work }: { work: PortfolioVO }) {
         <span style={{ fontSize: 14.5, fontWeight: 700 }} className="truncate-1">
           {work.title}
         </span>
-        <span className="text-xs text-muted truncate-1">{work.role || parseTechStack(work.techStack)[0] || '作品'}</span>
+        <span className="text-xs text-muted truncate-1">{work.role || work.techStacks?.[0]?.name || '作品'}</span>
       </div>
     </Link>
   )

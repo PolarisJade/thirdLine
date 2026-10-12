@@ -1,5 +1,6 @@
 import { api } from './client'
 import type {
+  ArticlePageQuery,
   ArticleQuery,
   ArticleSaveDTO,
   ArticleUpdateDTO,
@@ -31,6 +32,8 @@ import type {
   SiteStatsVO,
   TagDTO,
   TagVO,
+  TechStackDTO,
+  TechStackVO,
   UserUpdateDTO,
   UserVO,
 } from './types'
@@ -69,6 +72,9 @@ export const articleApi = {
 
   /** 后台游标分页（GET /admin/article/page），可按 status 过滤草稿 */
   adminPage: (query: ArticleQuery) => api.get<CursorPage<ArticleVO>>('/admin/article/page', query),
+
+  /** 后台标准分页（GET /admin/article/page-list），返回 total，供管理端表格的页码组件使用 */
+  adminPageList: (query: ArticlePageQuery) => api.get<PageResult<ArticleVO>>('/admin/article/page-list', query),
 
   /** 后台文章详情，用于编辑回填 */
   adminDetail: (id: number) => api.get<ArticleVO>(`/admin/article/${id}`),
@@ -163,6 +169,25 @@ export const portfolioApi = {
 
   /** 删除作品（DELETE /admin/portfolio/{id}） */
   remove: (id: number) => api.delete<void>(`/admin/portfolio/${id}`),
+}
+
+/* ============================================================ 技术栈字典 */
+
+export const techStackApi = {
+  /** 前台启用中的技术栈（GET /user/tech-stack/list），供筛选与展示 */
+  list: () => api.get<TechStackVO[]>('/user/tech-stack/list'),
+
+  /** 后台全部技术栈（GET /admin/tech-stack/list），含禁用项 */
+  adminList: () => api.get<TechStackVO[]>('/admin/tech-stack/list'),
+
+  /** 新增技术栈（POST /admin/tech-stack），名称唯一 */
+  save: (dto: TechStackDTO) => api.post<number>('/admin/tech-stack', dto),
+
+  /** 修改技术栈（PUT /admin/tech-stack），名称 / 排序 / 状态按需覆盖 */
+  update: (dto: TechStackDTO) => api.put<void>('/admin/tech-stack', dto),
+
+  /** 删除技术栈（DELETE /admin/tech-stack/{id}），已关联作品时后端拒绝 */
+  remove: (id: number) => api.delete<void>(`/admin/tech-stack/${id}`),
 }
 
 /* ================================================================== 音乐 */

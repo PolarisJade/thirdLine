@@ -1,10 +1,12 @@
 package com.god.thirdLine.controller.admin;
 
 import com.god.thirdLine.common.CursorPage;
+import com.god.thirdLine.common.PageResult;
 import com.god.thirdLine.common.Result;
 import com.god.thirdLine.context.UserContext;
 import com.god.thirdLine.domain.dto.ArticleSaveDTO;
 import com.god.thirdLine.domain.dto.ArticleUpdateDTO;
+import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleVO;
 import com.god.thirdLine.service.IArticleService;
@@ -40,6 +42,15 @@ public class AdminArticleController {
     @GetMapping("/page")
     public Result<CursorPage<ArticleVO>> page(ArticleQuery query) {
         return Result.success(articleService.pageArticles(query));
+    }
+
+    /**
+     * 标准（页码）分页查询文章：管理端表格使用，返回 total 供页码组件展示。
+     * 与上面的游标分页 /page 并存，游标查询保持不变。
+     */
+    @GetMapping("/page-list")
+    public Result<PageResult<ArticleVO>> pageList(ArticlePageQuery query) {
+        return Result.success(articleService.pageArticlesByNumber(query));
     }
 
     /**

@@ -50,9 +50,9 @@ public class Portfolio implements Serializable {
     private String coverImage;
 
     /**
-     * 技术栈/工具，逗号分隔，如 React,Spring Boot,MySQL
+     * 技术栈通过 tl_portfolio_tech_stack 关联 tl_tech_stack 维护，
+     * 不再以逗号分隔字符串存在本表。
      */
-    private String techStack;
 
     /**
      * 本人担任角色，如 前端负责人/独立开发

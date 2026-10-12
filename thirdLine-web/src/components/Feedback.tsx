@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
+import { Select } from './Form'
 import { cx } from '@/utils/format'
 
 /* ==================================================================== 空状态 */
@@ -63,6 +64,31 @@ export function ArticleCardSkeleton() {
           <Skeleton width={54} height={20} radius={999} />
           <Skeleton width={54} height={20} radius={999} />
         </div>
+      </div>
+    </div>
+  )
+}
+
+/** 文章列表项骨架（左文右图），与 .article-row 布局对齐 */
+export function ArticleRowSkeleton() {
+  return (
+    <div className="glass article-row">
+      <div className="article-row__main">
+        <div className="row" style={{ gap: 12 }}>
+          <Skeleton width={80} height={12} />
+          <Skeleton width={60} height={12} />
+        </div>
+        <Skeleton height={20} />
+        <Skeleton width="60%" height={20} />
+        <Skeleton height={12} />
+        <Skeleton width="85%" height={12} />
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <Skeleton width={54} height={20} radius={999} />
+          <Skeleton width={54} height={20} radius={999} />
+        </div>
+      </div>
+      <div className="article-row__cover">
+        <Skeleton height="100%" radius={0} />
       </div>
     </div>
   )
@@ -138,11 +164,26 @@ export function Loading({ text = '加载中…' }: { text?: string }) {
 
 /* =================================================================== 分页器 */
 
+/** 管理端列表默认的「每页条数」候选 */
+const DEFAULT_PAGE_SIZES = [10, 20, 50]
+
+/**
+ * 组装每页条数下拉项：把当前 size 也带上，
+ * 避免列表默认每页 12 条时下拉框选中项对不上。
+ */
+function buildSizeOptions(size: number, sizeOptions: number[]): Array<{ label: string; value: number }> {
+  return Array.from(new Set([size, ...sizeOptions]))
+    .sort((left, right) => left - right)
+    .map((value) => ({ label: `每页 ${value} 条`, value }))
+}
+
 export function Pagination({
   current,
   total,
   size,
   onChange,
+  sizeOptions = DEFAULT_PAGE_SIZES,
+  onSizeChange,
 }: {
   current: number
   /** 总记录数 */
@@ -150,9 +191,12 @@ export function Pagination({
   /** 每页条数 */
   size: number
   onChange: (page: number) => void
+  /** 每页条数候选；只在传了 onSizeChange 时才渲染选择器 */
+  sizeOptions?: number[]
+  /** 切换每页条数（通常直接传 usePaginatedList 的 setSize，它会回到第 1 页） */
+  onSizeChange?: (size: number) => void
 }) {
   const pageCount = Math.max(1, Math.ceil(total / size))
-  if (pageCount <= 1) return null
 
   /** 生成带省略号的页码序列 */
   const buildPages = (): Array<number | '...'> => {
@@ -174,6 +218,11 @@ export function Pagination({
 
   return (
     <nav className="pagination" aria-label="分页导航">
+      {/* 只有一页时也保留分页条：显式标出"第 1 / 1 页"，让「当前是分页列表」一目了然 */}
+      <span className="pagination__info">
+        第 {current} / {pageCount} 页 · 共 {total} 条
+      </span>
+
       <button
         type="button"
         className="pagination__btn"
@@ -211,6 +260,16 @@ export function Pagination({
       >
         <Icon name="chevronRight" size={16} />
       </button>
+
+      {onSizeChange && (
+        <Select
+          className="pagination__size"
+          aria-label="每页条数"
+          value={size}
+          options={buildSizeOptions(size, sizeOptions)}
+          onChange={(event) => onSizeChange(Number(event.target.value))}
+        />
+      )}
     </nav>
   )
 }

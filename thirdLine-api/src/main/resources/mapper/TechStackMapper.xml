@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.god.thirdLine.mapper.TechStackMapper">
+
+    <!-- 批量查询作品关联的技术栈：按 sort 升序，保证前端展示顺序稳定 -->
+    <select id="selectPortfolioTechStacks" resultType="com.god.thirdLine.domain.vo.PortfolioTechStackVO">
+        SELECT pts.portfolio_id  AS portfolio_id,
+               ts.id             AS tech_stack_id,
+               ts.name           AS tech_stack_name,
+               ts.sort           AS sort
+        FROM tl_portfolio_tech_stack pts
+        INNER JOIN tl_tech_stack ts ON ts.id = pts.tech_stack_id
+        WHERE pts.portfolio_id IN
+        <foreach collection="portfolioIds" item="portfolioId" open="(" separator="," close=")">
+            #{portfolioId}
+        </foreach>
+        <!-- 前台只要启用中的技术栈；后台需要完整关系，否则保存时会丢掉被禁用的关联 -->
+        <if test="onlyEnabled">
+            AND ts.status = 1
+        </if>
+        ORDER BY ts.sort ASC, ts.id ASC
+    </select>
+
+</mapper>

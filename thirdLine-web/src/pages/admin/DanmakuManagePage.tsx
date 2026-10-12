@@ -23,7 +23,7 @@ export function DanmakuManagePage() {
   const toast = useToast()
 
   const [status, setStatus] = useState<number | undefined>(undefined)
-  const list = usePaginatedList<DanmakuVO>((page, size) => danmakuApi.adminPage({ page, size, status }), [status], 12)
+  const list = usePaginatedList<DanmakuVO>((page, size) => danmakuApi.adminPage({ page, size, status }), [status], 10)
 
   const switchState = useAsync(() => danmakuApi.getSwitch(), [])
   const [switchSaving, setSwitchSaving] = useState(false)
@@ -265,7 +265,13 @@ export function DanmakuManagePage() {
               </table>
             </div>
 
-            <Pagination current={list.page} total={list.total} size={list.size} onChange={list.setPage} />
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>

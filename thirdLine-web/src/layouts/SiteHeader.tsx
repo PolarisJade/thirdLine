@@ -59,7 +59,7 @@ export function SiteHeader() {
             </span>
             <span className="brand__text">
               <span className="brand__name">thirdLine</span>
-              <span className="brand__tag">第三条线</span>
+              <span className="brand__tag">第三行</span>
             </span>
           </Link>
 

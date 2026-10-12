@@ -12,6 +12,7 @@ import com.god.thirdLine.domain.vo.MusicVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.MusicMapper;
 import com.god.thirdLine.service.IMusicService;
+import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.util.OssUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +39,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     private static final int STATUS_ENABLED = 1;
 
     private final OssUtil ossUtil;
+    private final IOssReferenceService ossReferenceService;
 
     @Override
     public Long saveMusic(MusicDTO dto) {
@@ -71,6 +73,9 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         if (music == null) {
             throw new BusinessException(ResultCode.MUSIC_NOT_FOUND);
         }
+        // 记录旧封面与旧音频：更新成功后清理被替换掉的 OSS 文件
+        String oldCoverImage = music.getCoverImage();
+        String oldAudioUrl = music.getAudioUrl();
         // 各字段按需覆盖
         if (StringUtils.hasText(dto.getTitle())) {
             music.setTitle(dto.getTitle());
@@ -92,6 +97,14 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         }
         music.setUpdateTime(LocalDateTime.now());
         this.updateById(music);
+
+        // 换封面 / 换音频后清理旧文件：确认无人引用才删，手填外链自动跳过
+        if (dto.getCoverImage() != null) {
+            ossReferenceService.deleteIfUnused(oldCoverImage, dto.getCoverImage());
+        }
+        if (StringUtils.hasText(dto.getAudioUrl())) {
+            ossReferenceService.deleteIfUnused(oldAudioUrl, dto.getAudioUrl());
+        }
     }
 
     @Override

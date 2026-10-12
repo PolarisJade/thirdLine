@@ -105,15 +105,6 @@ export function resolveSummary(summary: string | null | undefined, content: stri
   return truncate(stripHtml(content), max)
 }
 
-/** "React,Spring Boot,MySQL" -> ["React", "Spring Boot", "MySQL"] */
-export function parseTechStack(value: string | null | undefined): string[] {
-  if (!value) return []
-  return value
-    .split(/[,，、|]/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
 /** 统一的错误文案提取，ApiError 直接取后端 message */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message

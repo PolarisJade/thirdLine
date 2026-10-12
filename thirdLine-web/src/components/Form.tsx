@@ -1,4 +1,5 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { CSSProperties, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import * as RadixSelect from '@radix-ui/react-select'
 import { Icon, type IconName } from './Icon'
 import { cx } from '@/utils/format'
 
@@ -89,22 +90,80 @@ export interface SelectOption {
   value: string | number
 }
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+/** Radix 的 Item 不接受空字符串，用哨兵值表示"未选择"，对外仍然回传空字符串 */
+const NONE_VALUE = '__none__'
+
+export interface SelectProps {
   options: SelectOption[]
-  /** 未选择时的占位选项 */
+  /** 未选择时展示的文案；同时作为下拉第一项，选中它即清空选择 */
   placeholder?: string
+  value?: string | number
+  /**
+   * 刻意与原生的 select 保持一致：调用方仍从 event.target.value 取值，
+   * 清空选择时拿到空字符串 —— 这样全站调用处一行都不用改。
+   */
+  onChange?: (event: { target: { value: string } }) => void
+  className?: string
+  style?: CSSProperties
+  disabled?: boolean
+  id?: string
+  'aria-label'?: string
 }
 
-export function Select({ options, placeholder, className, ...rest }: SelectProps) {
+/**
+ * 下拉选择框。
+ *
+ * 触发器沿用 `.select` 的玻璃外观，弹层基于 Radix Select：
+ * 键盘操作（↑↓/Enter/Esc/首字母）、焦点管理、aria 语义、点击外部关闭、滚动跟随
+ * 都由 Radix 负责；视觉全部在 styles/ui.css 的 `.select-popover*` 里定义。
+ */
+export function Select({
+  options,
+  placeholder,
+  value,
+  onChange,
+  className,
+  style,
+  disabled,
+  id,
+  ...rest
+}: SelectProps) {
+  const current = value === undefined || value === null || value === '' ? NONE_VALUE : String(value)
+
   return (
-    <select className={cx('select', className)} {...rest}>
-      {placeholder !== undefined && <option value="">{placeholder}</option>}
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <RadixSelect.Root
+      value={current}
+      disabled={disabled}
+      onValueChange={(next) => onChange?.({ target: { value: next === NONE_VALUE ? '' : next } })}
+    >
+      <RadixSelect.Trigger id={id} className={cx('select', className)} style={style} {...rest}>
+        <RadixSelect.Value placeholder={placeholder ?? '请选择'} />
+      </RadixSelect.Trigger>
+
+      <RadixSelect.Portal>
+        <RadixSelect.Content className="select-popover glass glass--strong" position="popper" sideOffset={6}>
+          <RadixSelect.Viewport className="select-popover__viewport">
+            {placeholder !== undefined && (
+              <RadixSelect.Item value={NONE_VALUE} className="select-popover__item">
+                <RadixSelect.ItemText>{placeholder}</RadixSelect.ItemText>
+                <RadixSelect.ItemIndicator className="select-popover__check">
+                  <Icon name="check" size={14} />
+                </RadixSelect.ItemIndicator>
+              </RadixSelect.Item>
+            )}
+
+            {options.map((option) => (
+              <RadixSelect.Item key={option.value} value={String(option.value)} className="select-popover__item">
+                <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
+                <RadixSelect.ItemIndicator className="select-popover__check">
+                  <Icon name="check" size={14} />
+                </RadixSelect.ItemIndicator>
+              </RadixSelect.Item>
+            ))}
+          </RadixSelect.Viewport>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    </RadixSelect.Root>
   )
 }
 

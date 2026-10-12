@@ -2,9 +2,11 @@ package com.god.thirdLine.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.god.thirdLine.common.CursorPage;
+import com.god.thirdLine.common.PageResult;
 import com.god.thirdLine.domain.dto.ArticleSaveDTO;
 import com.god.thirdLine.domain.dto.ArticleUpdateDTO;
 import com.god.thirdLine.domain.entity.Article;
+import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleVO;
 
@@ -42,6 +44,15 @@ public interface IArticleService extends IService<Article> {
      * @return 游标分页结果
      */
     CursorPage<ArticleVO> pageArticles(ArticleQuery query);
+
+    /**
+     * 标准（页码）分页查询文章：管理端表格专用，返回总条数供页码组件使用。
+     * 与游标分页 {@link #pageArticles(ArticleQuery)} 并存，互不影响。
+     *
+     * @param query 查询条件（page/size + 筛选）
+     * @return 标准分页结果（含 total）
+     */
+    PageResult<ArticleVO> pageArticlesByNumber(ArticlePageQuery query);
 
     /**
      * 根据ID删除文章，并级联删除其标签关联

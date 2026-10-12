@@ -13,6 +13,7 @@ import com.god.thirdLine.domain.vo.UserVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.UserMapper;
 import com.god.thirdLine.service.EmailCodeService;
+import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IUserService;
 import com.god.thirdLine.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailCodeService emailCodeService;
+    private final IOssReferenceService ossReferenceService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -142,6 +144,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (dto == null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "修改内容不能为空");
         }
+        // 记录旧头像：更新成功后清理被替换掉的 OSS 文件
+        String oldAvatar = user.getAvatar();
 
         // 仅更新传入的字段
         if (dto.getNickname() != null) {
@@ -155,6 +159,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
+
+        // 换头像后清理旧文件：确认无人引用才删，手填外链自动跳过
+        if (dto.getAvatar() != null) {
+            ossReferenceService.deleteIfUnused(oldAvatar, dto.getAvatar());
+        }
         return toVO(user);
     }
 

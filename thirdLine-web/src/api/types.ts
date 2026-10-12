@@ -124,6 +124,25 @@ export interface TagVO {
   name: string
 }
 
+/** TechStackVO —— 技术栈字典项（作品集子模块，对应 tl_tech_stack） */
+export interface TechStackVO {
+  id: number
+  name: string
+  /** 排序值，越小越靠前 */
+  sort: number | null
+  /** 0 禁用 / 1 启用 */
+  status: number | null
+}
+
+/** TechStackDTO */
+export interface TechStackDTO {
+  id?: number
+  name: string
+  sort?: number
+  /** 0 禁用 / 1 启用 */
+  status?: number
+}
+
 /** CategoryVO */
 export interface CategoryVO {
   id: number
@@ -164,6 +183,17 @@ export interface ArticleQuery {
   status?: number
   cursor?: number
   size?: number
+}
+
+/** ArticlePageQuery —— 管理端标准分页（page/size + 同一套筛选条件，size 上限 100） */
+export interface ArticlePageQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  categoryId?: number
+  tagId?: number
+  /** 0 草稿 / 1 已发布 / 2 已删除 */
+  status?: number
 }
 
 /** ArticleSaveDTO */
@@ -247,8 +277,8 @@ export interface PortfolioVO {
   title: string
   summary: string | null
   coverImage: string | null
-  /** 逗号分隔，如 "React,Spring Boot,MySQL" */
-  techStack: string | null
+  /** 关联的技术栈，来自 tl_portfolio_tech_stack + tl_tech_stack（按 sort 升序） */
+  techStacks: TechStackVO[] | null
   role: string | null
   period: string | null
   demoUrl: string | null
@@ -274,7 +304,8 @@ export interface PortfolioDTO {
   title: string
   summary?: string
   coverImage?: string
-  techStack?: string
+  /** 关联的技术栈ID；修改时不传表示不动已有关系，传 [] 表示清空 */
+  techStackIds?: number[]
   role?: string
   period?: string
   demoUrl?: string

@@ -21,7 +21,6 @@ function DanmakuItem({ item, onEnd, onReport }: { item: FlyingDanmaku; onEnd: ()
       style={{ top: item.top, color: item.color, animationDuration: `${item.duration}s` }}
       onAnimationEnd={onEnd}
     >
-      {item.nickname && <span className="danmaku-layer__nickname">{item.nickname}</span>}
       <span>{item.content}</span>
       <button
         type="button"

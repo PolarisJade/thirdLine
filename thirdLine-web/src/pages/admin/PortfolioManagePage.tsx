@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { portfolioApi, type PortfolioDTO, type PortfolioVO } from '@/api'
+import { portfolioApi, techStackApi, type PortfolioDTO, type PortfolioVO } from '@/api'
 import { usePaginatedList } from '@/hooks/usePaginatedList'
-import { useDebounced } from '@/hooks/useAsync'
+import { useAsync, useDebounced } from '@/hooks/useAsync'
 import { useToast } from '@/components/ToastContext'
 import { Glass } from '@/components/Glass'
 import { Button } from '@/components/Button'
@@ -10,7 +10,7 @@ import { Badge, Field, Input, Select, Textarea } from '@/components/Form'
 import { ImageUpload } from '@/components/ImageUpload'
 import { Modal, ConfirmDialog } from '@/components/Modal'
 import { EmptyState, Pagination, TableSkeleton } from '@/components/Feedback'
-import { errorMessage, formatDate, parseTechStack } from '@/utils/format'
+import { cx, errorMessage, formatDate } from '@/utils/format'
 import { portfolioCover, withFallback } from '@/utils/placeholder'
 
 interface WorkForm {
@@ -18,7 +18,8 @@ interface WorkForm {
   title: string
   summary: string
   coverImage: string
-  techStack: string
+  /** 关联的技术栈ID（来自技术栈字典） */
+  techStackIds: number[]
   role: string
   period: string
   demoUrl: string
@@ -31,7 +32,7 @@ const EMPTY_FORM: WorkForm = {
   title: '',
   summary: '',
   coverImage: '',
-  techStack: '',
+  techStackIds: [],
   role: '',
   period: '',
   demoUrl: '',
@@ -43,7 +44,7 @@ const EMPTY_FORM: WorkForm = {
  * 作品集管理。
  * 列表：GET /admin/portfolio/page（分页 + keyword + status）
  * 增删改：POST / PUT / DELETE /admin/portfolio
- * 技术栈以英文逗号分隔存储，前台会拆分展示。
+ * 技术栈改为从字典表选择：提交 techStackIds，后端写 tl_portfolio_tech_stack 关联。
  */
 export function PortfolioManagePage() {
   const toast = useToast()
@@ -51,6 +52,9 @@ export function PortfolioManagePage() {
   const [keyword, setKeyword] = useState('')
   const [status, setStatus] = useState<number | undefined>(undefined)
   const debouncedKeyword = useDebounced(keyword, 420)
+
+  /** 技术栈字典（含禁用项），用于表单多选 */
+  const techStacks = useAsync(() => techStackApi.adminList(), [])
 
   const list = usePaginatedList<PortfolioVO>(
     (page, size) => portfolioApi.adminPage({ page, size, keyword: debouncedKeyword.trim() || undefined, status }),
@@ -72,13 +76,23 @@ export function PortfolioManagePage() {
     setModalOpen(true)
   }
 
+  /** 表单里切换某个技术栈的选中状态 */
+  const toggleTechStack = (techStackId: number) => {
+    setForm((prev) => ({
+      ...prev,
+      techStackIds: prev.techStackIds.includes(techStackId)
+        ? prev.techStackIds.filter((id) => id !== techStackId)
+        : [...prev.techStackIds, techStackId],
+    }))
+  }
+
   const openEdit = (work: PortfolioVO) => {
     setForm({
       id: work.id,
       title: work.title ?? '',
       summary: work.summary ?? '',
       coverImage: work.coverImage ?? '',
-      techStack: work.techStack ?? '',
+      techStackIds: (work.techStacks ?? []).map((item) => item.id),
       role: work.role ?? '',
       period: work.period ?? '',
       demoUrl: work.demoUrl ?? '',
@@ -102,7 +116,7 @@ export function PortfolioManagePage() {
       title: form.title.trim(),
       summary: form.summary.trim() || undefined,
       coverImage: form.coverImage.trim() || undefined,
-      techStack: form.techStack.trim() || undefined,
+      techStackIds: form.techStackIds,
       role: form.role.trim() || undefined,
       period: form.period.trim() || undefined,
       demoUrl: form.demoUrl.trim() || undefined,
@@ -248,17 +262,15 @@ export function PortfolioManagePage() {
 
                       <td>
                         <div className="tag-list">
-                          {parseTechStack(work.techStack)
-                            .slice(0, 3)
-                            .map((tech) => (
-                              <span className="tag-chip" key={tech}>
-                                {tech}
-                              </span>
-                            ))}
-                          {parseTechStack(work.techStack).length > 3 && (
-                            <span className="tag-chip">+{parseTechStack(work.techStack).length - 3}</span>
+                          {(work.techStacks ?? []).slice(0, 3).map((tech) => (
+                            <span className="tag-chip" key={tech.id}>
+                              {tech.name}
+                            </span>
+                          ))}
+                          {(work.techStacks?.length ?? 0) > 3 && (
+                            <span className="tag-chip">+{(work.techStacks?.length ?? 0) - 3}</span>
                           )}
-                          {parseTechStack(work.techStack).length === 0 && <span className="text-muted text-sm">—</span>}
+                          {(work.techStacks?.length ?? 0) === 0 && <span className="text-muted text-sm">—</span>}
                         </div>
                       </td>
 
@@ -320,7 +332,13 @@ export function PortfolioManagePage() {
               </table>
             </div>
 
-            <Pagination current={list.page} total={list.total} size={list.size} onChange={list.setPage} />
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>
@@ -365,14 +383,35 @@ export function PortfolioManagePage() {
           </Field>
 
           <div className="form-grid">
-            <Field label="技术栈" hint="用英文逗号分隔，例如 React,Spring Boot,MySQL">
-              <Input
-                icon="code"
-                value={form.techStack}
-                placeholder="React,Spring Boot,MySQL"
-                onChange={(event) => setForm((prev) => ({ ...prev, techStack: event.target.value }))}
-              />
-            </Field>
+            <div>
+              <span className="field__label">技术栈</span>
+              {/* 用 div 而不是 Field 包裹：Field 是 <label>，里面放按钮会触发标签的点击转发 */}
+              <div className="tag-picker" style={{ marginTop: 8 }}>
+                {techStacks.loading ? (
+                  <span className="tag-picker__empty">技术栈加载中…</span>
+                ) : (techStacks.data?.length ?? 0) === 0 ? (
+                  <span className="tag-picker__empty">暂无技术栈，可在「技术栈管理」中创建</span>
+                ) : (
+                  techStacks.data?.map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className={cx('tag-chip', form.techStackIds.includes(item.id) && 'tag-chip--active')}
+                      onClick={() => toggleTechStack(item.id)}
+                    >
+                      <Icon name={form.techStackIds.includes(item.id) ? 'check' : 'code'} size={12} />
+                      {item.name}
+                      {item.status === 0 && <span style={{ opacity: 0.6 }}>已禁用</span>}
+                    </button>
+                  ))
+                )}
+              </div>
+              <span className="field__hint" style={{ display: 'block', marginTop: 6 }}>
+                {form.techStackIds.length > 0
+                  ? `已选 ${form.techStackIds.length} 个技术栈 · 可多选`
+                  : '从技术栈字典中选择，字典在「技术栈管理」里维护'}
+              </span>
+            </div>
 
             <Field label="我的角色">
               <Input

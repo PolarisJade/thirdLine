@@ -24,7 +24,7 @@ export function ReportManagePage() {
   const list = usePaginatedList<DanmakuReportVO>(
     (page, size) => danmakuApi.reportPage(status, page, size),
     [status],
-    12,
+    10,
   )
 
   const [handlingId, setHandlingId] = useState<number | null>(null)
@@ -167,7 +167,13 @@ export function ReportManagePage() {
               </table>
             </div>
 
-            <Pagination current={list.page} total={list.total} size={list.size} onChange={list.setPage} />
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>

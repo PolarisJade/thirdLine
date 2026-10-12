@@ -199,6 +199,102 @@
   background-position: right var(--space-4) center;
 }
 
+/* 触发器现在是 <button>，原生 select 默认左对齐，这里显式对齐回来 */
+button.select {
+  text-align: left;
+}
+
+.select[data-state='open'] {
+  border-color: var(--brand-400);
+  background: var(--glass-bg);
+}
+
+/* ------------------------------------------------- Radix Select 弹层（自定义） */
+.select-popover {
+  /* 高于 Modal（z-index: 400），弹窗里的下拉也能浮在最上层 */
+  z-index: 420;
+  min-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+  padding: 6px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  animation: select-popover-in 140ms var(--ease-out);
+}
+
+.select-popover__viewport {
+  max-height: 288px;
+  overflow-y: auto;
+}
+
+.select-popover__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+/* data-highlighted 由 Radix 维护：鼠标悬浮与键盘上下选择共用同一态 */
+.select-popover__item[data-highlighted] {
+  color: var(--brand-600);
+  background: color-mix(in srgb, var(--brand-400) 18%, transparent);
+}
+
+.select-popover__item[data-state='checked'] {
+  font-weight: 600;
+  color: var(--brand-600);
+}
+
+.select-popover__check {
+  display: inline-flex;
+  align-items: center;
+  color: var(--brand-500);
+}
+
+@keyframes select-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================ 路由懒加载占位 */
+.route-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 40vh;
+  font-size: 13.5px;
+  color: var(--text-tertiary);
+}
+
+.route-fallback__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--brand-400) 35%, transparent);
+  border-top-color: var(--brand-500);
+  animation: route-fallback-spin 0.8s linear infinite;
+}
+
+@keyframes route-fallback-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .input::placeholder,
 .textarea::placeholder {
   color: var(--text-tertiary);
@@ -637,6 +733,27 @@
   gap: var(--space-2);
   flex-wrap: wrap;
   padding: var(--space-5) 0;
+}
+
+.pagination__info {
+  margin-right: var(--space-2);
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* 「每页 N 条」选择器：覆盖 .select 的 width: 100%，按内容自适应 */
+.pagination__size {
+  width: auto;
+  min-width: 132px;
+  height: 38px;
+  margin-left: var(--space-2);
+  font-size: 13px;
+}
+
+/* 与旁边的分页按钮保持一致的悬浮反馈 */
+.pagination__size:hover {
+  color: var(--brand-600);
+  border-color: var(--brand-400);
 }
 
 .pagination__btn {

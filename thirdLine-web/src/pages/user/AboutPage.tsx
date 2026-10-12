@@ -23,9 +23,9 @@ const SKILLS = [
 ]
 
 const TIMELINE = [
-  { year: '现在', title: '独立开发者', desc: '维护 thirdLine 这个站点，把学到的东西沉淀成文字。' },
-  { year: '2025', title: '后端开发', desc: '负责业务系统后端设计，习惯了把接口先定义清楚再写实现。' },
-  { year: '2024', title: '开始写博客', desc: '发现写下来才是真的学会了，于是有了第一条线。' },
+  { year: '现在', title: 'AI辅助开发', desc: '这几年AI大模型发展十分迅速，准备学习AI对项目开发进行赋能。' },
+  { year: '2025', title: 'Java开发', desc: '听说Java后端开发就业岗位多，于是我正式开始了学习Java' },
+  { year: '2024', title: '大一', desc: '2024年，我正式开始了学习计算机。' },
 ]
 
 /**
@@ -43,7 +43,7 @@ export function AboutPage() {
     <div className="container">
       <div className="page__header">
         <h1 className="page__title">关于我</h1>
-        <p className="page__desc">一个把想法写成代码，再把代码写成文字的人</p>
+        <p className="page__desc">我应该算是个好人吧....或许并不是</p>
       </div>
 
       <div className="about-grid">
@@ -51,12 +51,12 @@ export function AboutPage() {
         <Glass className="about-card" variant="strong">
           <Avatar size="xl" src={withFallback(profile?.avatar, avatarPlaceholder(profile?.nickname))} name={profile?.nickname} />
           <span className="about-card__name">{loading ? '加载中…' : profile?.nickname || 'PolarisJade'}</span>
-          <span className="about-card__role">后端开发 / 独立开发者</span>
+          <span className="about-card__role">大学生 / 非遗剪纸爱好者</span>
 
           <p className="text-muted text-sm" style={{ lineHeight: 1.85, marginTop: 4 }}>
-            相信好的代码像好的文字，
+            唉！感觉好累啊，
             <br />
-            读起来顺畅、有节奏，也留有余地。
+            感觉我的人生完蛋了....
           </p>
 
           <div className="about-card__contacts">
@@ -93,18 +93,16 @@ export function AboutPage() {
             <SectionHead eyebrow="Hello" title="你好，很高兴认识你" />
             <div className="rich-text" style={{ fontSize: 15 }}>
               <p>
-                我是 <strong>{profile?.nickname || 'PolarisJade'}</strong>，一名后端开发。
-                日常工作是把模糊的需求翻译成清晰的接口和表结构，然后在深夜里和边界条件较劲。
+                我是 <strong>{profile?.nickname || 'PolarisJade'}</strong>，目前是一名软件工程大三在读学生。
               </p>
               <p>
-                这个站点叫 <strong>thirdLine（第三条线）</strong>，名字来自我对生活的理解：
-                第一条线是必须做的事，第二条线是想做的事，
-                而第三条线，是那些「没什么用但让我觉得活着真好」的事。
-                写博客、拍照片、做点小工具，都属于第三条线。
+                这个站点叫 <strong>thirdLine（第三行）</strong>，为什么叫这个名字呢？
+                其实我也不知道，这个名字是我用AI想的，
+                就我这脑袋根本想不出几个有意境的名字，虽然说感觉这个名字页不咋滴。但也将就着用吧。
               </p>
               <p>
-                这里主要记录技术笔记、踩坑记录，以及一些做过的作品。
-                如果某篇文章刚好帮你省下了半小时，那这个站点就值回票价了。
+                这个网站主要是记录一些我的学习、生活和日常。
+                如果我写的一些文章能够帮助到你的话，我感到非常荣幸。
               </p>
             </div>
           </Glass>
@@ -116,28 +114,28 @@ export function AboutPage() {
                 <Icon name="article" size={19} />
               </span>
               <span className="stat-card__value">{formatNumber(stats?.articleCount ?? 0)}</span>
-              <span className="stat-card__label">篇文章</span>
+              <span className="stat-card__label">文章</span>
             </Glass>
             <Glass className="stat-card" hoverable>
               <span className="stat-card__icon">
                 <Icon name="folder" size={19} />
               </span>
               <span className="stat-card__value">{formatNumber(stats?.categoryCount ?? 0)}</span>
-              <span className="stat-card__label">个分类</span>
+              <span className="stat-card__label">分类</span>
             </Glass>
             <Glass className="stat-card" hoverable>
               <span className="stat-card__icon">
                 <Icon name="tag" size={19} />
               </span>
               <span className="stat-card__value">{formatNumber(stats?.tagCount ?? 0)}</span>
-              <span className="stat-card__label">个标签</span>
+              <span className="stat-card__label">标签</span>
             </Glass>
             <Glass className="stat-card" hoverable>
               <span className="stat-card__icon">
                 <Icon name="image" size={19} />
               </span>
               <span className="stat-card__value">{formatNumber(stats?.photoCount ?? 0)}</span>
-              <span className="stat-card__label">张照片</span>
+              <span className="stat-card__label">照片</span>
             </Glass>
           </div>
 
@@ -196,30 +194,24 @@ export function AboutPage() {
             </div>
           </Glass>
 
-          {/* 配图 + 邀请 */}
+          {/* 配图 + 快捷入口：图片完整展示，不裁切 */}
           <Glass variant="strong" radius="xl" style={{ overflow: 'hidden' }}>
-            <img src={ABOUT_IMAGE} alt="" aria-hidden="true" style={{ width: '100%', height: 220, objectFit: 'cover' }} />
-            <div className="stack" style={{ gap: 'var(--space-3)', padding: 'var(--space-5)' }}>
-              <span style={{ fontSize: 17, fontWeight: 700 }}>欢迎随便逛逛</span>
-              <span className="text-muted text-sm">
-                文章里有我踩过的坑，作品集里有做过的东西，相册里有一些没头没尾的日常。
-              </span>
-              <div className="row wrap" style={{ gap: 12, marginTop: 4 }}>
-                <Link to="/articles" className="btn btn--primary">
-                  <Icon name="book" size={16} />
-                  阅读文章
-                </Link>
-                <Link to="/portfolio" className="btn btn--glass">
-                  <Icon name="grid" size={16} />
-                  看看作品
-                </Link>
-                {profile?.email && (
-                  <a href={`mailto:${profile.email}`} className="btn btn--glass">
-                    <Icon name="mail" size={16} />
-                    联系我
-                  </a>
-                )}
-              </div>
+            <img src={ABOUT_IMAGE} alt="" aria-hidden="true" style={{ width: '100%', display: 'block' }} />
+            <div className="row wrap" style={{ gap: 12, padding: 'var(--space-5)' }}>
+              <Link to="/articles" className="btn btn--primary">
+                <Icon name="book" size={16} />
+                阅读文章
+              </Link>
+              <Link to="/portfolio" className="btn btn--glass">
+                <Icon name="grid" size={16} />
+                看看作品
+              </Link>
+              {profile?.email && (
+                <a href={`mailto:${profile.email}`} className="btn btn--glass">
+                  <Icon name="mail" size={16} />
+                  联系我
+                </a>
+              )}
             </div>
           </Glass>
         </div>

@@ -5,9 +5,18 @@ import { errorMessage } from '@/utils/format'
 
 export interface AsyncState<T> {
   data: T | null
+  /** 首屏加载（尚无数据）：页面应展示加载态/骨架屏 */
   loading: boolean
+  /** 后台刷新（已有数据）：旧数据保持在屏，页面不应整块替换导致高度突变抖动 */
+  refreshing: boolean
   error: string | null
 }
+
+/**
+ * 内部状态：refreshing 不在 state 里维护，而是由 loading + data 在返回值中推导，
+ * 这样各处 setState 只需关心 data / loading / error。
+ */
+type InternalAsyncState<T> = Omit<AsyncState<T>, 'refreshing'>
 
 /**
  * 统一的接口请求 hook：处理 loading / error / 卸载后不 setState。
@@ -15,7 +24,7 @@ export interface AsyncState<T> {
  * @param deps    依赖数组，变化时重新请求
  */
 export function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncState<T> & { reload: () => void } {
-  const [state, setState] = useState<AsyncState<T>>({ data: null, loading: true, error: null })
+  const [state, setState] = useState<InternalAsyncState<T>>({ data: null, loading: true, error: null })
   const [nonce, setNonce] = useState(0)
   const mountedRef = useRef(true)
 
@@ -53,7 +62,14 @@ export function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncSt
 
   const reload = useCallback(() => setNonce((value) => value + 1), [])
 
-  return { ...state, reload }
+  return {
+    ...state,
+    // 仅在还没有任何数据时才算 loading；reload/依赖变化时旧数据仍在，
+    // 避免“内容↔骨架屏”整体替换引起页面高度突变抖动
+    loading: state.loading && state.data === null,
+    refreshing: state.loading && state.data !== null,
+    reload,
+  }
 }
 
 /* ================================================================ 防抖值 */

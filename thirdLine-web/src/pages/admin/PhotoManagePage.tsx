@@ -42,7 +42,7 @@ export function PhotoManagePage() {
   const toast = useToast()
 
   const [status, setStatus] = useState<number | undefined>(undefined)
-  const list = usePaginatedList<PhotoVO>((page, size) => photoApi.adminPage({ page, size, status }), [status], 12)
+  const list = usePaginatedList<PhotoVO>((page, size) => photoApi.adminPage({ page, size, status }), [status], 10)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<PhotoForm>(EMPTY_FORM)
@@ -275,7 +275,13 @@ export function PhotoManagePage() {
               </table>
             </div>
 
-            <Pagination current={list.page} total={list.total} size={list.size} onChange={list.setPage} />
+            <Pagination
+              current={list.page}
+              total={list.total}
+              size={list.size}
+              onChange={list.setPage}
+              onSizeChange={list.setSize}
+            />
           </>
         )}
       </Glass>

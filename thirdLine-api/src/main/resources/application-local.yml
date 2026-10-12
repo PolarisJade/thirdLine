@@ -1,16 +1,21 @@
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/third_line?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+tl:
+  db:
     username: root
     password: 134679
-tl:
+    url: jdbc:mysql://localhost:3306/third_line?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+  redis:
+    host: localhost
+    password: 134679
+    database: 0
   mail:
     username: lunarriverside@163.com
     password: QBh2aYcwQYcAe7Rb
   host:
-    nickname: ParlisJade
+    nickname: PolarisJade
     email: lunarriverside@163.com
     github: https://github.com/PolarisJade
     avatar: https://third-line.oss-cn-wuhan-lr.aliyuncs.com/blog/avatar/2026/09/21/46117d08f680456ba8cb9661832c16ca.jpg
+    # 本站运行起始日期（yyyy-MM-dd）：映射 HostProperties.startTime，
+    # 供 GET /user/site/profile 返回，前端据此显示「第 N 天」与「始于 …」
+    start-time: 2026-10-01
 
