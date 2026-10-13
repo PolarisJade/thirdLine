@@ -13,7 +13,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IPhotoService;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
 
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
 
     @Override
@@ -116,7 +116,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         this.removeById(id);
         // 同步清理 OSS 上的原图（手填外链自动跳过）
-        ossUtil.deleteByUrl(photo.getUrl());
+        objectStorageUtil.deleteByUrl(photo.getUrl());
     }
 
     @Override

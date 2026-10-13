@@ -18,7 +18,7 @@ import com.god.thirdLine.mapper.PortfolioTechStackMapper;
 import com.god.thirdLine.mapper.TechStackMapper;
 import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IPortfolioService;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -47,7 +47,7 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
     /** 已发布状态 */
     private static final int STATUS_PUBLISHED = 1;
 
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
     private final PortfolioTechStackMapper portfolioTechStackMapper;
     private final TechStackMapper techStackMapper;
@@ -150,7 +150,7 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
         portfolioTechStackMapper.delete(Wrappers.<PortfolioTechStack>lambdaQuery()
                 .eq(PortfolioTechStack::getPortfolioId, id));
         // 同步清理 OSS 上的封面图（手填外链自动跳过）
-        ossUtil.deleteByUrl(portfolio.getCoverImage());
+        objectStorageUtil.deleteByUrl(portfolio.getCoverImage());
     }
 
     @Override

@@ -13,7 +13,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.MusicMapper;
 import com.god.thirdLine.service.IMusicService;
 import com.god.thirdLine.service.IOssReferenceService;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     /** 上架状态 */
     private static final int STATUS_ENABLED = 1;
 
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
 
     @Override
@@ -118,8 +118,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         }
         this.removeById(id);
         // 同步清理 OSS 上的音频与封面（手填外链自动跳过）
-        ossUtil.deleteByUrl(music.getAudioUrl());
-        ossUtil.deleteByUrl(music.getCoverImage());
+        objectStorageUtil.deleteByUrl(music.getAudioUrl());
+        objectStorageUtil.deleteByUrl(music.getCoverImage());
     }
 
     @Override

@@ -2,7 +2,7 @@ spring:
   application:
     name: thirdLine-api
   profiles:
-    active: local   # 切换环境：local / dev
+    active: dev   # 切换环境：local / dev
   # 文件上传大小限制
   servlet:
     multipart:
@@ -63,6 +63,20 @@ jwt:
   header: Authorization        # 存放 token 的请求头
   token-prefix: "Bearer "      # token 前缀
   refresh-header: X-Refresh-Token  # 续期后新 token 的响应头名称
+
+# ============ 对象存储选择（local / dev 可覆盖）============
+tl:
+  oss:
+    site: aliyun                     # minio / aliyun，默认沿用阿里云 OSS
+
+# ============ MinIO 配置占位（启用后请自行填写）============
+minio:
+  endpoint: ${MINIO_ENDPOINT:}        # S3 API 地址，如 http://127.0.0.1:9000（不是控制台端口）
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket-name: ${MINIO_BUCKET_NAME:}  # 请先创建存储桶，并设置公开读取或配置可访问的代理
+  url-prefix: ${MINIO_URL_PREFIX:}    # 可选，包含桶路径的访问前缀；留空使用 endpoint/bucket-name
+  dir: blog                          # 上传目录前缀
 
 # ============ 阿里云 OSS 配置（请自行填写）============
 aliyun:

@@ -18,4 +18,6 @@ tl:
     # 本站运行起始日期（yyyy-MM-dd）：映射 HostProperties.startTime，
     # 供 GET /user/site/profile 返回，前端据此显示「第 N 天」与「始于 …」
     start-time: 2026-10-01
+  oss:
+    site: minio    # 填写minio或者aliyun
 

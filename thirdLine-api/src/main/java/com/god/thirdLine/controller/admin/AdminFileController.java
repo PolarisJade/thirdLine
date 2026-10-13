@@ -1,7 +1,7 @@
 package com.god.thirdLine.controller.admin;
 
 import com.god.thirdLine.common.Result;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
- * 文件上传 后台管理控制器（阿里云 OSS）
+ * 文件上传后台管理控制器（通过 tl.oss.site 选择对象存储）
  * </p>
  * 用于上传用户头像、文章封面、相册图片、音乐音频等，返回可访问 URL。
  * 位于 /admin/** 命名空间，须登录方可上传。
@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class AdminFileController {
 
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
 
     /**
      * 上传图片
@@ -36,7 +36,7 @@ public class AdminFileController {
     @PostMapping("/upload")
     public Result<String> upload(@RequestParam("file") MultipartFile file,
                                  @RequestParam(value = "module", required = false, defaultValue = "common") String module) {
-        return Result.success(ossUtil.uploadImage(file, module));
+        return Result.success(objectStorageUtil.uploadImage(file, module));
     }
 
     /**
@@ -49,6 +49,6 @@ public class AdminFileController {
     @PostMapping("/upload-audio")
     public Result<String> uploadAudio(@RequestParam("file") MultipartFile file,
                                       @RequestParam(value = "module", required = false, defaultValue = "common") String module) {
-        return Result.success(ossUtil.uploadAudio(file, module));
+        return Result.success(objectStorageUtil.uploadAudio(file, module));
     }
 }

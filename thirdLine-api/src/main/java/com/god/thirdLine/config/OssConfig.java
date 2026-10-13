@@ -3,6 +3,7 @@ package com.god.thirdLine.config;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "tl.oss", name = "site", havingValue = "aliyun", matchIfMissing = true)
 public class OssConfig {
 
     private final OssProperties ossProperties;

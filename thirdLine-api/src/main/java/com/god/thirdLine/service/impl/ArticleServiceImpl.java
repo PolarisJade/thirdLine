@@ -23,7 +23,7 @@ import com.god.thirdLine.mapper.CategoryMapper;
 import com.god.thirdLine.mapper.TagMapper;
 import com.god.thirdLine.service.IArticleService;
 import com.god.thirdLine.service.IOssReferenceService;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +53,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleTagMapper articleTagMapper;
     private final TagMapper tagMapper;
     private final CategoryMapper categoryMapper;
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
 
     @Override
@@ -163,7 +163,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 级联删除标签关联
         articleTagMapper.delete(Wrappers.<ArticleTag>lambdaQuery().eq(ArticleTag::getArticleId, id));
         // 同步清理 OSS 上的封面图（手填外链自动跳过）
-        ossUtil.deleteByUrl(article.getCoverImage());
+        objectStorageUtil.deleteByUrl(article.getCoverImage());
     }
 
     @Override
