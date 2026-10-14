@@ -8,7 +8,7 @@ skills-lock.json
 target/
 *.class
 *.jar
-*/*/application-dev.yml
+**/application-dev.yml
 
 # Node / 前端
 node_modules/
@@ -19,6 +19,7 @@ dist/
 # OS
 Thumbs.db
 .DS_Store
+.env
 
 # 日志
 *.log
