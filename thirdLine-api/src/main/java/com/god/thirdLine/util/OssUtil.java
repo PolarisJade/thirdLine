@@ -7,6 +7,7 @@ import com.god.thirdLine.config.OssProperties;
 import com.god.thirdLine.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +27,8 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OssUtil {
+@ConditionalOnProperty(prefix = "tl.oss", name = "site", havingValue = "aliyun", matchIfMissing = true)
+public class OssUtil implements ObjectStorageUtil {
 
     /** 允许上传的图片扩展名 */
     private static final Set<String> ALLOWED_IMAGE_EXT = Set.of("jpg", "jpeg", "png", "gif", "bmp", "webp");

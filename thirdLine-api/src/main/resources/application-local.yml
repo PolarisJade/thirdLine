@@ -9,7 +9,7 @@ tl:
     database: 0
   mail:
     username: lunarriverside@163.com
-    password: QBh2aYcwQYcAe7Rb
+    password: ${MAIL_PASSWORD}
   host:
     nickname: PolarisJade
     email: lunarriverside@163.com
@@ -18,4 +18,12 @@ tl:
     # 本站运行起始日期（yyyy-MM-dd）：映射 HostProperties.startTime，
     # 供 GET /user/site/profile 返回，前端据此显示「第 N 天」与「始于 …」
     start-time: 2026-10-01
+  oss:
+    site: minio    # 填写minio或者aliyun
+    minio:
+      endpoint: http://8.148.65.93:19000
+      access-key: minio
+      secret-key: ${MINIO_SECRET_KEY}
+      bucket-name: third-line
+      url-prefix: http://8.148.65.93:19000/third-line
 

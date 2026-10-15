@@ -13,7 +13,7 @@ import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.mapper.PortfolioMapper;
 import com.god.thirdLine.mapper.UserMapper;
 import com.god.thirdLine.service.IOssReferenceService;
-import com.god.thirdLine.util.OssUtil;
+import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
     private final MusicMapper musicMapper;
     private final UserMapper userMapper;
     private final HostProperties hostProperties;
-    private final OssUtil ossUtil;
+    private final ObjectStorageUtil objectStorageUtil;
 
     @Override
     public boolean isReferenced(String url) {
@@ -112,7 +112,7 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
         }
         String target = url.trim();
         // 手填的第三方外链不归我们管
-        if (!ossUtil.isOwnObject(target)) {
+        if (!objectStorageUtil.isOwnObject(target)) {
             return;
         }
 
@@ -123,7 +123,7 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
                     log.info("[OSS 清理] 旧文件仍被引用，保留不删：{}", target);
                     return;
                 }
-                ossUtil.deleteByUrl(target);
+                objectStorageUtil.deleteByUrl(target);
                 log.info("[OSS 清理] 已删除被替换的旧文件：{}", target);
             } catch (Exception e) {
                 // 清理属于尽力而为，任何异常都不能影响正常的业务更新
@@ -143,7 +143,7 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
         while (matcher.find()) {
             String url = matcher.group();
             // 旧正文里有、新正文里已经没有的本站 OSS 文件才是候选
-            if (!current.contains(url) && ossUtil.isOwnObject(url)) {
+            if (!current.contains(url) && objectStorageUtil.isOwnObject(url)) {
                 candidates.add(url);
             }
         }

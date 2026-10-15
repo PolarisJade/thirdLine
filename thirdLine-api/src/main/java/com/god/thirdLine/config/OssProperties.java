@@ -1,6 +1,7 @@
 package com.god.thirdLine.config;
 
 import lombok.Data;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
+@ConditionalOnProperty(prefix = "tl.oss", name = "site", havingValue = "aliyun", matchIfMissing = true)
 @ConfigurationProperties(prefix = "aliyun.oss")
 public class OssProperties {
 
