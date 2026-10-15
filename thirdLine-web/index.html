@@ -6,8 +6,463 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="thirdLine · 第三条线 —— 记录代码与生活的地方" />
     <title>thirdLine · 第三条线</title>
+    <script>
+      /* 尽早敲定主题，别让首屏加载动画和页面主体闪一下错误的配色。
+         取值逻辑与 src/utils/theme.ts 的 getInitialTheme() 保持一致（同一个 key）。 */
+      ;(function () {
+        var mode = null
+        try {
+          var saved = localStorage.getItem('tl_theme')
+          if (saved === 'light' || saved === 'dark') mode = saved
+        } catch (error) {
+          /* localStorage 不可用（隐私模式等），退回系统偏好 */
+        }
+        if (!mode) {
+          mode =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        document.documentElement.setAttribute('data-theme', mode)
+        document.documentElement.style.colorScheme = mode
+      })()
+    </script>
+    <style>
+      /* ======================================================================
+         首屏加载动画（仓鼠跑轮）关键样式
+         ----------------------------------------------------------------------
+         src/styles/loader.css 跟着 JS 一起下载，在那之前先靠这段内联样式把动画
+         画出来，避免 React 起来之前白屏。下面是 loader.css 的自包含副本：
+         class 名、几何数值、关键帧都保持一致，所以 loader.css 加载完不会跳变。
+         tokens.css 此时还没加载，因此这里先把用到的自定义属性按同样的值补上，
+         改动画时 loader.css 与这段要一起改。
+         ==================================================================== */
+      :root {
+        /* 与 tokens.css 的 --bg-base / --text-tertiary / --space-3 同值 */
+        --splash-bg: #fdf6ee;
+        --text-tertiary: #9a8878;
+        --space-3: 12px;
+        --loader-metal: hsl(0, 0%, 60%);
+        --loader-metal-strong: hsl(0, 0%, 65%);
+      }
+
+      :root[data-theme='dark'] {
+        --splash-bg: #191310;
+        --text-tertiary: #94806f;
+        --loader-metal: hsl(28, 12%, 72%);
+        --loader-metal-strong: hsl(28, 12%, 78%);
+      }
+
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--splash-bg);
+        transition: opacity 320ms ease;
+      }
+
+      #app-splash.is-leaving {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .hamster-loader {
+        --hamster-dur: 1s;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-3);
+        text-align: center;
+      }
+
+      .hamster-loader__text {
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: var(--text-tertiary);
+      }
+
+      .hamster-loader .wheel-and-hamster {
+        position: relative;
+        width: 12em;
+        height: 12em;
+        font-size: var(--hamster-size);
+      }
+
+      .hamster-loader .wheel,
+      .hamster-loader .hamster,
+      .hamster-loader .hamster div,
+      .hamster-loader .spoke {
+        position: absolute;
+      }
+
+      .hamster-loader .wheel,
+      .hamster-loader .spoke {
+        border-radius: 50%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .hamster-loader .wheel {
+        background: radial-gradient(100% 100% at center, transparent 47.8%, var(--loader-metal) 48%);
+        z-index: 2;
+      }
+
+      .hamster-loader .hamster {
+        animation: hamster-bob var(--hamster-dur) ease-in-out infinite;
+        top: 50%;
+        left: calc(50% - 3.5em);
+        width: 7em;
+        height: 3.75em;
+        transform: rotate(4deg) translate(-0.8em, 1.85em);
+        transform-origin: 50% 0;
+        z-index: 1;
+      }
+
+      .hamster-loader .hamster__head {
+        animation: hamster-head var(--hamster-dur) ease-in-out infinite;
+        background: hsl(30, 90%, 55%);
+        border-radius: 70% 30% 0 100% / 40% 25% 25% 60%;
+        box-shadow:
+          0 -0.25em 0 hsl(30, 90%, 80%) inset,
+          0.75em -1.55em 0 hsl(30, 90%, 90%) inset;
+        top: 0;
+        left: -2em;
+        width: 2.75em;
+        height: 2.5em;
+        transform-origin: 100% 50%;
+      }
+
+      .hamster-loader .hamster__ear {
+        animation: hamster-ear var(--hamster-dur) ease-in-out infinite;
+        background: hsl(0, 90%, 85%);
+        border-radius: 50%;
+        box-shadow: -0.25em 0 hsl(30, 90%, 55%) inset;
+        top: -0.25em;
+        right: -0.25em;
+        width: 0.75em;
+        height: 0.75em;
+        transform-origin: 50% 75%;
+      }
+
+      .hamster-loader .hamster__eye {
+        animation: hamster-eye var(--hamster-dur) linear infinite;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 50%;
+        top: 0.375em;
+        left: 1.25em;
+        width: 0.5em;
+        height: 0.5em;
+      }
+
+      .hamster-loader .hamster__nose {
+        background: hsl(0, 90%, 75%);
+        border-radius: 35% 65% 85% 15% / 70% 50% 50% 30%;
+        top: 0.75em;
+        left: 0;
+        width: 0.2em;
+        height: 0.25em;
+      }
+
+      .hamster-loader .hamster__body {
+        animation: hamster-body var(--hamster-dur) ease-in-out infinite;
+        background: hsl(30, 90%, 90%);
+        border-radius: 50% 30% 50% 30% / 15% 60% 40% 40%;
+        box-shadow:
+          0.1em 0.75em 0 hsl(30, 90%, 55%) inset,
+          0.15em -0.5em 0 hsl(30, 90%, 80%) inset;
+        top: 0.25em;
+        left: 2em;
+        width: 4.5em;
+        height: 3em;
+        transform-origin: 17% 50%;
+        transform-style: preserve-3d;
+      }
+
+      .hamster-loader .hamster__limb--fr,
+      .hamster-loader .hamster__limb--fl {
+        clip-path: polygon(0 0, 100% 0, 70% 80%, 60% 100%, 0% 100%, 40% 80%);
+        top: 2em;
+        left: 0.5em;
+        width: 1em;
+        height: 1.5em;
+        transform-origin: 50% 0;
+      }
+
+      .hamster-loader .hamster__limb--fr {
+        animation: hamster-limb-fr var(--hamster-dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 80%) 80%, hsl(0, 90%, 75%) 80%);
+        transform: rotate(15deg) translateZ(-1px);
+      }
+
+      .hamster-loader .hamster__limb--fl {
+        animation: hamster-limb-fl var(--hamster-dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 90%) 80%, hsl(0, 90%, 85%) 80%);
+        transform: rotate(15deg);
+      }
+
+      .hamster-loader .hamster__limb--br,
+      .hamster-loader .hamster__limb--bl {
+        border-radius: 0.75em 0.75em 0 0;
+        clip-path: polygon(0 0, 100% 0, 100% 30%, 70% 90%, 70% 100%, 30% 100%, 40% 90%, 0% 30%);
+        top: 1em;
+        left: 2.8em;
+        width: 1.5em;
+        height: 2.5em;
+        transform-origin: 50% 30%;
+      }
+
+      .hamster-loader .hamster__limb--br {
+        animation: hamster-limb-br var(--hamster-dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 80%) 90%, hsl(0, 90%, 75%) 90%);
+        transform: rotate(-25deg) translateZ(-1px);
+      }
+
+      .hamster-loader .hamster__limb--bl {
+        animation: hamster-limb-bl var(--hamster-dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 90%) 90%, hsl(0, 90%, 85%) 90%);
+        transform: rotate(-25deg);
+      }
+
+      .hamster-loader .hamster__tail {
+        animation: hamster-tail var(--hamster-dur) linear infinite;
+        background: hsl(0, 90%, 85%);
+        border-radius: 0.25em 50% 50% 0.25em;
+        box-shadow: 0 -0.2em 0 hsl(0, 90%, 75%) inset;
+        top: 1.5em;
+        right: -0.5em;
+        width: 1em;
+        height: 0.5em;
+        transform: rotate(30deg) translateZ(-1px);
+        transform-origin: 0.25em 0.25em;
+      }
+
+      .hamster-loader .spoke {
+        animation: hamster-spoke var(--hamster-dur) linear infinite;
+        background:
+          radial-gradient(100% 100% at center, var(--loader-metal) 4.8%, transparent 5%),
+          linear-gradient(transparent 46.9%, var(--loader-metal-strong) 47% 52.9%, transparent 53%) 50% 50% / 99% 99%
+            no-repeat;
+      }
+
+      @keyframes hamster-bob {
+        from,
+        to {
+          transform: rotate(4deg) translate(-0.8em, 1.85em);
+        }
+
+        50% {
+          transform: rotate(0) translate(-0.8em, 1.85em);
+        }
+      }
+
+      @keyframes hamster-head {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(0);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(8deg);
+        }
+      }
+
+      @keyframes hamster-eye {
+        from,
+        90%,
+        to {
+          transform: scaleY(1);
+        }
+
+        95% {
+          transform: scaleY(0);
+        }
+      }
+
+      @keyframes hamster-ear {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(0);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(12deg);
+        }
+      }
+
+      @keyframes hamster-body {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(0);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(-2deg);
+        }
+      }
+
+      @keyframes hamster-limb-fr {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(50deg) translateZ(-1px);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(-30deg) translateZ(-1px);
+        }
+      }
+
+      @keyframes hamster-limb-fl {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(-30deg);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(50deg);
+        }
+      }
+
+      @keyframes hamster-limb-br {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(-60deg) translateZ(-1px);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(20deg) translateZ(-1px);
+        }
+      }
+
+      @keyframes hamster-limb-bl {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(20deg);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(-60deg);
+        }
+      }
+
+      @keyframes hamster-tail {
+        from,
+        25%,
+        50%,
+        75%,
+        to {
+          transform: rotate(30deg) translateZ(-1px);
+        }
+
+        12.5%,
+        37.5%,
+        62.5%,
+        87.5% {
+          transform: rotate(10deg) translateZ(-1px);
+        }
+      }
+
+      @keyframes hamster-spoke {
+        from {
+          transform: rotate(0);
+        }
+
+        to {
+          transform: rotate(-1turn);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hamster-loader .wheel-and-hamster * {
+          animation: none !important;
+        }
+
+        #app-splash {
+          transition: none;
+        }
+      }
+    </style>
+    <noscript>
+      <style>
+        /* 没有 JS 就没有 React，动画会一直转下去，直接藏掉 */
+        #app-splash {
+          display: none;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
+    <!-- 首屏加载动画：React 挂载后由 src/main.tsx 淡出并移除。
+         尺寸走行内 style，避免 loader.css 加载后把 --hamster-size 覆盖回默认值。 -->
+    <div id="app-splash" role="status" aria-live="polite">
+      <div class="hamster-loader" style="--hamster-size: 10px">
+        <div class="wheel-and-hamster" role="img" aria-label="一只橘色仓鼠在金属跑轮里奔跑">
+          <div class="wheel"></div>
+          <div class="hamster">
+            <div class="hamster__body">
+              <div class="hamster__head">
+                <div class="hamster__ear"></div>
+                <div class="hamster__eye"></div>
+                <div class="hamster__nose"></div>
+              </div>
+              <div class="hamster__limb hamster__limb--fr"></div>
+              <div class="hamster__limb hamster__limb--fl"></div>
+              <div class="hamster__limb hamster__limb--br"></div>
+              <div class="hamster__limb hamster__limb--bl"></div>
+              <div class="hamster__tail"></div>
+            </div>
+          </div>
+          <div class="spoke"></div>
+        </div>
+        <span class="hamster-loader__text">正在唤醒第三条线…</span>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

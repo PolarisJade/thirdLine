@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { Icon } from '@/components/Icon'
+import { HamsterLoader } from '@/components/HamsterLoader'
 
 /**
  * 需要登录才能访问的页面包装（前台）。
@@ -72,23 +72,5 @@ export function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 /** 全屏加载态：用于路由守卫生效前的过渡 */
 function FullScreenLoader({ text }: { text: string }) {
-  return (
-    <div
-      className="row"
-      style={{
-        minHeight: '100vh',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        gap: 'var(--space-4)',
-        color: 'var(--text-tertiary)',
-        fontSize: 13.5,
-      }}
-    >
-      <div className="spinner" />
-      <div className="row" style={{ gap: 8 }}>
-        <Icon name="refresh" size={15} />
-        {text}
-      </div>
-    </div>
-  )
+  return <HamsterLoader text={text} size={10} className="hamster-loader--fullscreen" />
 }

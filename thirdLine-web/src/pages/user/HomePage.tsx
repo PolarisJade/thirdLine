@@ -134,7 +134,7 @@ export function HomePage() {
         <section className="container" style={{ marginTop: 'var(--space-8)' }}>
           <SectionHead
             eyebrow="Works"
-            title="最近在做的东西"
+            title="我的作品"
             desc="动手做出来的，才真正属于自己"
             action={
               <Link to="/portfolio" className="btn btn--glass btn--sm">

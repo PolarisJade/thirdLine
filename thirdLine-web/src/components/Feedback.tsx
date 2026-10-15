@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
+import { HamsterLoader } from './HamsterLoader'
 import { Select } from './Form'
 import { cx } from '@/utils/format'
 
@@ -152,14 +153,9 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
   )
 }
 
-/** 通用加载图标 */
+/** 通用加载图标：仓鼠跑轮动画，见 components/HamsterLoader.tsx */
 export function Loading({ text = '加载中…' }: { text?: string }) {
-  return (
-    <div className="page-loader">
-      <div className="spinner" />
-      <span>{text}</span>
-    </div>
-  )
+  return <HamsterLoader text={text} size={8} className="page-loader" />
 }
 
 /* =================================================================== 分页器 */

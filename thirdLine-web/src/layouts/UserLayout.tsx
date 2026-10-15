@@ -4,6 +4,7 @@ import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
 import { MusicPlayer } from '@/components/MusicPlayer'
 import { BackToTop } from '@/components/BackToTop'
+import { FloatingPet } from '@/components/FloatingPet'
 
 /**
  * 用户端布局：页头 + 内容 + 页脚 + 全局悬浮音乐播放器。
@@ -28,6 +29,9 @@ export function UserLayout() {
       <SiteFooter />
       <MusicPlayer />
       <BackToTop />
+      <FloatingPet />
     </div>
   )
 }
+
+

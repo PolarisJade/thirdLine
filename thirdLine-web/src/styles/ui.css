@@ -269,30 +269,13 @@ button.select {
   }
 }
 
-/* ============================================================ 路由懒加载占位 */
+/* ============================================================ 路由懒加载占位
+   内部的加载动画（仓鼠跑轮）见 styles/loader.css 的 .hamster-loader */
 .route-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
   min-height: 40vh;
-  font-size: 13.5px;
-  color: var(--text-tertiary);
-}
-
-.route-fallback__spinner {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--brand-400) 35%, transparent);
-  border-top-color: var(--brand-500);
-  animation: route-fallback-spin 0.8s linear infinite;
-}
-
-@keyframes route-fallback-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .input::placeholder,
