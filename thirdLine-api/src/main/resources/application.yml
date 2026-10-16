@@ -3,6 +3,14 @@ spring:
     name: thirdLine-api
   profiles:
     active: local   # 切换环境：local / dev
+  # 本地密钥来源：Spring Boot 不会自动读取 .env，需显式导入成配置源，
+  # 否则 ${AGNES_BASE_URL} 这类占位符解析不到，会原样当成字符串传给下游（URI 解析直接报错）。
+  # 工作目录可能是模块目录或仓库根目录，两个路径都导入；optional 保证生产环境没这个文件也能启动。
+  # 优先级：系统环境变量 > .env，所以服务器上用环境变量注入即可覆盖。
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
   # 文件上传大小限制
   servlet:
     multipart:
@@ -43,6 +51,22 @@ spring:
       database: ${tl.redis.database}
       timeout: 3000ms
 
+  # ============ Spring AI：OpenAI 兼容协议（当前接 Agnes AI，仅用于页面人物对话）============
+  ai:
+    openai:
+      api-key: ${AGNES_API_KEY}         # 通过环境变量注入；未配置时留空不影响启动
+      base-url: ${AGNES_BASE_URL}       # 必须带 /v1：Spring AI 2.0.0 改用官方 OpenAI SDK，会自动拼 /chat/completions
+      chat:
+        model: agnes-3.0-flash
+        max-tokens: 80                  # 限制回复长度：人物只说一句话（约 30 字），同时压低用量
+        temperature: 0.9                # 略微提高随机性，同一句话不会每次答得一模一样
+    retry:
+      max-attempts: 2                   # 偶发 429/5xx 快速重试一次；网络彻底卡死由 tl.chat.timeout-ms 兜底
+      backoff:
+        initial-interval: 500ms
+        multiplier: 2
+        max-interval: 2s
+
 
 server:
   port: 8080
@@ -68,6 +92,17 @@ jwt:
 tl:
   oss:
     site: aliyun                     # minio / aliyun，默认沿用阿里云 OSS
+
+  # ============ 页面人物 AI 对话配置（映射 ChatProperties）============
+  chat:
+    timeout-ms: 30000                # 超过这个时间没返回就换成兜底台词（免费额度偶发长时间无响应）
+    max-input-length: 200            # 单条输入最大字符数，超出返回 CHAT_MESSAGE_TOO_LONG
+    max-concurrent: 4                # 对话并发上限，同时也是对 Agnes 的并发上限，避免触发 RPM 限流
+    sensitive-reply: "唔……这个我不想聊，我们说点别的吧？"
+    fallback-replies:                # 超时 / 报错 / 空回复时随机返回一条
+      - "唔……我刚刚走神了，再说一遍好不好？"
+      - "唔唔？（歪着头看你）"
+      - "唔……好像没听清呢，你再说一次？"
 
 # ============ MinIO 配置占位（启用后请自行填写）============
 minio:

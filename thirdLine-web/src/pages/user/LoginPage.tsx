@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from '@/components/ToastContext'
-import { Button } from '@/components/Button'
-import { Field, Input } from '@/components/Form'
+import { Link } from 'react-router-dom'
+import { AuthCard } from '@/components/AuthCard'
 import { Icon } from '@/components/Icon'
 import { HERO_IMAGE } from '@/utils/placeholder'
-import { errorMessage } from '@/utils/format'
 
 const HIGHLIGHTS = [
   { icon: 'article' as const, text: '写下踩过的坑，让下次少走弯路' },
@@ -16,54 +11,12 @@ const HIGHLIGHTS = [
 
 /**
  * 登录页。
- * 调用 POST /user/user/login，账号支持用户名或注册邮箱（后端 UserServiceImpl 已做兼容）。
+ *
+ * 登录 / 注册是同一张翻转卡的两面，表单逻辑都在 {@link AuthCard} 里，
+ * 这里只负责左侧氛围图、返回首页，以及决定卡片从哪一面开始。
+ * 登录调用 POST /user/user/login，账号支持用户名或注册邮箱（后端 UserServiceImpl 已做兼容）。
  */
 export function LoginPage() {
-  const { login, user, initializing } = useAuth()
-  const toast = useToast()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const redirect = searchParams.get('redirect') || '/'
-
-  // 已登录用户直接跳走，避免停留在登录页
-  useEffect(() => {
-    if (!initializing && user) {
-      navigate(redirect.startsWith('/login') ? '/' : redirect, { replace: true })
-    }
-  }, [user, initializing, navigate, redirect])
-
-  const submit = async () => {
-    if (!username.trim() || !password) {
-      setError('请输入用户名和密码')
-      return
-    }
-
-    setSubmitting(true)
-    setError(null)
-    try {
-      const info = await login({ username: username.trim(), password })
-      toast.success(`欢迎回来，${info.nickname || info.username}`)
-
-      // 管理员登录后默认进后台
-      if (info.role === 0 && redirect === '/') {
-        navigate('/admin', { replace: true })
-      } else {
-        navigate(redirect, { replace: true })
-      }
-    } catch (submitError) {
-      setError(errorMessage(submitError))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   return (
     <div className="auth-page">
       {/* ------------------------------------------------------------ 左侧氛围 */}
@@ -104,68 +57,12 @@ export function LoginPage() {
 
       {/* ------------------------------------------------------------ 右侧表单 */}
       <main className="auth-main">
-        <div className="auth-card glass glass--strong">
-          <Link to="/" className="row text-sm text-muted" style={{ gap: 6, marginBottom: 'var(--space-5)' }}>
+        <div className="auth-doodle-column">
+          <Link to="/" className="auth-doodle-back">
             <Icon name="chevronLeft" size={15} />
             返回首页
           </Link>
-
-          <h2 className="auth-card__title">登录</h2>
-          <p className="auth-card__subtitle">用用户名或注册邮箱都可以登录</p>
-
-          <form
-            className="auth-form"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void submit()
-            }}
-          >
-            <Field label="账号" required>
-              <Input
-                icon="user"
-                placeholder="用户名或邮箱"
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-              />
-            </Field>
-
-            <Field label="密码" required error={error ?? undefined}>
-              <Input
-                icon="lock"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="请输入密码"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                suffix={
-                  <Button
-                    variant="ghost"
-                    iconOnly
-                    size="sm"
-                    icon={showPassword ? 'eyeOff' : 'eye'}
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? '隐藏密码' : '显示密码'}
-                    type="button"
-                  />
-                }
-              />
-            </Field>
-
-            <Button type="submit" variant="primary" size="lg" block loading={submitting}>
-              登录
-            </Button>
-          </form>
-
-          <div className="auth-card__switch">
-            还没有账号？{' '}
-            <Link
-              to={`/register${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-              className="auth-link"
-            >
-              立即注册
-            </Link>
-          </div>
+          <AuthCard initialMode="login" />
         </div>
       </main>
     </div>

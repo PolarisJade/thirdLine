@@ -73,7 +73,11 @@ public enum ResultCode {
     /* 音乐模块 8xxx */
     MUSIC_NOT_FOUND(8001, "音乐不存在"),
     MUSIC_TITLE_REQUIRED(8002, "歌曲名不能为空"),
-    MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空");
+    MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空"),
+
+    /* 人物对话模块 9xxx */
+    CHAT_MESSAGE_EMPTY(9001, "说点什么再发送吧"),
+    CHAT_MESSAGE_TOO_LONG(9002, "消息太长了，请说得短一点");
 
     private final Integer code;
     private final String message;

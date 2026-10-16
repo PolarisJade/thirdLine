@@ -9,9 +9,10 @@
   border-radius: var(--radius-2xl);
   /* 底部留出弹幕发送框的位置（--danmaku-sender-space），避免与按钮重叠 */
   padding: var(--space-8) var(--space-7) calc(var(--space-7) + var(--danmaku-sender-space));
-  /* 弹幕背景图卡片高度：比内容自然高度再高一截，让大图更舒展，
-     也给 6 条弹幕轨道（--danmaku-top + 5 × 42px ≈ 230px）留出余量 */
-  min-height: 540px;
+  /* 弹幕背景图卡片高度：Hero 内部只有绝对定位的背景图与弹幕层，实际高度就等于这个值。
+     6 条弹幕轨道占顶部约 270px（--danmaku-top + 5 × 42px + 行高），底部再留出发送框，
+     剩下的空间全部给大图展示；桌面端从 540px 加高到 660px，图片能看到更多上下内容 */
+  min-height: 660px;
   display: flex;
   align-items: center;
 }
@@ -1285,6 +1286,147 @@
 
 @media (prefers-reduced-motion: reduce) {
   .floating-pet__actions {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   人物对话：点一下人物弹出的气泡 + 输入框
+   沿用动作条那套液态玻璃配方，不另起视觉；表现力都留给气泡里的那句话。
+   ========================================================================== */
+.floating-pet__chat {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: min(268px, calc(100vw - 36px));
+  padding: var(--space-3);
+  border: 1px solid var(--glass-border-outer);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  animation: floating-pet-chat-in var(--duration-fast) var(--ease-out);
+}
+
+/* 人物被拖到屏幕上边时，气泡翻到下方，免得整块被顶出屏幕 */
+.floating-pet__chat--below {
+  top: calc(100% + 10px);
+  bottom: auto;
+}
+
+/* 指向人物的小尖角 */
+.floating-pet__chat::after {
+  content: '';
+  position: absolute;
+  right: 26px;
+  bottom: -5px;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid var(--glass-border-outer);
+  border-bottom: 1px solid var(--glass-border-outer);
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.floating-pet__chat--below::after {
+  top: -5px;
+  bottom: auto;
+  border: 0;
+  border-top: 1px solid var(--glass-border-outer);
+  border-left: 1px solid var(--glass-border-outer);
+}
+
+.floating-pet__say {
+  /* 模型偶尔会多说两句，这里封顶并允许内部滚动，别让气泡吃掉半屏 */
+  max-height: 6.4em;
+  overflow-y: auto;
+  margin: 0 0 var(--space-2);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.floating-pet__ask {
+  display: flex;
+  gap: 6px;
+}
+
+.floating-pet__input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.floating-pet__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.floating-pet__input:focus-visible {
+  border-color: var(--brand-400);
+  outline: 2px solid color-mix(in srgb, var(--brand-400) 40%, transparent);
+  outline-offset: 1px;
+}
+
+.floating-pet__send {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-500);
+  color: var(--text-inverse);
+  font-size: 13px;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+.floating-pet__send:hover:not(:disabled) {
+  background: var(--brand-600);
+}
+
+.floating-pet__send:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.floating-pet__send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 出错时说清发生了什么，不让气泡替系统背锅 */
+.floating-pet__error {
+  margin: 6px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@keyframes floating-pet-chat-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 820px) {
+  /* 整个挂件在这档缩到了 0.86 倍，气泡里的字号相应放大回来；
+     输入框保持 16px 计算值，避免 iOS 聚焦时自动放大页面。 */
+  .floating-pet__say {
+    font-size: 15px;
+  }
+
+  .floating-pet__input,
+  .floating-pet__send {
+    height: 34px;
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-pet__chat {
     animation: none;
   }
 }

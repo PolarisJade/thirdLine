@@ -1,0 +1,523 @@
+/* ============================================================================
+   登录 / 注册：手绘涂鸦翻转卡片
+   ---------------------------------------------------------------------------
+   结构参考 uiverse.io 的 mamyapro123/curvy-bear-51（原版是 styled-components），
+   这里移植成「React 组件 + 纯 CSS」：本站没有任何 CSS-in-JS 运行时，
+   为一个卡片把它引进来不划算，也不该让一块样式脱离全站的文件组织方式。
+
+   配色沿用原稿的固定值（奶油纸 / 蓝纸 / 马克笔描边）：这是一张「纸」的物件感，
+   不跟随站点主题，所以深色主题下就是深色桌面上放着一张亮色的纸。
+
+   与原稿的差异（都是有理由的）：
+     1. 用 grid 让两张卡面叠在同一格里，卡片高度自动取较高的一面（注册面字段更多），
+        不再依赖写死的 --card-height，中文换行撑高也不会溢出；
+     2. 可点区域与焦点：开关的隐藏 checkbox 保留在 Tab 顺序里，焦点圈画在可见开关上；
+     3. 补了 prefers-reduced-motion：关掉涂鸦漂浮和标题抖动。
+   ========================================================================== */
+.auth-doodle-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 340px;
+}
+
+.auth-doodle-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast);
+}
+
+.auth-doodle-back:hover {
+  color: var(--brand-600);
+}
+
+/* ---------------------------------------------------------------- 涂鸦卡片 */
+.doodle-wrapper {
+  /* 调色板 */
+  --ink: #323232;
+  --paper-front: #fff9e6;
+  --paper-back: #e6f0ff;
+  --bg-color: #ffffff;
+  --primary-btn: #ff6b6b;
+  --primary-btn-hover: #ff5252;
+  --secondary-btn: #4ecdc4;
+  --secondary-btn-hover: #3bbfb6;
+  --switch-bg: #ffe66d;
+  --input-focus: #2d8cf0;
+  --error: #e03131;
+
+  /* 尺寸：输入框宽度跟着卡片宽度走，窄屏只改 --card-width 就整体收窄 */
+  --card-width: 340px;
+  --input-width: calc(var(--card-width) - 52px);
+  --input-height: 42px;
+  --btn-width: 148px;
+  --btn-height: 44px;
+  --border-width: 2px;
+  --shadow-offset: 4px;
+
+  /* 手绘感的不规则圆角 */
+  --sketch-radius-1: 8px 24px 8px 24px / 24px 8px 24px 8px;
+  --sketch-radius-2: 24px 8px 24px 8px / 8px 24px 8px 24px;
+  --sketch-radius-btn: 16px 5px 16px 5px / 5px 16px 5px 16px;
+
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Gochi Hand', var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+  width: var(--card-width);
+}
+
+/* 视觉隐藏但保留可聚焦：开关要能用键盘切换 */
+.doodle-toggle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------ 顶部模式开关 */
+.doodle-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  z-index: 5;
+}
+
+.doodle-mode-text {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.doodle-toggle:not(:checked) ~ .doodle-header .signup-text,
+.doodle-toggle:checked ~ .doodle-header .login-text {
+  opacity: 0.45;
+}
+
+.doodle-switch-label {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: var(--switch-bg);
+  border: var(--border-width) solid var(--ink);
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.doodle-switch-label:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.doodle-switch-handle {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg-color);
+  border: var(--border-width) solid var(--ink);
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.doodle-toggle:checked ~ .doodle-header .doodle-switch-label .doodle-switch-handle {
+  transform: translateX(24px);
+}
+
+/* 焦点画在可见的开关上（虚线更像手绘） */
+.doodle-toggle:focus-visible ~ .doodle-header .doodle-switch-label {
+  outline: 2px dashed var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- 3D 场景 */
+.doodle-card-scene {
+  position: relative;
+  width: var(--card-width);
+  perspective: 1000px;
+  z-index: 2;
+}
+
+/* 装饰涂鸦：z-index:-1 生效是因为 .doodle-card-scene 有 z-index 形成了层叠上下文 */
+.doodle-svg {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.doodle-star {
+  top: -25px;
+  left: -35px;
+  width: 48px;
+  height: 48px;
+  animation: float-star 4s ease-in-out infinite;
+}
+
+.doodle-sparkle {
+  bottom: -20px;
+  right: -25px;
+  width: 40px;
+  height: 40px;
+  animation: float-sparkle 4s ease-in-out infinite 1s;
+}
+
+.doodle-swirl {
+  top: 30px;
+  right: -30px;
+  width: 32px;
+  height: 32px;
+  animation: float-swirl 4s ease-in-out infinite 2s;
+}
+
+/* 各自写一套 keyframes，才能保住最初的旋转角度 */
+@keyframes float-star {
+  0%, 100% { transform: translateY(0) rotate(-15deg); }
+  50% { transform: translateY(-8px) rotate(-10deg); }
+}
+
+@keyframes float-sparkle {
+  0%, 100% { transform: translateY(0) rotate(10deg); }
+  50% { transform: translateY(-8px) rotate(15deg); }
+}
+
+@keyframes float-swirl {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+/* 两张卡面叠在同一格里，高度自动取较高的一张 */
+.doodle-card-inner {
+  position: relative;
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.doodle-toggle:checked ~ .doodle-card-scene .doodle-card-inner {
+  transform: rotateY(180deg);
+}
+
+.doodle-card-front,
+.doodle-card-back {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px;
+  box-sizing: border-box;
+  border: var(--border-width) solid var(--ink);
+  border-radius: var(--sketch-radius-1);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--ink);
+  /* 横格笔记本纸 */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 28px,
+    rgba(0, 0, 0, 0.06) 28px,
+    rgba(0, 0, 0, 0.06) 30px
+  );
+  background-position: 0 15px;
+}
+
+.doodle-card-front {
+  background-color: var(--paper-front);
+}
+
+.doodle-card-back {
+  background-color: var(--paper-back);
+  border-radius: var(--sketch-radius-2);
+  transform: rotateY(180deg);
+}
+
+/* ------------------------------------------------------------------ 排版 */
+.doodle-title {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.doodle-title-alt {
+  transform: rotate(2deg);
+  margin-bottom: 2px;
+}
+
+.doodle-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.doodle-input-wrapper {
+  position: relative;
+  width: var(--input-width);
+}
+
+.doodle-input {
+  width: 100%;
+  height: var(--input-height);
+  padding: 6px 14px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  background-color: var(--bg-color);
+  border: var(--border-width) solid var(--ink);
+  border-radius: var(--sketch-radius-1);
+  box-shadow: 3px 3px 0 var(--ink);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.doodle-input::placeholder {
+  color: #6b6b6b;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+.doodle-input:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.doodle-input:focus,
+.doodle-input:focus-visible {
+  border-color: var(--input-focus);
+  border-radius: var(--sketch-radius-2);
+  background-color: #fffdf5;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+/* 校验没过的输入框：换成马克笔红描边 */
+.doodle-input--error,
+.doodle-input--error:hover,
+.doodle-input--error:focus {
+  border-color: var(--error);
+  box-shadow: 3px 3px 0 var(--error);
+}
+
+/* 密码框里的显示 / 隐藏 */
+.doodle-input--suffix {
+  padding-right: 58px;
+}
+
+.doodle-eye {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b6b6b;
+  cursor: pointer;
+}
+
+.doodle-eye:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* 邮箱 + 验证码按钮同一行 */
+.doodle-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: var(--input-width);
+}
+
+.doodle-field-row .doodle-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.doodle-code-btn {
+  flex: none;
+  height: var(--input-height);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ink);
+  background-color: var(--switch-bg);
+  border: var(--border-width) solid var(--ink);
+  border-radius: var(--sketch-radius-btn);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.doodle-code-btn:hover:not(:disabled) {
+  background-color: #ffd93b;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.doodle-code-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.doodle-code-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* 校验 / 登录失败提示：像便签上补写的一行 */
+.doodle-error {
+  width: var(--input-width);
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  transform: rotate(-1deg);
+}
+
+/* ------------------------------------------------------------------ 按钮 */
+.doodle-btn {
+  margin: 6px 0 2px;
+  width: var(--btn-width);
+  height: var(--btn-height);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background-color: var(--primary-btn);
+  border: var(--border-width) solid var(--ink);
+  border-radius: var(--sketch-radius-btn);
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  transform: rotate(-1deg);
+  transition: all 0.15s ease;
+}
+
+.doodle-btn-alt {
+  background-color: var(--secondary-btn);
+  transform: rotate(1deg);
+}
+
+.doodle-btn:hover:not(:disabled) {
+  background-color: var(--primary-btn-hover);
+  transform: translateY(-2px) rotate(-2deg);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.doodle-btn-alt:hover:not(:disabled) {
+  background-color: var(--secondary-btn-hover);
+  transform: translateY(-2px) rotate(2deg);
+}
+
+.doodle-btn:active:not(:disabled) {
+  transform: translate(3px, 3px) rotate(0deg);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.doodle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 悬停卡片时标题抖一下 */
+.doodle-card-scene:hover .doodle-title {
+  animation: doodle-wiggle 0.5s ease-in-out;
+}
+
+@keyframes doodle-wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  25% { transform: rotate(2deg); }
+  50% { transform: rotate(-4deg); }
+  75% { transform: rotate(1deg); }
+}
+
+/* ---------------------------------------------------------------- 响应式 */
+@media (max-width: 420px) {
+  .auth-doodle-column {
+    max-width: 300px;
+  }
+
+  /* 只改这一处：输入框宽度是 calc(卡片宽 - 52px)，会跟着一起收窄 */
+  .doodle-wrapper {
+    --card-width: 300px;
+  }
+
+  /* 卡片放大后页面内边距也要一起收，否则小视口会被撑出横向滚动条 */
+  .auth-main {
+    padding: var(--space-4);
+  }
+
+  /* 窄屏把涂鸦往卡内收，同样是为了不撑出横向滚动条 */
+  .doodle-star {
+    left: -10px;
+  }
+
+  .doodle-swirl {
+    right: -8px;
+  }
+
+  .doodle-sparkle {
+    right: -6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-doodle-column {
+    max-width: 264px;
+  }
+
+  .doodle-wrapper {
+    --card-width: 264px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doodle-star,
+  .doodle-sparkle,
+  .doodle-swirl,
+  .doodle-card-scene:hover .doodle-title {
+    animation: none;
+  }
+
+  .doodle-card-inner,
+  .doodle-switch-handle,
+  .doodle-switch-label,
+  .doodle-btn,
+  .doodle-input,
+  .doodle-code-btn {
+    transition: none;
+  }
+}

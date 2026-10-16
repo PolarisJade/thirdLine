@@ -7,6 +7,7 @@ import type {
   ArticleVO,
   CategoryDTO,
   CategoryVO,
+  ChatReplyVO,
   CursorPage,
   DanmakuPoolVO,
   DanmakuQuery,
@@ -280,6 +281,18 @@ export const fileApi = {
     form.append('module', module)
     return api.upload<string>('/admin/file/upload-audio', form)
   },
+}
+
+/* ============================================================ 页面人物对话 */
+
+export const chatApi = {
+  /**
+   * 和页面人物说一句话（POST /user/chat），免登录、单轮无记忆
+   *
+   * 超时单独放宽到 35s：后端 tl.chat.timeout-ms 是 30s，用默认的 20s 会在后端拿到回复之前就断掉，
+   * 用户看到的是「网络异常」而不是人物回话
+   */
+  chat: (message: string) => api.post<ChatReplyVO>('/user/chat', { message }, { timeout: 35000 }),
 }
 
 export * from './types'

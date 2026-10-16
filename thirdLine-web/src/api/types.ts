@@ -423,3 +423,13 @@ export interface SiteProfileVO {
   avatar: string | null
   startTime: string | null
 }
+
+/* ------------------------------------------------------------ 页面人物对话 */
+
+/** ChatReplyVO —— POST /user/chat 的返回，对应后端 ChatReplyVO */
+export interface ChatReplyVO {
+  /** 角色回复：纯文本一句话，直接塞进气泡 */
+  content: string
+  /** true 表示这是兜底 / 拦截台词（模型超时、报错或命中敏感词），不是实时生成的 */
+  fallback: boolean
+}

@@ -99,6 +99,25 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ------------------------------------------------------- 用户端格纹纸背景
+   参考 uiverse.io 的 kennyotsu-monochromia/spotty-cheetah-65：两条垂直方向的
+   linear-gradient 各自在每一格 25% / 75% 处画线，background-size 55px，
+   也就是实际网格间距 27.5px。
+
+   原稿用的是写死的浅灰（#F3F3F3 底 + #E1E1E1 线）。这里只把「线色」接进主题变量
+   （--pattern-line，见 tokens.css），底色继续用 --bg-base：否则深色主题会被刷成一片白。
+   想完全照搬原稿配色，把 --pattern-line 改成 #E1E1E1、底色调成 #F3F3F3 即可。
+
+   只挂在用户端外壳和登录 / 注册页的右栏上，后台 /admin 不受影响。
+   注意 .app-shell 自带 z-index:1（形成层叠上下文），首页大图 .hero__bg（z-index:-2）
+   和玻璃高光 .glass::before（z-index:-1）都画在它这层背景之上，不会被盖住。 */
+.app-shell,
+.auth-main {
+  background-color: var(--bg-base);
+  background-image: var(--pattern-image);
+  background-size: 55px 55px;
+}
+
 @keyframes orb-drift-1 {
   from {
     transform: translate3d(0, 0, 0) scale(1);

@@ -4,8 +4,8 @@ import { Icon, type IconName } from '@/components/Icon'
 import { Avatar } from '@/components/Form'
 import { Button } from '@/components/Button'
 import { RouteFallback } from '@/components/RouteFallback'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
 import { danmakuApi } from '@/api'
 import { cx } from '@/utils/format'
 import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
@@ -55,7 +55,6 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
  */
 export function AdminLayout() {
   const { user, logout } = useAuth()
-  const { mode, toggle } = useTheme()
   const { pathname } = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
@@ -167,15 +166,7 @@ export function AdminLayout() {
             <Button variant="ghost" size="sm" icon="external" onClick={() => window.open('/', '_blank')}>
               查看前台
             </Button>
-            <button
-              type="button"
-              className="btn btn--ghost btn--icon"
-              onClick={toggle}
-              aria-label={mode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}
-              title={mode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}
-            >
-              <Icon name={mode === 'light' ? 'moon' : 'sun'} size={18} />
-            </button>
+            <ThemeSwitch />
           </div>
         </header>
 

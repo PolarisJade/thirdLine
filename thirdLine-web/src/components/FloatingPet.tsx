@@ -1,10 +1,28 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type PointerEvent,
+} from 'react'
+import { chatApi } from '@/api'
 
 const SPRITE_URL = '/nezuko-sprite.webp'
 const FRAME_WIDTH = 192
 const FRAME_HEIGHT = 208
 const DISPLAY_WIDTH = 144
 const DISPLAY_HEIGHT = Math.round((DISPLAY_WIDTH / FRAME_WIDTH) * FRAME_HEIGHT)
+
+/** 打开气泡时先说一句，不占用模型调用 */
+const GREETING = '唔唔！（朝你挥手）'
+
+/** 聊完静置多久自动收起，别一直挡着页面 */
+const AUTO_CLOSE_MS = 20_000
+
+/** 与后端 tl.chat.max-input-length 保持一致，超长在前端就拦住，省一次请求 */
+const MAX_INPUT_LENGTH = 200
 
 type Action = 'idle' | 'walk' | 'wave' | 'cheer' | 'sit'
 
@@ -126,6 +144,15 @@ export function FloatingPet() {
   const [dragged, setDragged] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [showActions, setShowActions] = useState(false)
+  /** 对话气泡是否展开（点一下人物切换） */
+  const [chatOpen, setChatOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+  /** 人物当前说的这句话；请求进行中显示「唔…」占位 */
+  const [reply, setReply] = useState('')
+  const [sending, setSending] = useState(false)
+  const [errorText, setErrorText] = useState('')
+  /** 人物被拖到屏幕上边时，把气泡翻到人物下方 */
+  const panelBelow = dragged && position.y < 260
 
   const drawFrame = useCallback((row: number, frame: number, force = false) => {
     const canvas = canvasRef.current
@@ -301,6 +328,58 @@ export function FloatingPet() {
     return () => window.clearInterval(timer)
   }, [chooseAction, collapsed])
 
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // 展开时自动聚焦输入框；触屏设备不自动聚焦，免得键盘直接弹出来挡住内容
+  useEffect(() => {
+    if (!chatOpen) return
+    if (!window.matchMedia('(hover: hover)').matches) return
+    inputRef.current?.focus()
+  }, [chatOpen])
+
+  // 聊完自动收起：没有正在输入、也没有请求在飞时，静置一会儿就收回。
+  // 只看 draft 是因为自动聚焦会让「有焦点」永远成立，那样就永远收不起来了。
+  useEffect(() => {
+    if (!chatOpen || sending || draft.trim()) return
+    const timer = window.setTimeout(() => setChatOpen(false), AUTO_CLOSE_MS)
+    return () => window.clearTimeout(timer)
+    // reply 入依赖是故意的：每来一句新回复都重新计时
+  }, [chatOpen, sending, draft, reply])
+
+  /** 点一下人物：展开 / 收起气泡，展开时先挥个手 */
+  const toggleChat = useCallback(() => {
+    if (chatOpen) {
+      setChatOpen(false)
+      return
+    }
+    setErrorText('')
+    setReply((current) => current || GREETING)
+    chooseAction('wave')
+    setChatOpen(true)
+  }, [chatOpen, chooseAction])
+
+  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const text = draft.trim()
+    if (!text || sending) return
+    setSending(true)
+    setErrorText('')
+    setDraft('')
+    try {
+      const data = await chatApi.chat(text)
+      setReply(data.content)
+      // 兜底 / 拦截台词配坐姿更贴，正常回答就开心一下
+      chooseAction(data.fallback ? 'sit' : 'cheer')
+    } catch (error) {
+      // 失败就把输入还回去，别让人白打一遍
+      setDraft(text)
+      setErrorText(error instanceof Error ? error.message : '没发出去，等一下再试')
+      chooseAction('sit')
+    } finally {
+      setSending(false)
+    }
+  }
+
   const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
     const target = event.currentTarget
     target.setPointerCapture(event.pointerId)
@@ -329,7 +408,7 @@ export function FloatingPet() {
     target.style.cursor = 'grab'
     const wasMoved = dragRef.current.moved
     dragRef.current.active = false
-    if (!wasMoved) chooseAction('wave')
+    if (!wasMoved) toggleChat()
   }
 
   if (collapsed) {
@@ -353,7 +432,7 @@ export function FloatingPet() {
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      {showActions && (
+      {showActions && !chatOpen && (
         <div className="floating-pet__actions" role="toolbar" aria-label="宠物动作">
           <button type="button" className={action === 'idle' ? 'is-active' : ''} onClick={() => chooseAction('idle')}>
             待机
@@ -372,6 +451,32 @@ export function FloatingPet() {
           </button>
         </div>
       )}
+      {chatOpen && (
+        <div className={`floating-pet__chat${panelBelow ? ' floating-pet__chat--below' : ''}`}>
+          <p className="floating-pet__say" aria-live="polite">
+            {sending ? '唔…' : reply}
+          </p>
+          <form className="floating-pet__ask" onSubmit={sendMessage}>
+            <input
+              ref={inputRef}
+              className="floating-pet__input"
+              value={draft}
+              maxLength={MAX_INPUT_LENGTH}
+              placeholder="和我说句话…"
+              aria-label="和祢豆子说话"
+              autoComplete="off"
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setChatOpen(false)
+              }}
+            />
+            <button type="submit" className="floating-pet__send" disabled={sending || !draft.trim()}>
+              发送
+            </button>
+          </form>
+          {errorText && <p className="floating-pet__error">{errorText}</p>}
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         className="floating-pet__canvas"
@@ -381,7 +486,7 @@ export function FloatingPet() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        title="点击互动，按住拖动"
+        title="点我说说话，按住可以拖动"
       />
     </aside>
   )

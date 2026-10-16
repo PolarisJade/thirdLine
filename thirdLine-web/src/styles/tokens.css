@@ -127,6 +127,36 @@
   --overlay: rgba(53, 40, 31, 0.36);
   --noise-opacity: 0.035;
 
+  /* 用户端格纹纸背景：这里只定义「线色」和网格图像，挂载位置见 base.css。
+     定义在 :root 上所以深浅两套主题都拿得到，里面的 var(--pattern-line)
+     会按当前主题解析成对应的颜色。想让格子更明显/更淡就只改这一个值。 */
+  --pattern-line: rgba(120, 88, 62, 0.12);
+  --pattern-image:
+    linear-gradient(
+      0deg,
+      transparent 24%,
+      var(--pattern-line) 25%,
+      var(--pattern-line) 26%,
+      transparent 27%,
+      transparent 74%,
+      var(--pattern-line) 75%,
+      var(--pattern-line) 76%,
+      transparent 77%,
+      transparent
+    ),
+    linear-gradient(
+      90deg,
+      transparent 24%,
+      var(--pattern-line) 25%,
+      var(--pattern-line) 26%,
+      transparent 27%,
+      transparent 74%,
+      var(--pattern-line) 75%,
+      var(--pattern-line) 76%,
+      transparent 77%,
+      transparent
+    );
+
   --scroll-thumb: rgba(190, 150, 118, 0.42);
 }
 
@@ -170,6 +200,9 @@
 
   --overlay: rgba(10, 7, 5, 0.62);
   --noise-opacity: 0.05;
+
+  /* 深色主题下格纹换成暖白细线：原稿的浅灰线在深底上等于没有 */
+  --pattern-line: rgba(255, 219, 186, 0.075);
 
   --scroll-thumb: rgba(255, 219, 186, 0.22);
 

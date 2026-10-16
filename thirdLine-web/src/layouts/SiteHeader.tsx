@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
 import { Avatar } from '@/components/Form'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
 import { useScrolled } from '@/hooks/useAsync'
 import { cx } from '@/utils/format'
 import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
@@ -20,7 +20,6 @@ const NAV_ITEMS = [
 
 export function SiteHeader() {
   const { user, isAdmin, logout } = useAuth()
-  const { mode, toggle } = useTheme()
   const scrolled = useScrolled()
   const navigate = useNavigate()
 
@@ -77,15 +76,7 @@ export function SiteHeader() {
           </nav>
 
           <div className="site-header__actions">
-            <button
-              type="button"
-              className="btn btn--ghost btn--icon"
-              onClick={toggle}
-              aria-label={mode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}
-              title={mode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}
-            >
-              <Icon name={mode === 'light' ? 'moon' : 'sun'} size={18} />
-            </button>
+            <ThemeSwitch />
 
             {user ? (
               <div className="user-menu" ref={menuRef}>
