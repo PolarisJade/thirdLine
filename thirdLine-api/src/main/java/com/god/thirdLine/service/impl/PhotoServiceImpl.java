@@ -19,7 +19,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (dto == null || !StringUtils.hasText(dto.getUrl())) {
             throw new BusinessException(ResultCode.PHOTO_URL_REQUIRED);
         }
-        LocalDateTime now = LocalDateTime.now();
         Photo photo = new Photo()
                 .setTitle(dto.getTitle())
                 .setDescription(dto.getDescription())
@@ -51,9 +49,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 .setWidth(dto.getWidth())
                 .setHeight(dto.getHeight())
                 .setFileSize(dto.getFileSize())
-                .setStatus(dto.getStatus() == null ? 1 : dto.getStatus())
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         // sort 未指定时自增追加到末尾（当前最大 sort + 1）
         photo.setSort(dto.getSort() == null ? nextSort() : dto.getSort());
         this.save(photo);
@@ -96,7 +93,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (dto.getStatus() != null) {
             photo.setStatus(dto.getStatus());
         }
-        photo.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(photo);
 
         // 换图后清理旧原图：确认无人引用才删，手填外链自动跳过

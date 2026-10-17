@@ -80,9 +80,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .setCategoryId(dto.getCategoryId())
                 .setIsTop(dto.getIsTop() == null ? 0 : dto.getIsTop())
                 .setIsOriginal(dto.getIsOriginal() == null ? 1 : dto.getIsOriginal())
-                .setStatus(dto.getStatus() == null ? 1 : dto.getStatus())
-                .setCreatedTime(now)
-                .setUpdatedTime(now);
+                .setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
+        // createdTime / updatedTime 由 MetaObjectHandler 自动填充
         // 发布状态记录发布时间
         if (Integer.valueOf(1).equals(article.getStatus())) {
             article.setPublishedTime(now);
@@ -211,7 +210,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 article.setPublishedTime(LocalDateTime.now());
             }
         }
-        article.setUpdatedTime(LocalDateTime.now());
+        // updatedTime 由 MetaObjectHandler 自动刷新
         this.updateById(article);
 
         // tagIds 非 null 时整体覆盖标签关联
@@ -232,20 +231,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 保存文章标签关联（自动去重、忽略空集合）
+     * 保存文章标签关联（自动去重、忽略空集合）。
+     * 整批拼成一条 INSERT，避免在循环里逐条写库。
      */
     private void saveArticleTags(Long articleId, List<Long> tagIds) {
         if (CollectionUtils.isEmpty(tagIds)) {
             return;
         }
-        // 去重并保持顺序
+        // 去重并保持顺序，顺带过滤掉前端可能带过来的 null
         LinkedHashSet<Long> distinctIds = new LinkedHashSet<>(tagIds);
-        for (Long tagId : distinctIds) {
-            if (tagId == null) {
-                continue;
-            }
-            articleTagMapper.insert(new ArticleTag().setArticleId(articleId).setTagId(tagId));
+        distinctIds.remove(null);
+        if (distinctIds.isEmpty()) {
+            return;
         }
+        List<ArticleTag> relations = distinctIds.stream()
+                .map(tagId -> new ArticleTag().setArticleId(articleId).setTagId(tagId))
+                .collect(Collectors.toList());
+        articleTagMapper.insertBatch(relations);
     }
 
     /**

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.god.thirdLine.mapper.PortfolioTechStackMapper">
+
+    <!-- 批量建立作品与技术栈的关联：一条 INSERT 解决，避免在循环里逐条 insert -->
+    <insert id="insertBatch">
+        INSERT INTO tl_portfolio_tech_stack (portfolio_id, tech_stack_id) VALUES
+        <foreach collection="relations" item="item" separator=",">
+            (#{item.portfolioId}, #{item.techStackId})
+        </foreach>
+    </insert>
+
+</mapper>

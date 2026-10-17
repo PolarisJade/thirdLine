@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,13 +44,11 @@ public class TechStackServiceImpl extends ServiceImpl<TechStackMapper, TechStack
             throw new BusinessException(ResultCode.TECH_STACK_NAME_DUPLICATE);
         }
 
-        LocalDateTime now = LocalDateTime.now();
         TechStack techStack = new TechStack()
                 .setName(name)
                 .setSort(dto.getSort() == null ? nextSort() : dto.getSort())
-                .setStatus(dto.getStatus() == null ? TechStack.STATUS_ENABLED : dto.getStatus())
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setStatus(dto.getStatus() == null ? TechStack.STATUS_ENABLED : dto.getStatus());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         this.save(techStack);
         return techStack.getId();
     }
@@ -86,7 +83,7 @@ public class TechStackServiceImpl extends ServiceImpl<TechStackMapper, TechStack
         if (dto.getStatus() != null) {
             techStack.setStatus(dto.getStatus());
         }
-        techStack.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(techStack);
     }
 

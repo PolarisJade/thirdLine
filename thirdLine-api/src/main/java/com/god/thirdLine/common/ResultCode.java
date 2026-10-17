@@ -77,7 +77,17 @@ public enum ResultCode {
 
     /* 人物对话模块 9xxx */
     CHAT_MESSAGE_EMPTY(9001, "说点什么再发送吧"),
-    CHAT_MESSAGE_TOO_LONG(9002, "消息太长了，请说得短一点");
+    CHAT_MESSAGE_TOO_LONG(9002, "消息太长了，请说得短一点"),
+
+    /* 友链模块 10xxx */
+    FRIEND_LINK_NOT_FOUND(10001, "友链不存在"),
+    FRIEND_LINK_NAME_REQUIRED(10002, "站点名称不能为空"),
+    FRIEND_LINK_URL_REQUIRED(10003, "站点地址不能为空"),
+    FRIEND_LINK_URL_INVALID(10004, "站点地址需以 http:// 或 https:// 开头"),
+    FRIEND_LINK_URL_DUPLICATE(10005, "该站点地址已提交过，请勿重复申请"),
+    FRIEND_LINK_SENSITIVE(10006, "内容含有敏感词，请修改后再提交"),
+    FRIEND_LINK_AUDIT_STATUS_INVALID(10007, "审核结果只能是已通过或已拒绝"),
+    FRIEND_LINK_REJECT_REASON_REQUIRED(10008, "拒绝时请填写拒绝原因");
 
     private final Integer code;
     private final String message;

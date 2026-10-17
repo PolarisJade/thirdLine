@@ -7,8 +7,6 @@ import com.god.thirdLine.service.ISiteConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 /**
  * <p>
  * 站点配置 服务实现类
@@ -39,17 +37,16 @@ public class SiteConfigServiceImpl implements ISiteConfigService {
     public void setDanmakuEnabled(boolean enabled) {
         String value = enabled ? VALUE_ON : VALUE_OFF;
         SiteConfig config = getByKey(SiteConfig.KEY_DANMAKU_ENABLED);
-        LocalDateTime now = LocalDateTime.now();
         if (config == null) {
             SiteConfig entity = new SiteConfig()
                     .setConfigKey(SiteConfig.KEY_DANMAKU_ENABLED)
                     .setConfigValue(value)
-                    .setDescription("弹幕全局开关：1开启/0关闭，关闭后前台不再展示弹幕且禁止发送")
-                    .setCreateTime(now)
-                    .setUpdateTime(now);
+                    .setDescription("弹幕全局开关：1开启/0关闭，关闭后前台不再展示弹幕且禁止发送");
+            // createTime / updateTime 由 MetaObjectHandler 自动填充
             siteConfigMapper.insert(entity);
         } else {
-            config.setConfigValue(value).setUpdateTime(now);
+            // updateTime 由 MetaObjectHandler 自动刷新
+            config.setConfigValue(value);
             siteConfigMapper.updateById(config);
         }
     }

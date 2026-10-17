@@ -1431,5 +1431,306 @@
   }
 }
 
+/* ============================================================================
+   友链页
+   ---------------------------------------------------------------------------
+   1) 友链墙：横向小卡片，比作品集卡片更小更密，形成「链接墙」的观感；
+   2) 交换区：左侧本站信息（可复制）+ 申请须知，右侧申请表单。
+   颜色/圆角/阴影全部取 tokens.css 的变量，深浅色主题自动跟随。
+   ========================================================================== */
+
+.friend-panel {
+  padding: var(--space-6);
+}
+
+/* ---------------------------------------------------------------- 站点图标 */
+/* 无图标或图片加载失败时退化成首字母方块，暖色渐变取自品牌色阶 */
+.link-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(145deg, var(--brand-100), var(--brand-300));
+  border: 1px solid color-mix(in srgb, var(--brand-500) 22%, transparent);
+  color: var(--brand-800);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+}
+
+.link-avatar--lg {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-size: 19px;
+}
+
+.link-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:root[data-theme='dark'] .link-avatar {
+  background: linear-gradient(145deg, rgba(217, 112, 74, 0.42), rgba(255, 193, 120, 0.2));
+  border-color: rgba(255, 219, 186, 0.18);
+  color: var(--brand-100);
+}
+
+/* ---------------------------------------------------------------- 友链卡片 */
+.friend-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  color: inherit;
+}
+
+.friend-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.friend-card__name {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.friend-card__desc {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+
+.friend-card__domain {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--brand-600);
+  opacity: 0.85;
+}
+
+:root[data-theme='dark'] .friend-card__domain {
+  color: var(--brand-300);
+}
+
+/* 箭头默认收起，悬停 / 键盘聚焦时滑出，提示这是外链 */
+.friend-card__arrow {
+  color: var(--text-tertiary);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--duration-base) var(--ease-soft),
+    transform var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-soft);
+}
+
+.friend-card:hover .friend-card__arrow,
+.friend-card:focus-visible .friend-card__arrow {
+  opacity: 1;
+  transform: none;
+  color: var(--brand-600);
+}
+
+/* -------------------------------------------------- 申请弹窗：步进条 + 引导语 */
+/* 结构参考常见的三步向导（Tailwind UI / Ant Design Steps 的简化版）：
+   序号圆点 + 标签 + 连接线，只表达进度，不承担交互。 */
+.wizard-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.wizard-steps__item {
+  /* 前两步等分剩余宽度，项内的连接线才能吃满空间连到下一步 */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* 最后一步没有连接线，宽度收回到内容，整体才不会右半边空掉 */
+.wizard-steps__item:last-child {
+  flex: 0 0 auto;
+}
+
+.wizard-steps__item--todo .wizard-steps__label {
+  color: var(--text-tertiary);
+}
+
+.wizard-steps__index {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background var(--duration-base) var(--ease-soft),
+    border-color var(--duration-base) var(--ease-soft),
+    color var(--duration-base) var(--ease-soft);
+}
+
+.wizard-steps__item--active .wizard-steps__index {
+  border-color: var(--brand-500);
+  background: var(--brand-500);
+  color: var(--text-inverse);
+}
+
+.wizard-steps__item--done .wizard-steps__index {
+  border-color: color-mix(in srgb, var(--brand-500) 45%, transparent);
+  background: color-mix(in srgb, var(--brand-500) 16%, transparent);
+  color: var(--brand-700);
+}
+
+:root[data-theme='dark'] .wizard-steps__item--done .wizard-steps__index {
+  color: var(--brand-200);
+}
+
+.wizard-steps__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wizard-steps__item--active .wizard-steps__label {
+  color: var(--text-primary);
+}
+
+/* 连接线：占据剩余空间，把三个步骤均匀撑开 */
+.wizard-steps__line {
+  flex: 1;
+  height: 1px;
+  min-width: 10px;
+  margin: 0 var(--space-1);
+  background: var(--line-strong);
+}
+
+.wizard-lead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------ 本站信息卡片 */
+/* 只在申请弹窗第二步里用，所以只保留子元素样式，外框由 Modal 提供 */
+.site-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.site-card__name {
+  font-size: 15.5px;
+  font-weight: 700;
+}
+
+.site-card__slogan {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+
+.site-card__list {
+  display: grid;
+  gap: 2px;
+}
+
+.site-card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.site-card__row:last-child {
+  border-bottom: none;
+}
+
+.site-card__label {
+  flex-shrink: 0;
+  width: 34px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.site-card__value {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 地址与头像地址用等宽字体，逐字符对齐更方便照抄 */
+.site-card__value--mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------- 申请须知（弹窗第一步） */
+.notice__list {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: var(--space-2);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.notice__list li::marker {
+  color: var(--brand-500);
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- 申请表单 */
+/* 放在弹窗第三步：外边距由 Modal 的 body 负责，这里只管字段间距 */
+.apply-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.apply-form__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* ------------------------------------------------------------------ 响应式 */
+@media (max-width: 640px) {
+  .apply-form__pair {
+    grid-template-columns: 1fr;
+  }
+
+  .friend-panel {
+    padding: var(--space-5);
+  }
+}
+
 
 

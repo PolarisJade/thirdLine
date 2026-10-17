@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,12 +44,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             throw new BusinessException(ResultCode.CATEGORY_NAME_DUPLICATE);
         }
 
-        LocalDateTime now = LocalDateTime.now();
         Category category = new Category()
                 .setName(dto.getName())
-                .setSort(dto.getSort() == null ? 0 : dto.getSort())
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setSort(dto.getSort() == null ? 0 : dto.getSort());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         this.save(category);
         return category.getId();
     }
@@ -95,7 +92,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (dto.getSort() != null) {
             category.setSort(dto.getSort());
         }
-        category.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(category);
     }
 

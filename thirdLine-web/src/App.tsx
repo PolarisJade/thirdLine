@@ -12,6 +12,7 @@ import { ArticleDetailPage } from './pages/user/ArticleDetailPage'
 import { PortfolioPage } from './pages/user/PortfolioPage'
 import { GalleryPage } from './pages/user/GalleryPage'
 import { MusicPage } from './pages/user/MusicPage'
+import { FriendLinksPage } from './pages/user/FriendLinksPage'
 import { AboutPage } from './pages/user/AboutPage'
 import { ProfilePage } from './pages/user/ProfilePage'
 import { LoginPage } from './pages/user/LoginPage'
@@ -66,6 +67,7 @@ export function App() {
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/music" element={<MusicPage />} />
+        <Route path="/links" element={<FriendLinksPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route
           path="/profile"

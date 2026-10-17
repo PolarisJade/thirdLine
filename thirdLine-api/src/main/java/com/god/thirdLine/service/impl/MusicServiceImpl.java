@@ -19,7 +19,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,15 +48,13 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         if (!StringUtils.hasText(dto.getAudioUrl())) {
             throw new BusinessException(ResultCode.MUSIC_AUDIO_REQUIRED);
         }
-        LocalDateTime now = LocalDateTime.now();
         Music music = new Music()
                 .setTitle(dto.getTitle())
                 .setArtist(dto.getArtist())
                 .setCoverImage(dto.getCoverImage())
                 .setAudioUrl(dto.getAudioUrl())
-                .setStatus(dto.getStatus() == null ? STATUS_ENABLED : dto.getStatus())
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setStatus(dto.getStatus() == null ? STATUS_ENABLED : dto.getStatus());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         // sort 未指定时自增追加到末尾（当前最大 sort + 1）
         music.setSort(dto.getSort() == null ? nextSort() : dto.getSort());
         this.save(music);
@@ -95,7 +92,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         if (dto.getStatus() != null) {
             music.setStatus(dto.getStatus());
         }
-        music.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(music);
 
         // 换封面 / 换音频后清理旧文件：确认无人引用才删，手填外链自动跳过

@@ -125,4 +125,17 @@ public class JwtUtil {
         }
         return headerValue.trim();
     }
+
+    /**
+     * 从请求头原始值中解析用户ID，供「登录可选」的公开接口使用
+     * （如友链申请：登录用户记录申请人，游客也能提交）。
+     * 未携带 token、token 已过期或非法时一律返回 null，不抛异常。
+     */
+    public Long resolveUserIdOrNull(String headerValue) {
+        String token = resolveToken(headerValue);
+        if (token == null) {
+            return null;
+        }
+        return getUserId(token);
+    }
 }

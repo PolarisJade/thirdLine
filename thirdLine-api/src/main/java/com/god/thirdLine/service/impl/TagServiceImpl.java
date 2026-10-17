@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,11 +43,9 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
             throw new BusinessException(ResultCode.TAG_NAME_DUPLICATE);
         }
 
-        LocalDateTime now = LocalDateTime.now();
         Tag tag = new Tag()
-                .setName(dto.getName())
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setName(dto.getName());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         this.save(tag);
         return tag.getId();
     }
@@ -91,7 +88,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
             throw new BusinessException(ResultCode.TAG_NAME_DUPLICATE);
         }
         tag.setName(dto.getName());
-        tag.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(tag);
     }
 

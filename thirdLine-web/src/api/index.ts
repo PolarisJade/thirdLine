@@ -15,6 +15,8 @@ import type {
   DanmakuReportVO,
   DanmakuSendDTO,
   DanmakuVO,
+  FriendLinkApplyDTO,
+  FriendLinkVO,
   LoginDTO,
   LoginVO,
   MusicDTO,
@@ -247,6 +249,20 @@ export const danmakuApi = {
 
   /** 设置弹幕全局开关（PUT /admin/danmaku/switch?enabled=） */
   setSwitch: (enabled: boolean) => api.put<void>('/admin/danmaku/switch', undefined, { enabled }),
+}
+
+/* ================================================================== 友链 */
+
+export const friendLinkApi = {
+  /** 前台可见友链（GET /user/friend-link/list），审核通过且未被隐藏的才返回 */
+  list: () => api.get<FriendLinkVO[]>('/user/friend-link/list'),
+
+  /**
+   * 提交友链申请（POST /user/friend-link/apply）。
+   * 免登录即可提交：带了登录 token 后端会记录申请人，游客按游客受理。
+   * 落库后为「待审核」，通过后才会出现在前台列表。
+   */
+  apply: (dto: FriendLinkApplyDTO) => api.post<void>('/user/friend-link/apply', dto),
 }
 
 /* ================================================================== 站点 */

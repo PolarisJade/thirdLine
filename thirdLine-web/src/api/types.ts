@@ -60,6 +60,10 @@ export const ResultCode = {
 
   DANMAKU_DISABLED: 7005,
   DANMAKU_REPORT_DUPLICATE: 7007,
+
+  FRIEND_LINK_URL_INVALID: 10004,
+  FRIEND_LINK_URL_DUPLICATE: 10005,
+  FRIEND_LINK_SENSITIVE: 10006,
 } as const
 
 /* ------------------------------------------------------------------ 用户 */
@@ -403,6 +407,35 @@ export interface DanmakuReportVO {
   /** 0 待处理 / 1 已处理 */
   status: number | null
   createTime: string | null
+}
+
+/* ------------------------------------------------------------------ 友链 */
+
+/**
+ * FriendLinkVO —— 前台可见友链，对应后端 FriendLinkVO。
+ * 后端刻意只下发展示字段，申请人邮箱、内部备注、审核状态都不在返回里。
+ */
+export interface FriendLinkVO {
+  id: number
+  name: string
+  url: string
+  /** 站点图标，为空时前端用站点名首字母兜底 */
+  avatar: string | null
+  description: string | null
+}
+
+/** FriendLinkApplyDTO —— 友链申请，长度限制与后端校验一致 */
+export interface FriendLinkApplyDTO {
+  /** 站点名称，必填，最长 64 */
+  name: string
+  /** 站点地址，必填，需 http/https */
+  url: string
+  /** 站点图标地址，最长 500 */
+  avatar?: string
+  /** 站点描述，最长 255 */
+  description?: string
+  /** 联系邮箱，仅后台可见 */
+  email?: string
 }
 
 /* ------------------------------------------------------------------ 站点 */

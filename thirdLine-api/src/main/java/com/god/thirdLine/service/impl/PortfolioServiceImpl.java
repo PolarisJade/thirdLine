@@ -67,9 +67,8 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
                 .setPeriod(dto.getPeriod())
                 .setDemoUrl(dto.getDemoUrl())
                 .setRepoUrl(dto.getRepoUrl())
-                .setStatus(status)
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setStatus(status);
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         // 发布状态记录发布时间
         if (status == STATUS_PUBLISHED) {
             portfolio.setPublishTime(now);
@@ -120,7 +119,7 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
                 portfolio.setPublishTime(LocalDateTime.now());
             }
         }
-        portfolio.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(portfolio);
 
         // techStackIds 非 null 时整体覆盖技术栈关联（传空数组即清空）
@@ -209,21 +208,24 @@ public class PortfolioServiceImpl extends ServiceImpl<PortfolioMapper, Portfolio
     }
 
     /**
-     * 保存作品与技术栈的关联（自动去重、忽略空集合、跳过空ID）
+     * 保存作品与技术栈的关联（自动去重、忽略空集合、跳过空ID）。
+     * 整批拼成一条 INSERT，避免在循环里逐条写库。
      */
     private void saveTechStackRelations(Long portfolioId, List<Long> techStackIds) {
         if (CollectionUtils.isEmpty(techStackIds)) {
             return;
         }
         LinkedHashSet<Long> distinctIds = new LinkedHashSet<>(techStackIds);
-        for (Long techStackId : distinctIds) {
-            if (techStackId == null) {
-                continue;
-            }
-            portfolioTechStackMapper.insert(new PortfolioTechStack()
-                    .setPortfolioId(portfolioId)
-                    .setTechStackId(techStackId));
+        distinctIds.remove(null);
+        if (distinctIds.isEmpty()) {
+            return;
         }
+        List<PortfolioTechStack> relations = distinctIds.stream()
+                .map(techStackId -> new PortfolioTechStack()
+                        .setPortfolioId(portfolioId)
+                        .setTechStackId(techStackId))
+                .collect(Collectors.toList());
+        portfolioTechStackMapper.insertBatch(relations);
     }
 
     /**

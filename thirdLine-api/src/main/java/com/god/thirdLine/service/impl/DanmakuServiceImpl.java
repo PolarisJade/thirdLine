@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -97,16 +96,13 @@ public class DanmakuServiceImpl extends ServiceImpl<DanmakuMapper, Danmaku> impl
         }
         lastSendTime.put(userId, now);
 
-        // 落库
-        LocalDateTime time = LocalDateTime.now();
+        // 落库（createTime / updateTime 由 MetaObjectHandler 自动填充）
         String color = dto == null || !StringUtils.hasText(dto.getColor()) ? DEFAULT_COLOR : dto.getColor().trim();
         Danmaku danmaku = new Danmaku()
                 .setUserId(userId)
                 .setContent(content)
                 .setColor(color)
-                .setStatus(1)
-                .setCreateTime(time)
-                .setUpdateTime(time);
+                .setStatus(1);
         this.save(danmaku);
 
         DanmakuVO vo = toVO(danmaku);
@@ -160,14 +156,11 @@ public class DanmakuServiceImpl extends ServiceImpl<DanmakuMapper, Danmaku> impl
         if (reason != null && reason.length() > MAX_REASON_LENGTH) {
             reason = reason.substring(0, MAX_REASON_LENGTH);
         }
-        LocalDateTime now = LocalDateTime.now();
         DanmakuReport report = new DanmakuReport()
                 .setDanmakuId(dto.getDanmakuId())
                 .setUserId(userId)
                 .setReason(reason)
-                .setStatus(DanmakuReport.STATUS_PENDING)
-                .setCreateTime(now)
-                .setUpdateTime(now);
+                .setStatus(DanmakuReport.STATUS_PENDING);
         danmakuReportMapper.insert(report);
     }
 
@@ -195,7 +188,8 @@ public class DanmakuServiceImpl extends ServiceImpl<DanmakuMapper, Danmaku> impl
         if (danmaku == null) {
             throw new BusinessException(ResultCode.DANMAKU_NOT_FOUND);
         }
-        danmaku.setStatus(status).setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
+        danmaku.setStatus(status);
         this.updateById(danmaku);
     }
 
@@ -265,7 +259,8 @@ public class DanmakuServiceImpl extends ServiceImpl<DanmakuMapper, Danmaku> impl
         if (report == null) {
             throw new BusinessException(ResultCode.DANMAKU_REPORT_NOT_FOUND);
         }
-        report.setStatus(DanmakuReport.STATUS_HANDLED).setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
+        report.setStatus(DanmakuReport.STATUS_HANDLED);
         danmakuReportMapper.updateById(report);
     }
 

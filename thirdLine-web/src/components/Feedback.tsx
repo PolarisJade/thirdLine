@@ -130,8 +130,21 @@ export function GallerySkeleton({ count = 6 }: { count?: number }) {
   )
 }
 
-/** 表格骨架 */
-export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
+/** 友链卡片骨架，与 .friend-card 的横向布局对齐，避免加载完成时高度跳动 */
+export function FriendLinkSkeleton() {
+  return (
+    <div className="glass friend-card">
+      <Skeleton width={44} height={44} radius={14} />
+      <div className="friend-card__body">
+        <Skeleton width="58%" height={15} />
+        <Skeleton width="92%" height={11} />
+        <Skeleton width="42%" height={10} />
+      </div>
+    </div>
+  )
+}
+
+/** 表格骨架 */export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
   return (
     <div className="stack" style={{ gap: 1 }}>
       {Array.from({ length: rows }).map((_, rowIndex) => (

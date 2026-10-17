@@ -22,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
 /**
@@ -115,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setNickname(StringUtils.hasText(dto.getNickname()) ? dto.getNickname().trim() : username);
         user.setRole(User.ROLE_USER);
         user.setStatus(1);
-        user.setCreateTime(LocalDateTime.now());
+        // createTime / updateTime 由 MetaObjectHandler 自动填充
         this.save(user);
 
         // 5. 注册成功即自动登录
@@ -157,7 +156,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (dto.getEmail() != null) {
             user.setEmail(dto.getEmail());
         }
-        user.setUpdateTime(LocalDateTime.now());
+        // updateTime 由 MetaObjectHandler 自动刷新
         this.updateById(user);
 
         // 换头像后清理旧文件：确认无人引用才删，手填外链自动跳过
@@ -189,9 +188,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(ResultCode.OLD_PASSWORD_ERROR);
         }
 
-        // 4. 一致则修改密码
+        // 4. 一致则修改密码（updateTime 由 MetaObjectHandler 自动刷新）
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-        user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
     }
 
