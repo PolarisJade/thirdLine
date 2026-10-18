@@ -36,7 +36,7 @@ export function LoginPage() {
           <h1 className="auth-aside__title">
             欢迎回到
             <br />
-            第三条线
+            第三行
           </h1>
 
           <p className="auth-aside__desc">

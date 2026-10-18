@@ -201,12 +201,7 @@ export function ArticleDetailPage() {
             )}
           </article>
 
-          {article.coverImage && (
-            <div className="article-hero">
-              <img src={article.coverImage} alt={article.title} />
-            </div>
-          )}
-
+          {/* 详情页不展示封面图，正文直接接在标题区之后 */}
           <div className="article-body glass glass--strong">
             {article.content?.trim() ? (
               <div className="rich-text" ref={contentRef} dangerouslySetInnerHTML={{ __html: article.content }} />

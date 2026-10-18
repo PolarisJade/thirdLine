@@ -15,7 +15,11 @@ import type {
   DanmakuReportVO,
   DanmakuSendDTO,
   DanmakuVO,
+  FriendLinkAdminVO,
   FriendLinkApplyDTO,
+  FriendLinkAuditDTO,
+  FriendLinkDTO,
+  FriendLinkQuery,
   FriendLinkVO,
   LoginDTO,
   LoginVO,
@@ -263,6 +267,28 @@ export const friendLinkApi = {
    * 落库后为「待审核」，通过后才会出现在前台列表。
    */
   apply: (dto: FriendLinkApplyDTO) => api.post<void>('/user/friend-link/apply', dto),
+
+  /** 后台分页（GET /admin/friend-link/page），可按审核状态 / 显示状态 / 关键词过滤 */
+  adminPage: (query: FriendLinkQuery) => api.get<PageResult<FriendLinkAdminVO>>('/admin/friend-link/page', query),
+
+  /** 后台详情（GET /admin/friend-link/{id}） */
+  adminDetail: (id: number) => api.get<FriendLinkAdminVO>(`/admin/friend-link/${id}`),
+
+  /** 新增友链（POST /admin/friend-link），后端直接置为已通过并立即生效 */
+  save: (dto: FriendLinkDTO) => api.post<number>('/admin/friend-link', dto),
+
+  /** 修改友链（PUT /admin/friend-link），字段不传表示不动，可空文本传空串表示清空 */
+  update: (dto: FriendLinkDTO) => api.put<void>('/admin/friend-link', dto),
+
+  /** 审核（PUT /admin/friend-link/{id}/audit）：1 通过 / 2 拒绝，拒绝需带原因 */
+  audit: (id: number, dto: FriendLinkAuditDTO) => api.put<void>(`/admin/friend-link/${id}/audit`, dto),
+
+  /** 切换显示状态（PUT /admin/friend-link/{id}/status?status=0|1） */
+  updateStatus: (id: number, status: number) =>
+    api.put<void>(`/admin/friend-link/${id}/status`, undefined, { status }),
+
+  /** 删除友链（DELETE /admin/friend-link/{id}） */
+  remove: (id: number) => api.delete<void>(`/admin/friend-link/${id}`),
 }
 
 /* ================================================================== 站点 */

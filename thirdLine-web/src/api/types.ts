@@ -438,6 +438,65 @@ export interface FriendLinkApplyDTO {
   email?: string
 }
 
+/**
+ * FriendLinkAdminVO —— 后台管理对象，对应后端 FriendLinkAdminVO。
+ * 相比 FriendLinkVO 多出申请人邮箱、来源、审核信息与内部备注。
+ */
+export interface FriendLinkAdminVO {
+  id: number
+  name: string
+  url: string
+  avatar: string | null
+  description: string | null
+  email: string | null
+  /** 申请用户ID，游客申请时为 null */
+  applyUserId: number | null
+  /** 来源：0 管理员添加 / 1 访客申请 */
+  source: number | null
+  /** 审核状态：0 待审核 / 1 已通过 / 2 已拒绝 */
+  auditStatus: number | null
+  rejectReason: string | null
+  /** 显示状态：0 隐藏 / 1 显示 */
+  status: number | null
+  remark: string | null
+  auditTime: string | null
+  createTime: string | null
+  updateTime: string | null
+}
+
+/** FriendLinkDTO —— 后台新增/修改；修改时字段为 null 表示不动，可空文本传空串表示清空 */
+export interface FriendLinkDTO {
+  id?: number
+  name: string
+  url: string
+  avatar?: string
+  description?: string
+  email?: string
+  /** 显示状态：0 隐藏 / 1 显示 */
+  status?: number
+  remark?: string
+}
+
+/** FriendLinkAuditDTO —— 审核结果：1 通过 / 2 拒绝，拒绝时 rejectReason 必填 */
+export interface FriendLinkAuditDTO {
+  id: number
+  auditStatus: number
+  rejectReason?: string
+}
+
+/** FriendLinkQuery —— 后台标准分页（后端把待审核排最前） */
+export interface FriendLinkQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  /** 0 待审核 / 1 已通过 / 2 已拒绝 */
+  auditStatus?: number
+  /** 0 隐藏 / 1 显示 */
+  status?: number
+  /** 0 管理员添加 / 1 访客申请 */
+  source?: number
+}
+
 /* ------------------------------------------------------------------ 站点 */
 
 /** SiteStatsVO */

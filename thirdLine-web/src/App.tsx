@@ -48,6 +48,9 @@ const DanmakuManagePage = lazy(() =>
 const ReportManagePage = lazy(() =>
   import('./pages/admin/ReportManagePage').then((m) => ({ default: m.ReportManagePage })),
 )
+const FriendLinkManagePage = lazy(() =>
+  import('./pages/admin/FriendLinkManagePage').then((m) => ({ default: m.FriendLinkManagePage })),
+)
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 
 /**
@@ -114,6 +117,7 @@ export function App() {
         <Route path="music" element={<MusicManagePage />} />
         <Route path="danmaku" element={<DanmakuManagePage />} />
         <Route path="reports" element={<ReportManagePage />} />
+        <Route path="friend-links" element={<FriendLinkManagePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage admin />} />
       </Route>

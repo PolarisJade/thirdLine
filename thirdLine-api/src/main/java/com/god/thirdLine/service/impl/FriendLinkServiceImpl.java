@@ -16,6 +16,7 @@ import com.god.thirdLine.domain.vo.FriendLinkVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.FriendLinkMapper;
 import com.god.thirdLine.service.IFriendLinkService;
+import com.god.thirdLine.service.MailService;
 import com.god.thirdLine.service.SensitiveWordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -68,6 +69,7 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$");
 
     private final SensitiveWordService sensitiveWordService;
+    private final MailService mailService;
 
     @Override
     public List<FriendLinkVO> listVisibleLinks() {
@@ -246,6 +248,12 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
         }
         FriendLink link = getExisting(dto.getId());
 
+        // 记录审核前的状态：只有状态真正发生变化时才发通知，重复点同一个结论不会重复发邮件
+        boolean firstApproval = auditStatus == FriendLink.AUDIT_APPROVED
+                && !Integer.valueOf(FriendLink.AUDIT_APPROVED).equals(link.getAuditStatus());
+        boolean firstRejection = auditStatus == FriendLink.AUDIT_REJECTED
+                && !Integer.valueOf(FriendLink.AUDIT_REJECTED).equals(link.getAuditStatus());
+
         // 拒绝原因只在「拒绝」时要求填写，通过时必须显式写回 NULL 清掉上一次的拒绝记录
         String rejectReason = null;
         if (auditStatus == FriendLink.AUDIT_REJECTED) {
@@ -265,6 +273,20 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
         this.update(update, Wrappers.<FriendLink>lambdaUpdate()
                 .eq(FriendLink::getId, link.getId())
                 .set(FriendLink::getRejectReason, rejectReason));
+
+        // 仅对「访客申请 + 填写了邮箱」的审核结果发送通知；
+        // 管理员直接添加的友链没有申请流程，不发送这封邮件。
+        // 通过 / 拒绝都只在状态真正变化时发一次，邮件在线程池中异步发送。
+        boolean isApplicant = Integer.valueOf(FriendLink.SOURCE_APPLY).equals(link.getSource());
+        boolean hasEmail = StringUtils.hasText(link.getEmail());
+        if (isApplicant && hasEmail) {
+            if (firstApproval) {
+                mailService.sendFriendLinkApproved(link.getEmail(), link.getName(), link.getUrl());
+            } else if (firstRejection) {
+                mailService.sendFriendLinkRejected(
+                        link.getEmail(), link.getName(), link.getUrl(), rejectReason);
+            }
+        }
     }
 
     @Override

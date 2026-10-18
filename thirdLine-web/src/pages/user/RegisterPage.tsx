@@ -35,7 +35,7 @@ export function RegisterPage() {
           <h1 className="auth-aside__title">
             加入
             <br />
-            第三条线
+            第三行
           </h1>
 
           <p className="auth-aside__desc">用邮箱注册一个账号，就能在这里留下你的痕迹。</p>

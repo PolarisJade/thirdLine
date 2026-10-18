@@ -29,6 +29,10 @@ spring:
           auth: true
           ssl:
             enable: true         # port=465 时开启 SSL；改用 587 时改为 starttls.enable: true
+          # SMTP 超时：邮件在独立线程池里发送，超时后及时释放线程，避免池被卡死
+          connectiontimeout: 10000   # 建立连接超时（毫秒）
+          timeout: 10000             # 读取超时（毫秒）
+          writetimeout: 10000        # 写入超时（毫秒）
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -128,3 +132,13 @@ email-code:
   subject: 【thirdLine】邮箱验证码   # 验证码邮件主题
   expire-minutes: 5               # 验证码有效期（分钟）
   send-interval-seconds: 60        # 同一邮箱两次发送的最小间隔（秒）
+  # 友链申请审核结果通知邮件主题（仅 source=1 的访客申请会发送）
+  friend-link-approved-subject: 【thirdLine】友链申请已通过
+  friend-link-rejected-subject: 【thirdLine】友链申请未通过
+  # 邮件异步发送线程池：SMTP 是阻塞 IO，不能占用 Web 请求线程
+  async:
+    core-pool-size: 2             # 常驻线程数
+    max-pool-size: 4              # 峰值线程数
+    queue-capacity: 200           # 等待队列长度；队列满时拒绝，不会退回请求线程执行
+    keep-alive-seconds: 60        # 超过常驻线程数的空闲线程存活时间
+    await-termination-seconds: 30 # 停机时等待已排队邮件发完的最长时间

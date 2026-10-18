@@ -1491,6 +1491,14 @@
   color: inherit;
 }
 
+/* 前台友链卡片的站点图标放大一档（后台管理页仍用基础 44px，不受影响） */
+.friend-card .link-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  font-size: 22px;
+}
+
 .friend-card__body {
   display: flex;
   flex-direction: column;

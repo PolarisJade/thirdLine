@@ -8,9 +8,10 @@ import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { Field, Input, Textarea } from '@/components/Form'
 import { EmptyState, FriendLinkSkeleton } from '@/components/Feedback'
+import { LinkAvatar } from '@/components/LinkAvatar'
 import { Modal } from '@/components/Modal'
 import { useToast } from '@/components/ToastContext'
-import { cx, initialOf } from '@/utils/format'
+import { cx } from '@/utils/format'
 import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
 
 /**
@@ -91,23 +92,6 @@ function validate(form: FriendLinkApplyDTO): FormErrors {
   }
 
   return errors
-}
-
-/* ==================================================================== 头像 */
-
-/**
- * 站点图标。
- * 没填地址、或图片加载失败时，退回到站点名首字母的暖色方块，不留破图。
- */
-function LinkAvatar({ src, name, large = false }: { src?: string | null; name: string; large?: boolean }) {
-  const [broken, setBroken] = useState(false)
-  const showImage = Boolean(src && src.trim() && !broken)
-
-  return (
-    <span className={cx('link-avatar', large && 'link-avatar--lg')} aria-hidden="true">
-      {showImage ? <img src={src ?? ''} alt="" loading="lazy" onError={() => setBroken(true)} /> : initialOf(name)}
-    </span>
-  )
 }
 
 /* ================================================================ 友链卡片 */
@@ -251,7 +235,7 @@ export function FriendLinksPage() {
     })
 
     if (result.ok) {
-      toast.success('申请已提交，审核通过后会出现在上面的列表里')
+      toast.success('申请成功，通过后将会通过邮件告知')
       setForm(EMPTY_FORM)
       setErrors({})
       setWizardOpen(false)

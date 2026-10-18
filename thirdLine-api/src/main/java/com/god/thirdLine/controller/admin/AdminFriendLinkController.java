@@ -69,7 +69,9 @@ public class AdminFriendLinkController {
     }
 
     /**
-     * 审核友链：1通过 / 2拒绝（拒绝需填原因）
+     * 审核友链：1通过 / 2拒绝（拒绝需填原因）。
+     * 通过或拒绝时，若为访客申请且申请人填了邮箱，后端会异步发送对应通知；
+     * 拒绝通知会带上本次填写的拒绝原因。
      */
     @PutMapping("/{id}/audit")
     public Result<Void> audit(@PathVariable Long id, @RequestBody FriendLinkAuditDTO dto) {

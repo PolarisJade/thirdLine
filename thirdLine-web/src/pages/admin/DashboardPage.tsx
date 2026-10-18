@@ -219,6 +219,10 @@ export function DashboardPage() {
             <Icon name="music" size={15} />
             上传音乐
           </Link>
+          <Link to="/admin/friend-links" className="btn btn--glass btn--sm">
+            <Icon name="link" size={15} />
+            友链管理
+          </Link>
           <Link to="/admin/categories" className="btn btn--glass btn--sm">
             <Icon name="folder" size={15} />
             管理分类
