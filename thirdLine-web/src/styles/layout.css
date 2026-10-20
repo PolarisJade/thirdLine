@@ -24,7 +24,7 @@
 
 .page {
   flex: 1;
-  /* 底部留出悬浮播放器 / 弹幕输入框的高度，避免遮住最后一屏内容 */
+  /* 底部留出悬浮播放器的高度，避免遮住最后一屏内容 */
   padding: var(--space-7) 0 calc(var(--space-8) + var(--floating-clearance));
 }
 

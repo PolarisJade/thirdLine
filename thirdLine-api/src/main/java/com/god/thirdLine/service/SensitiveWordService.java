@@ -18,7 +18,7 @@ public class SensitiveWordService {
 
     public SensitiveWordService() {
         this.wordBs = SensitiveWordBs.newInstance()
-                // 忽略大小写与全半角，减少绕过；关闭数字/邮箱等强校验以免误伤正常弹幕
+                // 忽略大小写与全半角，减少绕过；关闭数字/邮箱等强校验以免误伤正常内容
                 .ignoreCase(true)
                 .ignoreWidth(true)
                 .ignoreNumStyle(true)

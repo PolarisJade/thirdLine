@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { RouteFallback } from '@/components/RouteFallback'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { useAuth } from '@/contexts/AuthContext'
-import { danmakuApi, friendLinkApi } from '@/api'
+import { friendLinkApi } from '@/api'
 import { cx } from '@/utils/format'
 import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
 
@@ -16,7 +16,7 @@ interface NavItem {
   icon: IconName
   end?: boolean
   /** 有内容需要处理的角标来源 */
-  badge?: 'reports' | 'links'
+  badge?: 'links'
 }
 
 const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
@@ -39,9 +39,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   {
     title: '互动',
     items: [
-      { to: '/admin/danmaku', label: '弹幕管理', icon: 'message' },
       { to: '/admin/friend-links', label: '友链管理', icon: 'link', badge: 'links' },
-      { to: '/admin/reports', label: '举报处理', icon: 'flag', badge: 'reports' },
     ],
   },
   {
@@ -58,20 +56,11 @@ export function AdminLayout() {
   const { user, logout } = useAuth()
   const { pathname } = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pendingReports, setPendingReports] = useState(0)
   const [pendingLinks, setPendingLinks] = useState(0)
 
-  // 拉取待处理数量作为侧边栏角标：待处理举报 + 待审核友链
+  // 拉取待处理数量作为侧边栏角标：待审核友链
   useEffect(() => {
     let cancelled = false
-
-    // 角标非关键功能，失败一律静默
-    danmakuApi
-      .reportPage(0, 1, 1)
-      .then((result) => {
-        if (!cancelled) setPendingReports(result.total)
-      })
-      .catch(() => {})
 
     friendLinkApi
       .adminPage({ auditStatus: 0, page: 1, size: 1 })
@@ -95,7 +84,7 @@ export function AdminLayout() {
   )?.label
 
   /** 角标类型 -> 待处理数量 */
-  const badgeCounts = { reports: pendingReports, links: pendingLinks }
+  const badgeCounts = { links: pendingLinks }
 
   return (
     <div className="admin-shell">

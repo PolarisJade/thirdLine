@@ -44,6 +44,12 @@ public class FriendLinkController {
         return Result.success(friendLinkService.listVisibleLinks());
     }
 
+    /** 查询访客友链申请开关，供前台决定是否展示申请入口。 */
+    @GetMapping("/apply-enabled")
+    public Result<Boolean> applyEnabled() {
+        return Result.success(friendLinkService.isApplyEnabled());
+    }
+
     /**
      * 提交友链申请，落库后进入待审核队列
      */

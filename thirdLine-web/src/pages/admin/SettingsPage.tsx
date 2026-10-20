@@ -134,7 +134,7 @@ export function SettingsPage() {
           </div>
 
           <div className="stack" style={{ gap: 'var(--space-4)' }}>
-            <Field label="昵称" hint="会显示在文章作者、弹幕、页脚等处">
+            <Field label="昵称" hint="会显示在文章作者、页脚等处">
               <Input
                 icon="heart"
                 value={nickname}

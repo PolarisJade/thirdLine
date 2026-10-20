@@ -199,11 +199,13 @@ export function SwitchRow({
   desc,
   checked,
   onChange,
+  disabled,
 }: {
   label: string
   desc?: string
   checked: boolean
   onChange: (checked: boolean) => void
+  disabled?: boolean
 }) {
   return (
     <div className="switch-row">
@@ -211,7 +213,7 @@ export function SwitchRow({
         <span className="switch-row__label">{label}</span>
         {desc && <span className="switch-row__desc">{desc}</span>}
       </div>
-      <Switch checked={checked} onChange={onChange} label={label} />
+      <Switch checked={checked} onChange={onChange} label={label} disabled={disabled} />
     </div>
   )
 }

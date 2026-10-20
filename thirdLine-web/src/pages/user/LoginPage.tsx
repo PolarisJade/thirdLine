@@ -6,7 +6,7 @@ import { HERO_IMAGE } from '@/utils/placeholder'
 const HIGHLIGHTS = [
   { icon: 'article' as const, text: '写下踩过的坑，让下次少走弯路' },
   { icon: 'grid' as const, text: '收藏做过的作品，看得见成长' },
-  { icon: 'message' as const, text: '发一条弹幕，留下此刻的想法' },
+  { icon: 'message' as const, text: '与这里的内容产生互动' },
 ]
 
 /**
@@ -41,7 +41,7 @@ export function LoginPage() {
 
           <p className="auth-aside__desc">
             这里放着我的技术笔记、做过的项目，还有一些不想忘记的瞬间。
-            登录后可以发弹幕、管理自己的资料。
+            登录后可以管理自己的资料。
           </p>
 
           <div className="auth-aside__points">

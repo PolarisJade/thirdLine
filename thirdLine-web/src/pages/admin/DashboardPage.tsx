@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom'
-import { articleApi, danmakuApi, photoApi, portfolioApi, musicApi, siteApi } from '@/api'
+import { articleApi, photoApi, portfolioApi, musicApi, siteApi } from '@/api'
 import { useAsync } from '@/hooks/useAsync'
 import { Glass } from '@/components/Glass'
 import { Icon, type IconName } from '@/components/Icon'
-import { Badge } from '@/components/Form'
 import { EmptyState, TableSkeleton } from '@/components/Feedback'
 import { formatNumber, formatRelative, resolveSummary } from '@/utils/format'
 import { articleCover, withFallback } from '@/utils/placeholder'
@@ -26,8 +25,6 @@ export function DashboardPage() {
   const portfolios = useAsync(() => portfolioApi.adminPage({ size: 1 }), [])
   const photos = useAsync(() => photoApi.adminPage({ size: 1 }), [])
   const musics = useAsync(() => musicApi.adminPage({ size: 1 }), [])
-  const danmaku = useAsync(() => danmakuApi.adminPage({ size: 1 }), [])
-  const reports = useAsync(() => danmakuApi.reportPage(0, 1, 5), [])
 
   const cards: StatCard[] = [
     { label: '已发布文章', value: stats.data?.articleCount ?? 0, icon: 'article', to: '/admin/articles' },
@@ -36,17 +33,7 @@ export function DashboardPage() {
     { label: '相册照片', value: photos.data?.total ?? 0, icon: 'image', tone: 'ok', to: '/admin/photos' },
     { label: '作品集', value: portfolios.data?.total ?? 0, icon: 'grid', tone: 'ok', to: '/admin/portfolio' },
     { label: '音乐', value: musics.data?.total ?? 0, icon: 'music', tone: 'alt', to: '/admin/music' },
-    { label: '弹幕总数', value: danmaku.data?.total ?? 0, icon: 'message', to: '/admin/danmaku' },
-    {
-      label: '待处理举报',
-      value: reports.data?.total ?? 0,
-      icon: 'flag',
-      tone: (reports.data?.total ?? 0) > 0 ? 'warn' : 'ok',
-      to: '/admin/reports',
-    },
   ]
-
-  const pendingReports = reports.data?.total ?? 0
 
   return (
     <div className="stack" style={{ gap: 'var(--space-5)' }}>
@@ -152,48 +139,6 @@ export function DashboardPage() {
           )}
         </Glass>
 
-        {/* ------------------------------------------------------ 待处理举报 */}
-        <Glass className="dash-panel" variant="strong" style={{ padding: 'var(--space-5)' }}>
-          <div className="row" style={{ marginBottom: 'var(--space-4)' }}>
-            <h2 className="dash-panel__title" style={{ margin: 0 }}>
-              <Icon name="flag" size={17} />
-              待处理举报
-            </h2>
-            <span className="grow" />
-            {pendingReports > 0 && <Badge tone="danger">{pendingReports} 条待处理</Badge>}
-          </div>
-
-          {reports.loading ? (
-            <TableSkeleton rows={3} columns={2} />
-          ) : (reports.data?.records.length ?? 0) === 0 ? (
-            <EmptyState icon="check" title="没有待处理举报" desc="社区氛围良好，继续保持。" />
-          ) : (
-            <div className="dash-list">
-              {reports.data?.records.map((report) => (
-                <div className="dash-list__item" key={report.id} style={{ alignItems: 'flex-start' }}>
-                  <span className="dash-list__index">
-                    <Icon name="flag" size={11} />
-                  </span>
-                  <div className="dash-list__body">
-                    <div className="dash-list__title">“{report.danmakuContent || '内容已删除'}”</div>
-                    <div className="dash-list__meta">
-                      理由：{report.reason || '未填写'} · 举报人 {report.reporterNickname || '匿名'} ·{' '}
-                      {formatRelative(report.createTime)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Link
-                to="/admin/reports"
-                className="btn btn--glass btn--sm"
-                style={{ marginTop: 'var(--space-4)', justifyContent: 'center' }}
-              >
-                去处理举报
-                <Icon name="arrowRight" size={14} />
-              </Link>
-            </div>
-          )}
-        </Glass>
       </div>
 
       {/* -------------------------------------------------------- 快捷入口 */}

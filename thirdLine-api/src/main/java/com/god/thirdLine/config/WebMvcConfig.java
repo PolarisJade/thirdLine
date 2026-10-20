@@ -25,9 +25,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 仅拦截后台管理命名空间；前台公开接口 /user/** 不注册拦截器，天然放行
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/admin/**");
-        // 前台需登录才能访问的接口：发送/举报弹幕，以及登录态校验
+        // 前台需登录才能访问的接口：登录态校验
         registry.addInterceptor(userJwtInterceptor)
-                .addPathPatterns("/user/danmaku/send", "/user/danmaku/report", "/user/user/info");
+                .addPathPatterns("/user/user/info");
     }
 
     @Override

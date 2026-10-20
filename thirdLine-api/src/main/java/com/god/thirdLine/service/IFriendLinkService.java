@@ -29,6 +29,9 @@ public interface IFriendLinkService extends IService<FriendLink> {
      */
     List<FriendLinkVO> listVisibleLinks();
 
+    /** 查询访客友链申请开关。 */
+    boolean isApplyEnabled();
+
     /**
      * 访客提交友链申请，落库后为待审核状态
      *

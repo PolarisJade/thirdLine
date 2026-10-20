@@ -7,7 +7,6 @@ import { Button } from '@/components/Button'
 import { ArticleCard } from '@/components/ArticleCard'
 import { WorkMiniCard } from '@/components/WorkCard'
 import { ArticleCardSkeleton, EmptyState, SectionHead } from '@/components/Feedback'
-import { DanmakuStage } from '@/components/Danmaku'
 import { Avatar } from '@/components/Form'
 import { daysSince, formatDate, formatNumber } from '@/utils/format'
 import { HERO_IMAGE, avatarPlaceholder, photoPlaceholder, withFallback } from '@/utils/placeholder'
@@ -36,9 +35,6 @@ export function HomePage() {
             <img src={HERO_IMAGE} alt="" aria-hidden="true" />
           </div>
 
-          {/* 弹幕层：放在 Hero 内部（Hero 为 position: relative + overflow: hidden），
-              弹幕只在首屏大图区域飘过，不会盖住顶部导航，也不会干扰下方内容 */}
-          <DanmakuStage />
         </div>
 
         {/* ------------------------------------------------------- 统计条 */}

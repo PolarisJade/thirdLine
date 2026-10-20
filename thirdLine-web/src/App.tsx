@@ -42,12 +42,6 @@ const PortfolioManagePage = lazy(() =>
   import('./pages/admin/PortfolioManagePage').then((m) => ({ default: m.PortfolioManagePage })),
 )
 const MusicManagePage = lazy(() => import('./pages/admin/MusicManagePage').then((m) => ({ default: m.MusicManagePage })))
-const DanmakuManagePage = lazy(() =>
-  import('./pages/admin/DanmakuManagePage').then((m) => ({ default: m.DanmakuManagePage })),
-)
-const ReportManagePage = lazy(() =>
-  import('./pages/admin/ReportManagePage').then((m) => ({ default: m.ReportManagePage })),
-)
 const FriendLinkManagePage = lazy(() =>
   import('./pages/admin/FriendLinkManagePage').then((m) => ({ default: m.FriendLinkManagePage })),
 )
@@ -115,8 +109,6 @@ export function App() {
         <Route path="photos" element={<PhotoManagePage />} />
         <Route path="portfolio" element={<PortfolioManagePage />} />
         <Route path="music" element={<MusicManagePage />} />
-        <Route path="danmaku" element={<DanmakuManagePage />} />
-        <Route path="reports" element={<ReportManagePage />} />
         <Route path="friend-links" element={<FriendLinkManagePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage admin />} />

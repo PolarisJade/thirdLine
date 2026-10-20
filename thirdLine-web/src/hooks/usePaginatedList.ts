@@ -19,7 +19,7 @@ export interface PaginatedList<T> {
 }
 
 /**
- * 标准分页列表 hook，对应后端 PageResult（相册 / 作品 / 音乐 / 弹幕 / 举报）。
+ * 标准分页列表 hook，对应后端 PageResult（相册 / 作品 / 音乐等）。
  * 后端页码从 1 开始。
  */
 export function usePaginatedList<T>(

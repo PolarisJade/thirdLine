@@ -7,13 +7,7 @@ import com.god.thirdLine.service.ISiteConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * <p>
- * 站点配置 服务实现类
- * </p>
- *
- * @author ParlisJade
- */
+/** 站点配置服务实现。 */
 @Service
 @RequiredArgsConstructor
 public class SiteConfigServiceImpl implements ISiteConfigService {
@@ -24,31 +18,24 @@ public class SiteConfigServiceImpl implements ISiteConfigService {
     private final SiteConfigMapper siteConfigMapper;
 
     @Override
-    public boolean isDanmakuEnabled() {
-        SiteConfig config = getByKey(SiteConfig.KEY_DANMAKU_ENABLED);
-        // 配置缺失时默认开启，保证未初始化环境也可用
-        if (config == null || config.getConfigValue() == null) {
-            return true;
-        }
-        return VALUE_ON.equals(config.getConfigValue());
+    public boolean isFriendLinkApplyEnabled() {
+        SiteConfig config = getByKey(SiteConfig.KEY_FRIEND_LINK_APPLY_ENABLED);
+        return config == null || config.getConfigValue() == null || VALUE_ON.equals(config.getConfigValue());
     }
 
     @Override
-    public void setDanmakuEnabled(boolean enabled) {
+    public void setFriendLinkApplyEnabled(boolean enabled) {
         String value = enabled ? VALUE_ON : VALUE_OFF;
-        SiteConfig config = getByKey(SiteConfig.KEY_DANMAKU_ENABLED);
+        SiteConfig config = getByKey(SiteConfig.KEY_FRIEND_LINK_APPLY_ENABLED);
         if (config == null) {
-            SiteConfig entity = new SiteConfig()
-                    .setConfigKey(SiteConfig.KEY_DANMAKU_ENABLED)
+            siteConfigMapper.insert(new SiteConfig()
+                    .setConfigKey(SiteConfig.KEY_FRIEND_LINK_APPLY_ENABLED)
                     .setConfigValue(value)
-                    .setDescription("弹幕全局开关：1开启/0关闭，关闭后前台不再展示弹幕且禁止发送");
-            // createTime / updateTime 由 MetaObjectHandler 自动填充
-            siteConfigMapper.insert(entity);
-        } else {
-            // updateTime 由 MetaObjectHandler 自动刷新
-            config.setConfigValue(value);
-            siteConfigMapper.updateById(config);
+                    .setDescription("访客友链申请开关：1开启/0关闭，关闭后前台不展示申请入口且接口拒绝申请"));
+            return;
         }
+        config.setConfigValue(value);
+        siteConfigMapper.updateById(config);
     }
 
     private SiteConfig getByKey(String key) {

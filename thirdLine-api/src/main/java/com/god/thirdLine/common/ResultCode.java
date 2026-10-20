@@ -59,25 +59,10 @@ public enum ResultCode {
     TECH_STACK_IN_USE(6102, "技术栈已关联作品，无法删除"),
     TECH_STACK_NAME_DUPLICATE(6103, "技术栈名称已存在"),
 
-    /* 弹幕模块 7xxx */
-    DANMAKU_CONTENT_EMPTY(7001, "弹幕内容不能为空"),
-    DANMAKU_CONTENT_TOO_LONG(7002, "弹幕内容不能超过 100 个字符"),
-    DANMAKU_SENSITIVE(7003, "弹幕含有敏感词，请修改后再发送"),
-    DANMAKU_SEND_TOO_FREQUENT(7004, "发送过于频繁，请稍后再试"),
-    DANMAKU_DISABLED(7005, "弹幕功能已关闭"),
-    DANMAKU_NOT_FOUND(7006, "弹幕不存在或已被删除"),
-    DANMAKU_REPORT_DUPLICATE(7007, "您已举报过该条弹幕"),
-    DANMAKU_REPORT_NOT_FOUND(7008, "举报记录不存在"),
-    DANMAKU_REPORT_SELF(7009, "不能举报自己发送的弹幕"),
-
     /* 音乐模块 8xxx */
     MUSIC_NOT_FOUND(8001, "音乐不存在"),
     MUSIC_TITLE_REQUIRED(8002, "歌曲名不能为空"),
     MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空"),
-
-    /* 人物对话模块 9xxx */
-    CHAT_MESSAGE_EMPTY(9001, "说点什么再发送吧"),
-    CHAT_MESSAGE_TOO_LONG(9002, "消息太长了，请说得短一点"),
 
     /* 友链模块 10xxx */
     FRIEND_LINK_NOT_FOUND(10001, "友链不存在"),
@@ -87,7 +72,8 @@ public enum ResultCode {
     FRIEND_LINK_URL_DUPLICATE(10005, "该站点地址已提交过，请勿重复申请"),
     FRIEND_LINK_SENSITIVE(10006, "内容含有敏感词，请修改后再提交"),
     FRIEND_LINK_AUDIT_STATUS_INVALID(10007, "审核结果只能是已通过或已拒绝"),
-    FRIEND_LINK_REJECT_REASON_REQUIRED(10008, "拒绝时请填写拒绝原因");
+    FRIEND_LINK_REJECT_REASON_REQUIRED(10008, "拒绝时请填写拒绝原因"),
+    FRIEND_LINK_APPLY_DISABLED(10009, "当前暂未开放友链申请");
 
     private final Integer code;
     private final String message;

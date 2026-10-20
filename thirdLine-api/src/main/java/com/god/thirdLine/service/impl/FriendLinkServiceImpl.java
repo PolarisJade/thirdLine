@@ -16,6 +16,7 @@ import com.god.thirdLine.domain.vo.FriendLinkVO;
 import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.FriendLinkMapper;
 import com.god.thirdLine.service.IFriendLinkService;
+import com.god.thirdLine.service.ISiteConfigService;
 import com.god.thirdLine.service.MailService;
 import com.god.thirdLine.service.SensitiveWordService;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,7 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
 
     private final SensitiveWordService sensitiveWordService;
     private final MailService mailService;
+    private final ISiteConfigService siteConfigService;
 
     @Override
     public List<FriendLinkVO> listVisibleLinks() {
@@ -81,7 +83,15 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
     }
 
     @Override
+    public boolean isApplyEnabled() {
+        return siteConfigService.isFriendLinkApplyEnabled();
+    }
+
+    @Override
     public void apply(FriendLinkApplyDTO dto, Long applyUserId) {
+        if (!siteConfigService.isFriendLinkApplyEnabled()) {
+            throw new BusinessException(ResultCode.FRIEND_LINK_APPLY_DISABLED);
+        }
         if (dto == null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "申请内容不能为空");
         }
@@ -369,7 +379,7 @@ public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendL
     }
 
     /**
-     * 站点名称与描述属于对外展示的 UGC 内容，复用弹幕那套敏感词词库
+     * 站点名称与描述属于对外展示的 UGC 内容，复用敏感词词库
      */
     private void checkSensitive(String name, String description) {
         if (sensitiveWordService.contains(name) || sensitiveWordService.contains(description)) {

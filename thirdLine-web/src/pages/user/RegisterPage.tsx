@@ -4,7 +4,7 @@ import { Icon } from '@/components/Icon'
 import { HERO_IMAGE } from '@/utils/placeholder'
 
 const HIGHLIGHTS = [
-  { icon: 'message' as const, text: '登录后可以发弹幕、参与互动' },
+  { icon: 'message' as const, text: '登录后可以参与互动' },
   { icon: 'user' as const, text: '维护自己的头像与昵称' },
   { icon: 'zap' as const, text: '注册即自动登录，无需二次填写' },
 ]

@@ -68,14 +68,8 @@
   --header-height: 68px;
   --content-width: 1200px;
   --sidebar-width: 236px;
-  /* 底部悬浮组件（音乐播放器 / 弹幕输入框）预留空间，避免遮住正文 */
+  /* 底部悬浮播放器预留空间，避免遮住正文 */
   --floating-clearance: 108px;
-  /* 弹幕第一条轨道距容器顶部的距离 */
-  --danmaku-top: 20px;
-  /* 弹幕横向扫过的基准距离（容器内模式下约等于 Hero 宽度） */
-  --danmaku-travel: 1160px;
-  /* 弹幕发送框占用的高度，用于 Hero 底部留白 */
-  --danmaku-sender-space: 60px;
 
   --font-sans: 'Inter', 'HarmonyOS Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
     system-ui, -apple-system, 'Segoe UI', sans-serif;

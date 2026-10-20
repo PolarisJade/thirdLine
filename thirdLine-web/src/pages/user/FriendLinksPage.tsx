@@ -123,6 +123,7 @@ function FriendCard({ link }: { link: FriendLinkVO }) {
 export function FriendLinksPage() {
   const toast = useToast()
   const { data, loading, error, reload } = useAsync(() => friendLinkApi.list(), [])
+  const { data: applyEnabled } = useAsync(() => friendLinkApi.applyEnabled(), [])
   const { data: profile } = useAsync(() => siteApi.profile(), [])
   const { pending, run } = useSubmit()
 
@@ -439,9 +440,11 @@ export function FriendLinksPage() {
             {loading ? '正在把朋友们的站点搬过来…' : `共 ${links.length} 位朋友 · 交换链接，也交换各自看世界的方式`}
           </p>
         </div>
-        <Button type="button" variant="primary" icon="plus" onClick={openWizard}>
-          申请友链
-        </Button>
+        {applyEnabled !== false && (
+          <Button type="button" variant="primary" icon="plus" onClick={openWizard}>
+            申请友链
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -465,7 +468,11 @@ export function FriendLinksPage() {
         </Glass>
       ) : links.length === 0 ? (
         <Glass className="friend-panel">
-          <EmptyState icon="link" title="还没有添加友链" desc="点页面上的「申请友链」，成为第一个留在这里的人。" />
+          <EmptyState
+            icon="link"
+            title="还没有添加友链"
+            desc={applyEnabled === false ? '当前暂未开放友链申请。' : '点页面上的「申请友链」，成为第一个留在这里的人。'}
+          />
         </Glass>
       ) : (
         <div className="grid-cards">

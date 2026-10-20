@@ -166,7 +166,7 @@ export function ProfilePage() {
               <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 'var(--space-5)' }}>基本资料</h2>
 
               <div className="form-grid">
-                <Field label="昵称" hint="展示在文章作者、弹幕等位置">
+                <Field label="昵称" hint="展示在文章作者等位置">
                   <Input
                     icon="heart"
                     value={nickname}

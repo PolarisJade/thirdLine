@@ -16,10 +16,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /**
  * 前台用户登录拦截器。
  * <p>
- * 仅注册在需要登录的前台写接口上（如发送 / 举报弹幕）：只要求携带有效 token
+ * 仅注册在需要登录的前台写接口上：只要求携带有效 token
  * 并解析出 userId，<b>不校验管理员角色</b>，普通注册用户同样放行；
  * 与只拦 {@code /admin/**} 的 {@link JwtInterceptor} 区别在于此。
- * 浏览弹幕池等读接口不进入本拦截器，保持匿名可访问。
+ * 公开读接口不进入本拦截器，保持匿名可访问。
  *
  * @author ParlisJade
  */

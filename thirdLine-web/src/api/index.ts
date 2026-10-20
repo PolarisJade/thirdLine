@@ -7,14 +7,7 @@ import type {
   ArticleVO,
   CategoryDTO,
   CategoryVO,
-  ChatReplyVO,
   CursorPage,
-  DanmakuPoolVO,
-  DanmakuQuery,
-  DanmakuReportDTO,
-  DanmakuReportVO,
-  DanmakuSendDTO,
-  DanmakuVO,
   FriendLinkAdminVO,
   FriendLinkApplyDTO,
   FriendLinkAuditDTO,
@@ -219,47 +212,14 @@ export const musicApi = {
   remove: (id: number) => api.delete<void>(`/admin/music/${id}`),
 }
 
-/* ================================================================== 弹幕 */
-
-export const danmakuApi = {
-  /** 弹幕池（GET /user/danmaku/pool），返回全局开关 + 可见弹幕，匿名可访问 */
-  pool: (limit = 50) => api.get<DanmakuPoolVO>('/user/danmaku/pool', { limit }),
-
-  /** 发送弹幕（POST /user/danmaku/send），需登录，后端 5 秒限频 */
-  send: (dto: DanmakuSendDTO) => api.post<DanmakuVO>('/user/danmaku/send', dto),
-
-  /** 举报弹幕（POST /user/danmaku/report），需登录，同一弹幕不可重复举报 */
-  report: (dto: DanmakuReportDTO) => api.post<void>('/user/danmaku/report', dto),
-
-  /** 后台弹幕分页（GET /admin/danmaku/page） */
-  adminPage: (query: DanmakuQuery) => api.get<PageResult<DanmakuVO>>('/admin/danmaku/page', query),
-
-  /** 切换弹幕显隐（PUT /admin/danmaku/{id}/status?status=0|1） */
-  updateStatus: (id: number, status: number) =>
-    api.put<void>(`/admin/danmaku/${id}/status`, undefined, { status }),
-
-  /** 删除弹幕（DELETE /admin/danmaku/{id}） */
-  remove: (id: number) => api.delete<void>(`/admin/danmaku/${id}`),
-
-  /** 举报记录分页（GET /admin/danmaku/report/page） */
-  reportPage: (status: number | undefined, page = 1, size = 12) =>
-    api.get<PageResult<DanmakuReportVO>>('/admin/danmaku/report/page', { status, page, size }),
-
-  /** 标记举报已处理（PUT /admin/danmaku/report/{id}/handle） */
-  handleReport: (id: number) => api.put<void>(`/admin/danmaku/report/${id}/handle`),
-
-  /** 查询弹幕全局开关（GET /admin/danmaku/switch） */
-  getSwitch: () => api.get<boolean>('/admin/danmaku/switch'),
-
-  /** 设置弹幕全局开关（PUT /admin/danmaku/switch?enabled=） */
-  setSwitch: (enabled: boolean) => api.put<void>('/admin/danmaku/switch', undefined, { enabled }),
-}
-
 /* ================================================================== 友链 */
 
 export const friendLinkApi = {
   /** 前台可见友链（GET /user/friend-link/list），审核通过且未被隐藏的才返回 */
   list: () => api.get<FriendLinkVO[]>('/user/friend-link/list'),
+
+  /** 前台申请入口开关（GET /user/friend-link/apply-enabled） */
+  applyEnabled: () => api.get<boolean>('/user/friend-link/apply-enabled'),
 
   /**
    * 提交友链申请（POST /user/friend-link/apply）。
@@ -289,6 +249,12 @@ export const friendLinkApi = {
 
   /** 删除友链（DELETE /admin/friend-link/{id}） */
   remove: (id: number) => api.delete<void>(`/admin/friend-link/${id}`),
+
+  /** 查询后台友链申请开关 */
+  getApplySwitch: () => api.get<boolean>('/admin/friend-link/apply-switch'),
+
+  /** 设置后台友链申请开关 */
+  setApplySwitch: (enabled: boolean) => api.put<void>('/admin/friend-link/apply-switch', undefined, { enabled }),
 }
 
 /* ================================================================== 站点 */
@@ -323,18 +289,6 @@ export const fileApi = {
     form.append('module', module)
     return api.upload<string>('/admin/file/upload-audio', form)
   },
-}
-
-/* ============================================================ 页面人物对话 */
-
-export const chatApi = {
-  /**
-   * 和页面人物说一句话（POST /user/chat），免登录、单轮无记忆
-   *
-   * 超时单独放宽到 35s：后端 tl.chat.timeout-ms 是 30s，用默认的 20s 会在后端拿到回复之前就断掉，
-   * 用户看到的是「网络异常」而不是人物回话
-   */
-  chat: (message: string) => api.post<ChatReplyVO>('/user/chat', { message }, { timeout: 35000 }),
 }
 
 export * from './types'

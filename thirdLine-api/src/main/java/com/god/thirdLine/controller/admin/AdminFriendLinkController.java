@@ -7,6 +7,7 @@ import com.god.thirdLine.domain.dto.FriendLinkDTO;
 import com.god.thirdLine.domain.query.FriendLinkQuery;
 import com.god.thirdLine.domain.vo.FriendLinkAdminVO;
 import com.god.thirdLine.service.IFriendLinkService;
+import com.god.thirdLine.service.ISiteConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminFriendLinkController {
 
     private final IFriendLinkService friendLinkService;
+    private final ISiteConfigService siteConfigService;
+
+    /** 查询访客友链申请开关。 */
+    @GetMapping("/apply-switch")
+    public Result<Boolean> applySwitch() {
+        return Result.success(siteConfigService.isFriendLinkApplyEnabled());
+    }
+
+    /** 设置访客友链申请开关。 */
+    @PutMapping("/apply-switch")
+    public Result<Void> updateApplySwitch(@RequestParam("enabled") boolean enabled) {
+        siteConfigService.setFriendLinkApplyEnabled(enabled);
+        return Result.success();
+    }
 
     /**
      * 分页查询友链（可按审核状态 / 显示状态 / 来源 / 关键词过滤，待审核排最前）

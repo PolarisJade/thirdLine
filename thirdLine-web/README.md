@@ -57,10 +57,9 @@ src/
 │  ├─ RichEditor.tsx    #   wangEditor 5 封装（管理端写文章用）
 │  ├─ ImageUpload.tsx   #   图片 / 音频上传（对接 OSS 接口）
 │  ├─ MusicPlayer.tsx   #   全局悬浮音乐播放器
-│  ├─ Danmaku.tsx       #   弹幕层 + 发送 + 举报
 │  └─ ArticleCard / WorkCard
 ├─ contexts/            # AuthProvider（登录态）、ThemeProvider（明暗主题）
-├─ hooks/               # useAsync / usePaginatedList / useDebounced / useDanmaku
+├─ hooks/               # useAsync / usePaginatedList / useDebounced
 ├─ layouts/             # UserLayout（前台）、AdminLayout（后台）、页头页脚
 ├─ pages/
 │  ├─ user/             # 用户端页面
@@ -99,8 +98,6 @@ src/
 | 相册 | `GET /user/photo/list`、`/admin/photo` 全套 | 前台瀑布流与灯箱、后台管理 |
 | 作品集 | `GET /user/portfolio/list`、`/admin/portfolio` 全套 | 前台作品展示、后台管理；技术栈由 `tl_portfolio_tech_stack` 关联 `tl_tech_stack` 装配，请求/响应字段为 `techStackIds` / `techStacks` |
 | 音乐 | `GET /user/music/list`、`/admin/music` 全套 | 悬浮播放器与音乐页、后台管理 |
-| 弹幕 | `GET /user/danmaku/pool`、`POST /user/danmaku/send`、`POST /user/danmaku/report` | 首页弹幕层 |
-| 弹幕 | `/admin/danmaku/**`（含 `switch` 全局开关、举报列表与处理） | 后台弹幕与举报管理 |
 | 用户 | `POST /user/user/login`、`/register`、`EMAIL /email/code`、`GET /user/user/info` | 登录注册与登录态校验 |
 | 用户 | `PUT /admin/user/info`、`PUT /admin/user/password` | 个人中心 / 账号设置 |
 | 上传 | `POST /admin/file/upload`、`/admin/file/upload-audio` | 图片与音频上传（阿里云 OSS） |
@@ -164,7 +161,7 @@ src/
 
 | 路径 | 页面 | 主要接口 |
 | --- | --- | --- |
-| `/` | 首页：Hero、站点统计、最新文章、作品缩略、生活碎片、关于 + 弹幕层 | site stats/profile、article、portfolio、photo、danmaku |
+| `/` | 首页：Hero、站点统计、最新文章、作品缩略、生活碎片、关于 | site stats/profile、article、portfolio、photo |
 | `/articles` | 文章列表：关键词 / 分类 / 标签筛选 + 加载更多 | `/user/article/page` |
 | `/articles/:id` | 文章详情：富文本正文、自动目录、阅读时长、相关阅读 | `/user/article/{id}` |
 | `/portfolio` | 作品集：技术栈本地筛选（选项来自各作品的 `techStacks`） | `/user/portfolio/list` |
@@ -179,7 +176,7 @@ src/
 | 路径 | 页面 |
 | --- | --- |
 | `/admin/login` | 管理员登录（校验 `role === 0`） |
-| `/admin` | 数据看板：8 项统计卡、最近文章、待处理举报、快捷入口 |
+| `/admin` | 数据看板：6 项统计卡、最近文章、快捷入口 |
 | `/admin/articles` | 文章管理：状态/分类/标签筛选、发布↔草稿、删除 |
 | `/admin/articles/new`、`/admin/articles/:id/edit` | **富文本编辑器**（wangEditor 5）+ 摘要 / 封面 / 分类 / 标签 / 置顶 / 原创 |
 | `/admin/categories` | 分类管理（名称、排序、删除保护） |
@@ -188,8 +185,6 @@ src/
 | `/admin/photos` | 相册管理（上传、尺寸与大小回填、显隐、排序） |
 | `/admin/portfolio` | 作品集管理（**多选技术栈字典**、角色、周期、演示与仓库链接） |
 | `/admin/music` | 音乐管理（音频上传 + 试听 + 上架/下架） |
-| `/admin/danmaku` | 弹幕管理（全局开关、单条显隐、删除） |
-| `/admin/reports` | 举报处理（待处理/已处理、标记处理完成） |
 | `/admin/settings` | 账号设置（资料、密码） |
 
 ---
@@ -248,7 +243,7 @@ server {
 - 分页有两套并存：**前台文章流**走后端游标分页（`ArticleQuery` + `GET /user/article/page`），
   因此前台文章列表是「加载更多」而不是页码；**管理端文章表格**改用标准分页
   （`GET /admin/article/page-list`，返回 `total`，页码组件），
-  管理端的相册 / 作品 / 音乐 / 弹幕 / 举报同样是标准分页。
+  管理端的相册 / 作品 / 音乐同样是标准分页。
   后端原有的游标接口 `GET /admin/article/page` 保持不动（仪表盘「最新文章」仍在使用）。
   分页条（`components/Feedback.tsx` 的 `Pagination`）在只有一页时也保留，并显示「第 X / Y 页 · 共 N 条」；
   管理端列表右侧还有「每页 N 条」选择器（默认 10 / 20 / 50，`usePaginatedList` 的 `setSize` 会自动回到第 1 页）。
@@ -258,7 +253,6 @@ server {
   写入走 `PortfolioDTO.techStackIds`（修改时不传表示不动关系，传 `[]` 表示清空）；
   前台 `/portfolio` 的筛选与卡片、后台作品表单的多选 chips 都改从这两张表取值。
   数据迁移见 `thirdLine-api/sql/20261012_portfolio_tech_stack_migration.sql`。
-- 弹幕层只在**首页**挂载，且被约束在首屏 Hero 卡片内部（`--danmaku-top` / `--danmaku-travel` 控制轨道与扫过距离），
   不会遮挡顶部导航，也不会干扰下方内容；发送框内联在 Hero 底部，不需要页面额外预留空白。
 - 底部悬浮音乐播放器会覆盖页面左下角，`.page` 已通过 `--floating-clearance` 预留底部空间。
 - `scripts/` 下的三个脚本只是**开发期辅助工具**，不参与构建，可随时删除：

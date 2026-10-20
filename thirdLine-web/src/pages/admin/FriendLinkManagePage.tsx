@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { friendLinkApi, type FriendLinkAdminVO, type FriendLinkDTO } from '@/api'
 import { usePaginatedList } from '@/hooks/usePaginatedList'
-import { useDebounced } from '@/hooks/useAsync'
+import { useAsync, useDebounced } from '@/hooks/useAsync'
 import { useToast } from '@/components/ToastContext'
 import { Glass } from '@/components/Glass'
 import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
-import { Badge, Field, Input, Select, Textarea } from '@/components/Form'
+import { Badge, Field, Input, Select, SwitchRow, Textarea } from '@/components/Form'
 import { LinkAvatar } from '@/components/LinkAvatar'
 import { ConfirmDialog, Modal } from '@/components/Modal'
 import { EmptyState, Pagination, TableSkeleton } from '@/components/Feedback'
@@ -55,6 +55,21 @@ const SOURCE_LABEL: Record<number, string> = {
  */
 export function FriendLinkManagePage() {
   const toast = useToast()
+  const applySwitch = useAsync(() => friendLinkApi.getApplySwitch(), [])
+  const [switchSaving, setSwitchSaving] = useState(false)
+
+  const updateApplySwitch = async (enabled: boolean) => {
+    setSwitchSaving(true)
+    try {
+      await friendLinkApi.setApplySwitch(enabled)
+      applySwitch.reload()
+      toast.success(enabled ? '已开放访客友链申请' : '已关闭访客友链申请')
+    } catch (error) {
+      toast.error(errorMessage(error))
+    } finally {
+      setSwitchSaving(false)
+    }
+  }
 
   const [keyword, setKeyword] = useState('')
   const [auditStatus, setAuditStatus] = useState<number | undefined>(undefined)
@@ -234,6 +249,20 @@ export function FriendLinkManagePage() {
           添加友链
         </Button>
       </div>
+
+      <Glass className="panel" variant="strong" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+        <SwitchRow
+          label="开放访客申请友链"
+          desc={
+            applySwitch.data === false
+              ? '已关闭：前台不展示申请按钮，接口也会拒绝新的申请。'
+              : '已开启：访客可以在前台提交友链申请。'
+          }
+          checked={applySwitch.data !== false}
+          onChange={(enabled) => void updateApplySwitch(enabled)}
+          disabled={applySwitch.loading || switchSaving}
+        />
+      </Glass>
 
       <Glass className="panel" variant="strong" style={{ padding: 'var(--space-4) var(--space-5)' }}>
         <div className="filter-bar">

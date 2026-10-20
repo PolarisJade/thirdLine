@@ -25,7 +25,7 @@ export interface CursorPage<T> {
   hasMore: boolean
 }
 
-/** 标准分页结果 PageResult<T>（相册 / 作品 / 音乐 / 弹幕使用） */
+/** 标准分页结果 PageResult<T>（相册 / 作品 / 音乐使用） */
 export interface PageResult<T> {
   records: T[]
   total: number
@@ -57,9 +57,6 @@ export const ResultCode = {
   CATEGORY_IN_USE: 2005,
 
   TAG_NAME_DUPLICATE: 3003,
-
-  DANMAKU_DISABLED: 7005,
-  DANMAKU_REPORT_DUPLICATE: 7007,
 
   FRIEND_LINK_URL_INVALID: 10004,
   FRIEND_LINK_URL_DUPLICATE: 10005,
@@ -354,61 +351,6 @@ export interface MusicDTO {
   status?: number
 }
 
-/* ------------------------------------------------------------------ 弹幕 */
-
-/** DanmakuVO */
-export interface DanmakuVO {
-  id: number
-  userId: number | null
-  nickname: string | null
-  content: string
-  color: string | null
-  /** 0 隐藏 / 1 显示 */
-  status: number | null
-  /** 仅后台列表返回 */
-  reportCount?: number | null
-  createTime: string | null
-}
-
-/** DanmakuPoolVO —— 一次拉取即可渲染弹幕池 */
-export interface DanmakuPoolVO {
-  /** 全局开关，关闭时不展示也不允许发送 */
-  enabled: boolean
-  items: DanmakuVO[]
-}
-
-/** DanmakuSendDTO —— content 最长 100 字符，后端另有 5 秒限频 */
-export interface DanmakuSendDTO {
-  content: string
-  color?: string
-}
-
-/** DanmakuReportDTO —— reason 最长 200 字符 */
-export interface DanmakuReportDTO {
-  danmakuId: number
-  reason?: string
-}
-
-/** DanmakuQuery */
-export interface DanmakuQuery {
-  page?: number
-  size?: number
-  status?: number
-}
-
-/** DanmakuReportVO */
-export interface DanmakuReportVO {
-  id: number
-  danmakuId: number
-  danmakuContent: string | null
-  danmakuNickname: string | null
-  reporterNickname: string | null
-  reason: string | null
-  /** 0 待处理 / 1 已处理 */
-  status: number | null
-  createTime: string | null
-}
-
 /* ------------------------------------------------------------------ 友链 */
 
 /**
@@ -514,14 +456,4 @@ export interface SiteProfileVO {
   github: string | null
   avatar: string | null
   startTime: string | null
-}
-
-/* ------------------------------------------------------------ 页面人物对话 */
-
-/** ChatReplyVO —— POST /user/chat 的返回，对应后端 ChatReplyVO */
-export interface ChatReplyVO {
-  /** 角色回复：纯文本一句话，直接塞进气泡 */
-  content: string
-  /** true 表示这是兜底 / 拦截台词（模型超时、报错或命中敏感词），不是实时生成的 */
-  fallback: boolean
 }
