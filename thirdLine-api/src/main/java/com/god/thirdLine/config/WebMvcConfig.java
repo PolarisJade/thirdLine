@@ -27,7 +27,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/admin/**");
         // 前台需登录才能访问的接口：登录态校验
         registry.addInterceptor(userJwtInterceptor)
-                .addPathPatterns("/user/user/info");
+                .addPathPatterns("/user/user/info")
+                // 留言墙写接口：提交 / 拖动确认 / 删除 / 举报都必须登录；
+                // 读接口（/user/wall/config、/user/wall/list）不在此列，保持匿名可访问
+                .addPathPatterns("/user/wall/note", "/user/wall/note/**");
     }
 
     @Override

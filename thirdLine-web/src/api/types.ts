@@ -61,6 +61,20 @@ export const ResultCode = {
   FRIEND_LINK_URL_INVALID: 10004,
   FRIEND_LINK_URL_DUPLICATE: 10005,
   FRIEND_LINK_SENSITIVE: 10006,
+
+  WALL_DISABLED: 11001,
+  WALL_NOTE_NOT_FOUND: 11002,
+  WALL_NOTE_CONTENT_EMPTY: 11003,
+  WALL_NOTE_CONTENT_TOO_LONG: 11004,
+  WALL_NOTE_SENSITIVE: 11005,
+  WALL_NOTE_TOO_FREQUENT: 11006,
+  WALL_NOTE_DAILY_LIMIT: 11007,
+  WALL_FULL: 11008,
+  WALL_POSITION_CONFLICT: 11009,
+  WALL_NOTE_FORBIDDEN: 11010,
+  WALL_REPORT_DUPLICATE: 11011,
+  WALL_REPORT_SELF: 11012,
+  WALL_REPORT_REASON_INVALID: 11013,
 } as const
 
 /* ------------------------------------------------------------------ 用户 */
@@ -456,4 +470,166 @@ export interface SiteProfileVO {
   github: string | null
   avatar: string | null
   startTime: string | null
+}
+
+/* ------------------------------------------------------------------ 留言墙 */
+
+/** 信纸颜色选项，对应 WallColorVO */
+export interface WallColorVO {
+  /** 落库用的 key：pink / purple / yellow / orange / green / blue */
+  key: string
+  label: string
+  /** 十六进制色值 */
+  color: string
+}
+
+/**
+ * 墙面配置 WallConfigVO。
+ * 画布 / 信纸尺寸由后端下发，前端不要写死，否则拖动预览和服务端裁决会用两套参数。
+ */
+export interface WallConfigVO {
+  enabled: boolean
+  notice: string
+  maxLength: number
+  maxNotes: number
+  canvasWidth: number
+  canvasHeight: number
+  paperWidth: number
+  paperHeight: number
+  /** 信纸之间的安全间距 */
+  gap: number
+  /** 坐标吸附粒度 */
+  grid: number
+  palette: WallColorVO[]
+}
+
+/** 前台信纸 WallNoteVO */
+export interface WallNoteVO {
+  id: number
+  content: string
+  paperColor: string
+  /** 左上角 X（逻辑画布坐标） */
+  posX: number
+  /** 左上角 Y（逻辑画布坐标） */
+  posY: number
+  rotateDeg: number
+  /** 乐观锁版本号，拖动确认时回传 */
+  version: number
+  createTime: string
+  /** 是否是当前登录用户贴的 */
+  owned: boolean
+  /** 是否还在审核中（只有自己的待审核留言会出现在公开列表里） */
+  pending: boolean
+}
+
+/** 整面墙 WallListVO */
+export interface WallListVO {
+  notes: WallNoteVO[]
+  /** 墙面版本号，用于轮询判断是否需要重绘 */
+  version: number
+  maxNotes: number
+}
+
+/** 提交留言 WallNoteCreateDTO */
+export interface WallNoteCreateDTO {
+  content: string
+  paperColor: string
+  posX: number
+  posY: number
+}
+
+/** 拖动确认 WallNoteMoveDTO */
+export interface WallNoteMoveDTO {
+  posX: number
+  posY: number
+  version: number
+}
+
+/** 拖动确认结果 WallMoveResultVO */
+export interface WallMoveResultVO {
+  id: number
+  posX: number
+  posY: number
+  version: number
+  /** 服务端是否调整了位置（落点被占 / 被夹到画布内） */
+  adjusted: boolean
+}
+
+/** 举报 WallNoteReportDTO */
+export interface WallNoteReportDTO {
+  /** 1垃圾广告 2辱骂攻击 3色情低俗 4政治敏感 5违法信息 6其他 */
+  reasonType: number
+  reason?: string
+}
+
+/** 后台留言 WallNoteAdminVO */
+export interface WallNoteAdminVO {
+  id: number
+  content: string
+  paperColor: string
+  posX: number
+  posY: number
+  rotateDeg: number
+  /** 0待审核 1已通过 2已拒绝 */
+  auditStatus: number
+  auditRemark: string | null
+  auditTime: string | null
+  /** 0隐藏 1显示 */
+  status: number
+  reportCount: number
+  /** 作者 ID，仅后台可见 */
+  userId: number
+  version: number
+  createTime: string
+  updateTime: string
+}
+
+/** 后台留言查询 WallNoteQuery */
+export interface WallNoteQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  auditStatus?: number
+  status?: number
+}
+
+/** 审核 WallNoteAuditDTO */
+export interface WallNoteAuditDTO {
+  /** 1通过 2拒绝 */
+  auditStatus: number
+  /** 拒绝时必填 */
+  auditRemark?: string
+}
+
+/** 后台举报 WallReportAdminVO */
+export interface WallReportAdminVO {
+  id: number
+  noteId: number
+  /** 留言已被删除时为 null */
+  noteContent: string | null
+  /** 被举报留言当前显示状态 */
+  noteStatus: number | null
+  reporterUserId: number
+  /** 1垃圾广告 2辱骂攻击 3色情低俗 4政治敏感 5违法信息 6其他 */
+  reasonType: number
+  reason: string | null
+  /** 0待处理 1成立 2不成立 */
+  status: number
+  handleRemark: string | null
+  handleTime: string | null
+  createTime: string
+}
+
+/** 后台举报查询 WallReportQuery */
+export interface WallReportQuery {
+  page?: number
+  size?: number
+  status?: number
+}
+
+/** 举报处理 WallReportHandleDTO */
+export interface WallReportHandleDTO {
+  /** 1成立 2不成立 */
+  status: number
+  handleRemark?: string
 }

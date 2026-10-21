@@ -22,6 +22,21 @@ export function formatDate(value: string | null | undefined): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
+/**
+ * 信纸上的日期：当年只显示「10月11日」，跨年补上年份。
+ * 和留言墙样图保持一致，不显示时分秒。
+ */
+export function formatMonthDay(value: string | null | undefined): string {
+  const date = toDate(value)
+  if (!date) return '—'
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  if (date.getFullYear() === new Date().getFullYear()) {
+    return `${month}月${day}日`
+  }
+  return `${date.getFullYear()}年${month}月${day}日`
+}
+
 /** 2026-09-21 10:30 */
 export function formatDateTime(value: string | null | undefined): string {
   const date = toDate(value)

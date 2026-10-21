@@ -13,6 +13,7 @@ import { PortfolioPage } from './pages/user/PortfolioPage'
 import { GalleryPage } from './pages/user/GalleryPage'
 import { MusicPage } from './pages/user/MusicPage'
 import { FriendLinksPage } from './pages/user/FriendLinksPage'
+import { WallPage } from './pages/user/WallPage'
 import { AboutPage } from './pages/user/AboutPage'
 import { ProfilePage } from './pages/user/ProfilePage'
 import { LoginPage } from './pages/user/LoginPage'
@@ -45,6 +46,9 @@ const MusicManagePage = lazy(() => import('./pages/admin/MusicManagePage').then(
 const FriendLinkManagePage = lazy(() =>
   import('./pages/admin/FriendLinkManagePage').then((m) => ({ default: m.FriendLinkManagePage })),
 )
+const WallManagePage = lazy(() =>
+  import('./pages/admin/WallManagePage').then((m) => ({ default: m.WallManagePage })),
+)
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 
 /**
@@ -65,6 +69,7 @@ export function App() {
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/music" element={<MusicPage />} />
         <Route path="/links" element={<FriendLinksPage />} />
+        <Route path="/wall" element={<WallPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route
           path="/profile"
@@ -110,6 +115,7 @@ export function App() {
         <Route path="portfolio" element={<PortfolioManagePage />} />
         <Route path="music" element={<MusicManagePage />} />
         <Route path="friend-links" element={<FriendLinkManagePage />} />
+        <Route path="wall" element={<WallManagePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage admin />} />
       </Route>

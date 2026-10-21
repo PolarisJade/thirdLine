@@ -2,7 +2,7 @@ spring:
   application:
     name: thirdLine-api
   profiles:
-    active: dev   # 切换环境：local / dev
+    active: local   # 切换环境：local / dev
   # 本地密钥来源：Spring Boot 不会自动读取 .env，需显式导入成配置源。
   # 工作目录可能是模块目录或仓库根目录，两个路径都导入；optional 保证生产环境没这个文件也能启动。
   # 优先级：系统环境变量 > .env，所以服务器上用环境变量注入即可覆盖。

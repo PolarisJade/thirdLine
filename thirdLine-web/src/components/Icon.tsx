@@ -9,6 +9,7 @@ export type IconName =
   | 'home'
   | 'article'
   | 'grid'
+  | 'crosshair'
   | 'image'
   | 'music'
   | 'message'
@@ -72,6 +73,8 @@ const PATHS: Record<IconName, string> = {
   home: 'M3 10.5 12 3l9 7.5M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5',
   article: 'M4 4v16h16V8l-4-4H4Zm12 0v4h4M8 12h8M8 16h5',
   grid: 'M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z',
+  crosshair:
+    'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM12 2v3M12 19v3M2 12h3M19 12h3',
   image: 'M3 5h18v14H3V5Zm0 10 5-5 4 4 3-3 6 6M9.5 9.5h.01',
   music: 'M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   message: 'M21 12a8 8 0 0 1-8 8H7l-4 3v-7a8 8 0 0 1 8-8h2a8 8 0 0 1 8 4Z',

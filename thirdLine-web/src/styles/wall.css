@@ -1,0 +1,782 @@
+/* ============================================================================
+   留言墙
+   ---------------------------------------------------------------------------
+   一块比屏幕大得多的逻辑画布（默认 3200×2000），坐标以 1:1 存库：
+   按住空白处拖动 = 平移整面墙；鼠标滚轮 = 以光标为中心缩放，不再靠页面滚动。
+
+   墙面本身完全透明，直接透出站点背景的格纹，没有白色底板和边框；
+   信纸是浅色纸片，文字保持深色，深色主题只影响页面背景。
+   ========================================================================== */
+
+.wall-page {
+  position: fixed;
+  top: var(--header-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* 留言墙是全屏画布：隐藏页脚、清掉 main 的上下留白，避免页面出现滚动条 */
+body.wall-page-open .site-footer {
+  display: none;
+}
+
+/* 页面不滚动，回到顶部在留言墙里没有意义，也会和缩放控件抢位置 */
+body.wall-page-open .back-to-top {
+  display: none;
+}
+
+body.wall-page-open .page {
+  padding: 0;
+}
+
+body.wall-page-open {
+  overscroll-behavior: none;
+}
+
+/* 站点自带的静态格纹会换成画布上可移动的格纹，避免两层格纹叠在一起 */
+body.wall-page-open .app-shell {
+  background-image: none;
+}
+
+/* ------------------------------------------------------- 审核提示（悬浮框） */
+
+.wall-notice {
+  position: fixed;
+  top: calc(var(--header-height) + 14px);
+  left: 50%;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(760px, calc(100vw - 32px));
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-shadow);
+  transform: translateX(-50%);
+}
+
+.wall-notice__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--brand-500);
+}
+
+.wall-notice__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.wall-notice__text {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.wall-notice__hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.wall-notice__action {
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- 画布 */
+
+.wall-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* 拖动交给 Pointer Events，禁止浏览器把触摸手势当成页面滚动 */
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wall-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.wall-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  will-change: transform;
+  /* 格纹画在画布上，跟随平移 / 缩放一起动；底色透明，透出站点背景色 */
+  background-image:
+    linear-gradient(to right, var(--pattern-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--pattern-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* 缩放控件：只在留言墙页面出现 */
+.wall-zoom {
+  position: fixed;
+  right: 20px;
+  bottom: calc(var(--floating-clearance) + 8px);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-shadow);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wall-zoom__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    background var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft);
+}
+
+.wall-zoom__btn:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+.wall-zoom__divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.wall-zoom__value {
+  min-width: 54px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft);
+}
+
+.wall-zoom__value:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+/* 全屏状态下的居中提示 / 错误态 */
+.wall-status {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: var(--space-5);
+}
+
+.wall-status .wall-loading {
+  min-height: 0;
+}
+
+/* ---------------------------------------------------------------- 信纸 */
+
+.wall-note {
+  position: absolute;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wall-note--mine {
+  cursor: grab;
+}
+
+.wall-note--mine:active,
+.wall-note.is-dragging {
+  cursor: grabbing;
+}
+
+.wall-note.is-dragging {
+  will-change: transform;
+}
+
+.wall-note__paper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 22px 20px 16px;
+  border-radius: 3px 3px 5px 5px;
+  color: #4a3b31;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(90, 65, 45, 0.14),
+    0 12px 26px -12px rgba(90, 65, 45, 0.45);
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    filter var(--duration-base) var(--ease-soft);
+}
+
+.wall-note--mine:hover .wall-note__paper {
+  box-shadow:
+    0 2px 4px rgba(90, 65, 45, 0.16),
+    0 20px 40px -16px rgba(90, 65, 45, 0.5);
+}
+
+.wall-note.is-dragging .wall-note__paper {
+  box-shadow:
+    0 6px 12px rgba(90, 65, 45, 0.18),
+    0 34px 60px -20px rgba(90, 65, 45, 0.55);
+  filter: brightness(1.02);
+}
+
+/* 右上角折角，纯装饰 */
+.wall-note__fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(225deg, rgba(255, 255, 255, 0.92) 0 50%, rgba(74, 59, 49, 0.09) 50% 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.wall-note__content {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wall-note__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: 10px;
+}
+
+.wall-note__date {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: rgba(74, 59, 49, 0.52);
+}
+
+.wall-note__flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: rgba(74, 59, 49, 0.45);
+  opacity: 0;
+  transition:
+    opacity var(--duration-fast) var(--ease-soft),
+    background var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft);
+}
+
+.wall-note:hover .wall-note__flag,
+.wall-note:focus-within .wall-note__flag {
+  opacity: 1;
+}
+
+.wall-note__flag:hover {
+  color: var(--danger);
+  background: rgba(74, 59, 49, 0.08);
+}
+
+.wall-note__flag.is-reported {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 触摸设备没有 hover：举报按钮常驻显示 */
+@media (hover: none) {
+  .wall-note__flag {
+    opacity: 0.75;
+  }
+}
+
+/* 审核中：虚线内框 + 轻微褪色，作者自己能看到 */
+.wall-note.is-pending .wall-note__paper {
+  opacity: 0.86;
+}
+
+.wall-note.is-pending .wall-note__paper::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1.5px dashed rgba(74, 59, 49, 0.32);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.wall-note__badge {
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(74, 59, 49, 0.12);
+  color: rgba(74, 59, 49, 0.75);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ------------------------------------------------------------ 确认按钮 */
+
+.wall-confirm {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  box-shadow: var(--glass-shadow);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.wall-confirm--above {
+  top: auto;
+  bottom: calc(100% + 10px);
+}
+
+.wall-confirm__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    filter var(--duration-fast) var(--ease-soft),
+    background var(--duration-fast) var(--ease-soft);
+}
+
+.wall-confirm__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wall-confirm__btn--ok {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px rgba(79, 157, 105, 0.7);
+}
+
+.wall-confirm__btn--ok:not(:disabled):hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.wall-confirm__btn--cancel {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+
+.wall-confirm__btn--cancel:not(:disabled):hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ---------------------------------------------------------------- 草稿 */
+
+.wall-note--draft {
+  cursor: default;
+}
+
+.wall-draft__paper {
+  padding: 18px 16px 12px;
+  outline: 2px solid transparent;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--brand-400) 55%, transparent),
+    0 18px 40px -14px rgba(90, 65, 45, 0.5);
+}
+
+.wall-draft__input {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: #4a3b31;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.7;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.wall-draft__input::placeholder {
+  color: rgba(74, 59, 49, 0.42);
+}
+
+.wall-draft__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: 8px;
+}
+
+.wall-draft__colors {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wall-draft__color {
+  width: 17px;
+  height: 17px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(74, 59, 49, 0.14);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.wall-draft__color:hover {
+  transform: scale(1.12);
+}
+
+.wall-draft__color.is-active {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 1.5px rgba(74, 59, 49, 0.5),
+    0 2px 6px rgba(74, 59, 49, 0.2);
+}
+
+.wall-draft__count {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: rgba(74, 59, 49, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.wall-draft__count.is-over {
+  color: #c0452f;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------ 空态/加载 */
+
+.wall-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.wall-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-300) 16%, transparent);
+  color: var(--brand-500);
+}
+
+.wall-empty__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.wall-empty__desc {
+  font-size: 13px;
+}
+
+.wall-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 220px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.wall-loading--board {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.wall-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: wall-spin 0.7s linear infinite;
+}
+
+.wall-spinner--lg {
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes wall-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------ 举报弹窗 */
+
+.wall-report__quote {
+  padding: 12px 14px;
+  border-left: 3px solid var(--brand-300);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.wall-report__quote-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.wall-report__quote-text {
+  margin: 4px 0 0;
+  max-height: 84px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+}
+
+.wall-report__reasons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.wall-report__reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-align: left;
+  transition:
+    border-color var(--duration-fast) var(--ease-soft),
+    background var(--duration-fast) var(--ease-soft),
+    box-shadow var(--duration-fast) var(--ease-soft);
+}
+
+.wall-report__reason:hover {
+  border-color: var(--line-strong);
+}
+
+.wall-report__reason.is-active {
+  border-color: var(--brand-400);
+  background: color-mix(in srgb, var(--brand-300) 14%, var(--surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-400) 22%, transparent);
+}
+
+.wall-report__dot {
+  position: relative;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+}
+
+.wall-report__reason.is-active .wall-report__dot {
+  border-color: var(--danger);
+}
+
+.wall-report__reason.is-active .wall-report__dot::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.wall-report__reason-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.wall-report__reason-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.wall-report__reason-desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.wall-report__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-tertiary);
+}
+
+/* ------------------------------------------------------------ 后台管理 */
+
+.wall-admin-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.wall-admin-tabs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition:
+    background var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft),
+    box-shadow var(--duration-fast) var(--ease-soft);
+}
+
+.wall-admin-tabs__item:hover {
+  color: var(--text-primary);
+}
+
+.wall-admin-tabs__item.is-active {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: var(--glass-shadow);
+}
+
+.wall-admin__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.wall-admin__swatch {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.wall-admin__content {
+  max-width: 420px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ 响应式 */
+
+@media (max-width: 768px) {
+  .wall-notice {
+    top: calc(var(--header-height) + 10px);
+    width: calc(100vw - 20px);
+    align-items: flex-start;
+    padding: 9px 10px 9px 12px;
+  }
+
+  .wall-notice__hint {
+    display: none;
+  }
+
+  .wall-notice__action {
+    padding: 0 12px;
+  }
+
+  .wall-report__reasons {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 尊重系统的「减少动态效果」 */
+@media (prefers-reduced-motion: reduce) {
+  .wall-note__paper,
+  .wall-confirm__btn,
+  .wall-draft__color {
+    transition: none;
+  }
+
+  .wall-spinner {
+    animation-duration: 1.6s;
+  }
+}

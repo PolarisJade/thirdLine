@@ -36,6 +36,19 @@ import type {
   TechStackVO,
   UserUpdateDTO,
   UserVO,
+  WallConfigVO,
+  WallListVO,
+  WallMoveResultVO,
+  WallNoteAdminVO,
+  WallNoteAuditDTO,
+  WallNoteCreateDTO,
+  WallNoteMoveDTO,
+  WallNoteQuery,
+  WallNoteReportDTO,
+  WallNoteVO,
+  WallReportAdminVO,
+  WallReportHandleDTO,
+  WallReportQuery,
 } from './types'
 
 /* ============================================================ 用户 / 登录注册 */
@@ -255,6 +268,54 @@ export const friendLinkApi = {
 
   /** 设置后台友链申请开关 */
   setApplySwitch: (enabled: boolean) => api.put<void>('/admin/friend-link/apply-switch', undefined, { enabled }),
+}
+
+/* ================================================================== 留言墙 */
+
+export const wallApi = {
+  /** 墙面配置（GET /user/wall/config）：画布尺寸、色板、须知、开关 */
+  config: () => api.get<WallConfigVO>('/user/wall/config'),
+
+  /** 整面墙（GET /user/wall/list）；带登录 token 时返回 owned 标记 */
+  list: () => api.get<WallListVO>('/user/wall/list'),
+
+  /** 提交留言（POST /user/wall/note），落库后待审核 */
+  create: (dto: WallNoteCreateDTO) => api.post<WallNoteVO>('/user/wall/note', dto),
+
+  /** 拖动后确认位置（PUT /user/wall/note/{id}/position） */
+  move: (id: number, dto: WallNoteMoveDTO) =>
+    api.put<WallMoveResultVO>(`/user/wall/note/${id}/position`, dto),
+
+  /** 作者删除自己的留言（DELETE /user/wall/note/{id}） */
+  remove: (id: number) => api.delete<void>(`/user/wall/note/${id}`),
+
+  /** 举报（POST /user/wall/note/{id}/report） */
+  report: (id: number, dto: WallNoteReportDTO) =>
+    api.post<void>(`/user/wall/note/${id}/report`, dto),
+
+  /* ---------------------------------------------------------------- 后台 */
+
+  /** 后台留言分页（GET /admin/wall/note/page） */
+  adminPage: (query: WallNoteQuery) => api.get<PageResult<WallNoteAdminVO>>('/admin/wall/note/page', query),
+
+  /** 审核（PUT /admin/wall/note/{id}/audit）：1通过 / 2拒绝 */
+  adminAudit: (id: number, dto: WallNoteAuditDTO) =>
+    api.put<void>(`/admin/wall/note/${id}/audit`, dto),
+
+  /** 显示 / 隐藏（PUT /admin/wall/note/{id}/status?status=0|1） */
+  adminStatus: (id: number, status: number) =>
+    api.put<void>(`/admin/wall/note/${id}/status`, undefined, { status }),
+
+  /** 后台删除（DELETE /admin/wall/note/{id}） */
+  adminRemove: (id: number) => api.delete<void>(`/admin/wall/note/${id}`),
+
+  /** 后台举报分页（GET /admin/wall/report/page） */
+  adminReports: (query: WallReportQuery) =>
+    api.get<PageResult<WallReportAdminVO>>('/admin/wall/report/page', query),
+
+  /** 处理举报（PUT /admin/wall/report/{id}/handle）：1成立 / 2不成立 */
+  adminHandle: (id: number, dto: WallReportHandleDTO) =>
+    api.put<void>(`/admin/wall/report/${id}/handle`, dto),
 }
 
 /* ================================================================== 站点 */

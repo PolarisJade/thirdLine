@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { RouteFallback } from '@/components/RouteFallback'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { useAuth } from '@/contexts/AuthContext'
-import { friendLinkApi } from '@/api'
+import { friendLinkApi, wallApi } from '@/api'
 import { cx } from '@/utils/format'
 import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
 
@@ -16,7 +16,7 @@ interface NavItem {
   icon: IconName
   end?: boolean
   /** 有内容需要处理的角标来源 */
-  badge?: 'links'
+  badge?: 'links' | 'wall'
 }
 
 const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
@@ -39,6 +39,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   {
     title: '互动',
     items: [
+      { to: '/admin/wall', label: '留言墙', icon: 'message', badge: 'wall' },
       { to: '/admin/friend-links', label: '友链管理', icon: 'link', badge: 'links' },
     ],
   },
@@ -57,8 +58,9 @@ export function AdminLayout() {
   const { pathname } = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingLinks, setPendingLinks] = useState(0)
+  const [pendingWall, setPendingWall] = useState(0)
 
-  // 拉取待处理数量作为侧边栏角标：待审核友链
+  // 拉取待处理数量作为侧边栏角标：待审核友链 + 待审核留言
   useEffect(() => {
     let cancelled = false
 
@@ -66,6 +68,13 @@ export function AdminLayout() {
       .adminPage({ auditStatus: 0, page: 1, size: 1 })
       .then((result) => {
         if (!cancelled) setPendingLinks(result.total)
+      })
+      .catch(() => {})
+
+    wallApi
+      .adminPage({ auditStatus: 0, page: 1, size: 1 })
+      .then((result) => {
+        if (!cancelled) setPendingWall(result.total)
       })
       .catch(() => {})
 
@@ -84,7 +93,7 @@ export function AdminLayout() {
   )?.label
 
   /** 角标类型 -> 待处理数量 */
-  const badgeCounts = { links: pendingLinks }
+  const badgeCounts = { links: pendingLinks, wall: pendingWall }
 
   return (
     <div className="admin-shell">

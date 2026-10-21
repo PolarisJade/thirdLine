@@ -73,7 +73,26 @@ public enum ResultCode {
     FRIEND_LINK_SENSITIVE(10006, "内容含有敏感词，请修改后再提交"),
     FRIEND_LINK_AUDIT_STATUS_INVALID(10007, "审核结果只能是已通过或已拒绝"),
     FRIEND_LINK_REJECT_REASON_REQUIRED(10008, "拒绝时请填写拒绝原因"),
-    FRIEND_LINK_APPLY_DISABLED(10009, "当前暂未开放友链申请");
+    FRIEND_LINK_APPLY_DISABLED(10009, "当前暂未开放友链申请"),
+
+    /* 留言墙模块 11xxx */
+    WALL_DISABLED(11001, "留言墙暂未开放"),
+    WALL_NOTE_NOT_FOUND(11002, "留言不存在或已删除"),
+    WALL_NOTE_CONTENT_EMPTY(11003, "留言内容不能为空"),
+    WALL_NOTE_CONTENT_TOO_LONG(11004, "留言内容超出长度限制"),
+    WALL_NOTE_SENSITIVE(11005, "内容包含不适宜信息，请修改后再提交"),
+    WALL_NOTE_TOO_FREQUENT(11006, "提交太快了，稍等几秒再发"),
+    WALL_NOTE_DAILY_LIMIT(11007, "今天的留言次数已经用完，明天再来吧"),
+    WALL_FULL(11008, "这面墙已经贴满了，等站主整理后再来"),
+    WALL_POSITION_CONFLICT(11009, "这张信纸刚刚被移动过，请刷新后再试"),
+    WALL_NOTE_FORBIDDEN(11010, "只能操作自己贴的留言"),
+    WALL_REPORT_DUPLICATE(11011, "你已经举报过这条留言了"),
+    WALL_REPORT_SELF(11012, "不能举报自己的留言"),
+    WALL_REPORT_REASON_INVALID(11013, "请选择举报原因"),
+    WALL_AUDIT_STATUS_INVALID(11014, "审核结果只能是已通过或已拒绝"),
+    WALL_STATUS_INVALID(11015, "显示状态只能是 0隐藏 或 1显示"),
+    WALL_REPORT_STATUS_INVALID(11016, "举报处理结果只能是 1成立 或 2不成立"),
+    WALL_REPORT_ALREADY_HANDLED(11017, "该举报已经处理过了");
 
     private final Integer code;
     private final String message;

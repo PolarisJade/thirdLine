@@ -38,6 +38,36 @@ public class SiteConfigServiceImpl implements ISiteConfigService {
         siteConfigMapper.updateById(config);
     }
 
+    @Override
+    public String getValue(String key, String defaultValue) {
+        if (key == null || key.isBlank()) {
+            return defaultValue;
+        }
+        SiteConfig config = getByKey(key);
+        if (config == null || config.getConfigValue() == null || config.getConfigValue().isBlank()) {
+            return defaultValue;
+        }
+        return config.getConfigValue();
+    }
+
+    @Override
+    public void setValue(String key, String value, String description) {
+        if (key == null || key.isBlank()) {
+            throw new IllegalArgumentException("config key 不能为空");
+        }
+        String nextValue = value == null ? "" : value;
+        SiteConfig config = getByKey(key);
+        if (config == null) {
+            siteConfigMapper.insert(new SiteConfig()
+                    .setConfigKey(key)
+                    .setConfigValue(nextValue)
+                    .setDescription(description));
+            return;
+        }
+        config.setConfigValue(nextValue);
+        siteConfigMapper.updateById(config);
+    }
+
     private SiteConfig getByKey(String key) {
         return siteConfigMapper.selectOne(Wrappers.<SiteConfig>lambdaQuery()
                 .eq(SiteConfig::getConfigKey, key), false);
