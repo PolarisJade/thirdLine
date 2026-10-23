@@ -139,6 +139,21 @@ export function FriendLinksPage() {
   const siteAvatar = withFallback(profile?.avatar, avatarPlaceholder(siteName))
   const siteUrl = window.location.origin
 
+  /**
+   * 申请开关的三种状态：true 已开放 / false 已关闭 / null 尚未取回。
+   * 只有明确为 true 才渲染入口按钮——开关关闭时接口返回 false 有延迟，
+   * 若把「未取回」也当作开放，按钮会先出现再消失，闪一下。
+   */
+  const applyAvailable = applyEnabled === true
+
+  /** 空列表时的引导文案，同样只在确认开放后才提示「点申请友链」 */
+  const emptyDesc =
+    applyEnabled === null
+      ? '暂时看不到友链申请状态，稍后刷新再看看。'
+      : applyAvailable
+        ? '点页面上的「申请友链」，成为第一个留在这里的人。'
+        : '当前暂未开放友链申请。'
+
   /** 交换友链时对方要填的四项，顺序和常见友链页一致 */
   const siteInfo = [
     { label: '名称', value: siteName, mono: false },
@@ -440,7 +455,7 @@ export function FriendLinksPage() {
             {loading ? '正在把朋友们的站点搬过来…' : `共 ${links.length} 位朋友 · 交换链接，也交换各自看世界的方式`}
           </p>
         </div>
-        {applyEnabled !== false && (
+        {applyAvailable && (
           <Button type="button" variant="primary" icon="plus" onClick={openWizard}>
             申请友链
           </Button>
@@ -471,7 +486,7 @@ export function FriendLinksPage() {
           <EmptyState
             icon="link"
             title="还没有添加友链"
-            desc={applyEnabled === false ? '当前暂未开放友链申请。' : '点页面上的「申请友链」，成为第一个留在这里的人。'}
+            desc={emptyDesc}
           />
         </Glass>
       ) : (

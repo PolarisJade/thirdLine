@@ -360,6 +360,37 @@
   color: var(--brand-500);
 }
 
+/* 底部备案信息条：备案号需以纯文本形式常驻展示，故单独成行、居中排布，
+   避开左下角悬浮播放器与右下角回到顶部按钮 */
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.site-footer__icp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast);
+}
+
+.site-footer__icp:hover {
+  color: var(--brand-500);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ============================================================== 回到顶部 */
 .back-to-top {
   position: fixed;
@@ -417,6 +448,12 @@
   .site-footer__grid {
     grid-template-columns: 1fr;
     gap: var(--space-5);
+  }
+
+  /* 移动端悬浮播放器几乎占满底部宽度，存在播放器时为备案信息让出空间，
+     否则备案号会被播放器盖住（没有音乐时不渲染播放器，也就不需要这段留白） */
+  .app-shell:has(.music-player) .site-footer {
+    padding-bottom: calc(var(--space-6) + 96px);
   }
 
   .back-to-top {

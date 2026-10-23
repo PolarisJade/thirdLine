@@ -5,6 +5,14 @@ import { siteApi } from '@/api'
 import { formatDate } from '@/utils/format'
 
 /**
+ * ICP 备案信息（个人备案）。
+ * 按备案要求，备案号须以纯文本展示在页面底部，并链接至工信部备案管理系统；
+ * 因此这里写成常量而不是走接口，保证后端不可用时备案号依然显示。
+ */
+const ICP_NUMBER = '湘ICP备2026048558号'
+const ICP_QUERY_URL = 'https://beian.miit.gov.cn/'
+
+/**
  * 页脚。
  * 站主信息来自 GET /user/site/profile（后端配置文件 tl.host.*），是公开读接口。
  */
@@ -76,6 +84,19 @@ export function SiteFooter() {
               </span>
             </div>
           </div>
+        </div>
+
+        <div className="site-footer__bottom">
+          <a
+            className="site-footer__icp"
+            href={ICP_QUERY_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            title="工业和信息化部政务服务平台 · 备案信息查询"
+          >
+            {ICP_NUMBER}
+            <Icon name="external" size={12} strokeWidth={2} />
+          </a>
         </div>
       </div>
     </footer>

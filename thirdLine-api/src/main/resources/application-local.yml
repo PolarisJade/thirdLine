@@ -25,5 +25,5 @@ tl:
       access-key: minio
       secret-key: ${MINIO_SECRET_KEY}
       bucket-name: third-line
-      url-prefix: http://8.148.65.93:19000/third-line
+      url-prefix: http://${IP}:19000/third-line
 

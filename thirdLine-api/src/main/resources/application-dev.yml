@@ -1,19 +1,27 @@
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/third_line?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: thirdLineUser
-    password: ${DB_PWD}
-
 tl:
+  db:
+    username: thirdLineUser
+    password: ${DB_PASSWORD}
+    url: jdbc:mysql://127.0.0.1:3306/third_line?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+  redis:
+    host: 127.0.0.1
+    password: ${REDIS_PASSWORD}
+    database: 0
   mail:
     username: lunarriverside@163.com
-    password: ${MAIL_PWD}
-
+    password: ${MAIL_PASSWORD}
   host:
-    nickname: ParlisJade
+    nickname: PolarisJade
     email: lunarriverside@163.com
     github: https://github.com/PolarisJade
-    avatar: https://third-line.oss-cn-wuhan-lr.aliyuncs.com/blog/avatar/2026/09/21/46117d08f680456ba8cb9661832c16ca.jpg
-    # 本站运行起始日期（yyyy-MM-dd，引号固定为字符串，避免被 YAML 解析成时间）
-    start_time: '2026-10-01'
+    avatar: ${AVATAR}
+    # 本站运行起始日期（yyyy-MM-dd），与 local 环境保持一致
+    start-time: 2026-10-01
+  oss:
+    site: minio    # 填写minio或者aliyun
+    minio:
+      endpoint: http://127.0.0.1:19000
+      access-key: minio
+      secret-key: ${MINIO_SECRET_KEY}
+      bucket-name: third-line
+      url-prefix: https://${IP}:19000/third-line
