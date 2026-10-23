@@ -9,6 +9,9 @@ import com.god.thirdLine.domain.entity.Article;
 import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleVO;
+import com.god.thirdLine.domain.vo.ArticleArchiveVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -53,6 +56,11 @@ public interface IArticleService extends IService<Article> {
      * @return 标准分页结果（含 total）
      */
     PageResult<ArticleVO> pageArticlesByNumber(ArticlePageQuery query);
+
+    /**
+     * 查询前台文章日期归档。
+     */
+    List<ArticleArchiveVO> listArticleArchive();
 
     /**
      * 根据ID删除文章，并级联删除其标签关联

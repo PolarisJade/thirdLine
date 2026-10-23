@@ -83,6 +83,27 @@ export interface UserVO {
   createTime: string
 }
 
+/** 后台用户列表查询参数。 */
+export interface UserQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  role?: number
+  status?: number
+}
+
+/** 后台创建、编辑用户；编辑时不提交 password。 */
+export interface AdminUserDTO {
+  id?: number
+  username?: string
+  password?: string
+  nickname?: string
+  avatar?: string
+  email?: string
+  role?: number
+  status?: number
+}
+
 /** LoginVO */
 export interface LoginVO {
   token: string
@@ -173,6 +194,19 @@ export interface ArticleVO {
   createdTime: string | null
   updatedTime: string | null
   tags: TagVO[] | null
+}
+
+/** ArticleArchiveVO —— 按发布日期聚合的文章组 */
+export interface ArticleArchiveVO {
+  date: string
+  articles: ArticleArchiveEntryVO[]
+}
+
+export interface ArticleArchiveEntryVO {
+  id: number
+  title: string
+  categoryName: string | null
+  publishedTime: string
 }
 
 /** ArticleQuery —— 游标分页，size 上限 50 */
@@ -447,6 +481,8 @@ export interface SiteStatsVO {
   categoryCount: number
   tagCount: number
   photoCount: number
+  /** 全部现存账号，包含管理员及已禁用账号。 */
+  userCount: number
 }
 
 /** SiteProfileVO —— 数据来自后端配置文件 tl.host.* */
@@ -456,4 +492,47 @@ export interface SiteProfileVO {
   github: string | null
   avatar: string | null
   startTime: string | null
+}
+/** 网站历程：数字类型、状态由后端枚举提供选项和文案。 */
+export interface SiteHistoryVO {
+  id: number
+  description: string
+  updateDate: string
+  version: string
+  updateType: number
+  updateTypeLabel: string
+}
+
+export interface SiteHistoryAdminVO extends SiteHistoryVO {
+  publishStatus: number
+  publishStatusLabel: string
+  status: number
+  statusLabel: string
+  createTime: string
+  updateTime: string
+}
+
+export interface SiteHistoryDTO {
+  id?: number
+  description: string
+  updateDate: string
+  version: string
+  updateType: number
+  publishStatus?: number
+  status?: number
+}
+
+export interface SiteHistoryQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  updateType?: number
+  publishStatus?: number
+  status?: number
+}
+
+export interface SiteHistoryOptionsVO {
+  updateTypes: Array<{ value: number; label: string }>
+  publishStatuses: Array<{ value: number; label: string }>
+  statuses: Array<{ value: number; label: string }>
 }

@@ -15,6 +15,7 @@ import com.god.thirdLine.mapper.UserMapper;
 import com.god.thirdLine.service.EmailCodeService;
 import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IUserService;
+import com.god.thirdLine.service.SiteStatsCache;
 import com.god.thirdLine.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -44,6 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final JwtUtil jwtUtil;
     private final EmailCodeService emailCodeService;
     private final IOssReferenceService ossReferenceService;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -115,7 +117,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setRole(User.ROLE_USER);
         user.setStatus(1);
         // createTime / updateTime 由 MetaObjectHandler 自动填充
-        this.save(user);
+        if (this.save(user)) {
+            siteStatsCache.evictAfterCommit();
+        }
 
         // 5. 注册成功即自动登录
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());

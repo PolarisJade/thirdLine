@@ -27,6 +27,7 @@ export function DashboardPage() {
   const musics = useAsync(() => musicApi.adminPage({ size: 1 }), [])
 
   const cards: StatCard[] = [
+    { label: '用户', value: stats.data?.userCount ?? 0, icon: 'users', to: '/admin/users' },
     { label: '已发布文章', value: stats.data?.articleCount ?? 0, icon: 'article', to: '/admin/articles' },
     { label: '分类', value: stats.data?.categoryCount ?? 0, icon: 'folder', tone: 'alt', to: '/admin/categories' },
     { label: '标签', value: stats.data?.tagCount ?? 0, icon: 'tag', tone: 'alt', to: '/admin/tags' },

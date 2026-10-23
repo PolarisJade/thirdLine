@@ -70,6 +70,14 @@ export function HomePage() {
             <span className="stat-card__value">{formatNumber(stats?.photoCount ?? 0)}</span>
             <span className="stat-card__label">照片</span>
           </Glass>
+
+          <Glass className="stat-card" hoverable>
+            <span className="stat-card__icon">
+              <Icon name="users" size={19} />
+            </span>
+            <span className="stat-card__value">{formatNumber(stats?.userCount ?? 0)}</span>
+            <span className="stat-card__label">用户</span>
+          </Glass>
         </div>
       </section>
 

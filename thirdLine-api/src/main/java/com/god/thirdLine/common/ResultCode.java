@@ -64,6 +64,9 @@ public enum ResultCode {
     MUSIC_TITLE_REQUIRED(8002, "歌曲名不能为空"),
     MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空"),
 
+    /* 网站历程模块 9xxx */
+    SITE_HISTORY_NOT_FOUND(9001, "历程不存在或已删除"),
+
     /* 友链模块 10xxx */
     FRIEND_LINK_NOT_FOUND(10001, "友链不存在"),
     FRIEND_LINK_NAME_REQUIRED(10002, "站点名称不能为空"),

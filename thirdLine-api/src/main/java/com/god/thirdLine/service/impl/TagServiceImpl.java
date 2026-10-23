@@ -11,6 +11,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.ArticleTagMapper;
 import com.god.thirdLine.mapper.TagMapper;
 import com.god.thirdLine.service.ITagService;
+import com.god.thirdLine.service.SiteStatsCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagService {
 
     private final ArticleTagMapper articleTagMapper;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     public Long saveTag(TagDTO dto) {
@@ -46,7 +48,9 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         Tag tag = new Tag()
                 .setName(dto.getName());
         // createTime / updateTime 由 MetaObjectHandler 自动填充
-        this.save(tag);
+        if (this.save(tag)) {
+            siteStatsCache.evictAfterCommit();
+        }
         return tag.getId();
     }
 
@@ -65,7 +69,9 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         if (refCount != null && refCount > 0) {
             throw new BusinessException(ResultCode.TAG_IN_USE);
         }
-        this.removeById(id);
+        if (this.removeById(id)) {
+            siteStatsCache.evictAfterCommit();
+        }
     }
 
     @Override
@@ -89,7 +95,9 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         }
         tag.setName(dto.getName());
         // updateTime 由 MetaObjectHandler 自动刷新
-        this.updateById(tag);
+        if (this.updateById(tag)) {
+            siteStatsCache.evictAfterCommit();
+        }
     }
 
     @Override

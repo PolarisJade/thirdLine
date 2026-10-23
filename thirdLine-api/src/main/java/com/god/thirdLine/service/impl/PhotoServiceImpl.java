@@ -13,6 +13,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IPhotoService;
+import com.god.thirdLine.service.SiteStatsCache;
 import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +37,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
 
     private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     public Long savePhoto(PhotoDTO dto) {
@@ -53,7 +55,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // createTime / updateTime 由 MetaObjectHandler 自动填充
         // sort 未指定时自增追加到末尾（当前最大 sort + 1）
         photo.setSort(dto.getSort() == null ? nextSort() : dto.getSort());
-        this.save(photo);
+        if (this.save(photo)) {
+            siteStatsCache.evictAfterCommit();
+        }
         return photo.getId();
     }
 
@@ -94,7 +98,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setStatus(dto.getStatus());
         }
         // updateTime 由 MetaObjectHandler 自动刷新
-        this.updateById(photo);
+        if (this.updateById(photo)) {
+            siteStatsCache.evictAfterCommit();
+        }
 
         // 换图后清理旧原图：确认无人引用才删，手填外链自动跳过
         if (StringUtils.hasText(dto.getUrl())) {
@@ -111,7 +117,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (photo == null) {
             throw new BusinessException(ResultCode.PHOTO_NOT_FOUND);
         }
-        this.removeById(id);
+        if (this.removeById(id)) {
+            siteStatsCache.evictAfterCommit();
+        }
         // 同步清理 OSS 上的原图（手填外链自动跳过）
         objectStorageUtil.deleteByUrl(photo.getUrl());
     }

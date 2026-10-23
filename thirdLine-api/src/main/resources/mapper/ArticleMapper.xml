@@ -71,4 +71,14 @@
         WHERE a.id = #{id}
     </select>
 
+    <!-- 前台日期归档：只返回已发布文章，按发布时间倒序 -->
+    <select id="selectPublishedArticlesForArchive" resultType="com.god.thirdLine.domain.vo.ArticleArchiveEntryVO">
+        SELECT a.id, a.title, a.published_time, c.name AS category_name
+        FROM tl_article a
+        LEFT JOIN tl_category c ON c.id = a.category_id
+        WHERE a.status = 1
+          AND a.published_time IS NOT NULL
+        ORDER BY a.published_time DESC, a.id DESC
+    </select>
+
 </mapper>

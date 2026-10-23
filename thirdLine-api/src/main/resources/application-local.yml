@@ -5,7 +5,7 @@ tl:
     url: jdbc:mysql://localhost:3306/third_line?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
   redis:
     host: localhost
-    password: 134679
+    password:          # 本地 Redis 未设置密码，留空，否则 Lettuce 会发送 AUTH 导致报错
     database: 0
   mail:
     username: lunarriverside@163.com

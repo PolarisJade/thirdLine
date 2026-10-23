@@ -1,12 +1,21 @@
 package com.god.thirdLine.controller.admin;
 
+import com.god.thirdLine.common.PageResult;
 import com.god.thirdLine.common.Result;
 import com.god.thirdLine.context.UserContext;
+import com.god.thirdLine.domain.dto.AdminPasswordResetDTO;
+import com.god.thirdLine.domain.dto.AdminUserDTO;
 import com.god.thirdLine.domain.dto.PasswordUpdateDTO;
 import com.god.thirdLine.domain.dto.UserUpdateDTO;
 import com.god.thirdLine.domain.vo.UserVO;
+import com.god.thirdLine.domain.query.UserQuery;
+import com.god.thirdLine.service.IAdminUserService;
 import com.god.thirdLine.service.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +36,34 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminUserController {
 
     private final IUserService userService;
+    private final IAdminUserService adminUserService;
+
+    @GetMapping("/page")
+    public Result<PageResult<UserVO>> page(UserQuery query) {
+        return Result.success(adminUserService.pageUsers(query));
+    }
+
+    @PostMapping
+    public Result<Long> create(@RequestBody AdminUserDTO dto) {
+        return Result.success(adminUserService.createUser(dto));
+    }
+
+    @PutMapping
+    public Result<UserVO> update(@RequestBody AdminUserDTO dto) {
+        return Result.success(adminUserService.updateUser(dto));
+    }
+
+    @PutMapping("/{id}/password")
+    public Result<Void> resetPassword(@PathVariable Long id, @RequestBody AdminPasswordResetDTO dto) {
+        adminUserService.resetPassword(id, dto.getNewPassword());
+        return Result.success();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        adminUserService.deleteUser(id);
+        return Result.success();
+    }
 
     /**
      * 修改当前登录用户信息

@@ -364,10 +364,10 @@
    避开左下角悬浮播放器与右下角回到顶部按钮 */
 .site-footer__bottom {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px var(--space-3);
+  gap: 4px;
   margin-top: var(--space-6);
   padding-top: var(--space-4);
   border-top: 1px dashed var(--line);
@@ -389,6 +389,14 @@
   color: var(--brand-500);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* 公安联网备案图标：与文字同行展示，尺寸与行高对齐 */
+.site-footer__beian-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 /* ============================================================== 回到顶部 */

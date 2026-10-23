@@ -11,6 +11,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.ArticleMapper;
 import com.god.thirdLine.mapper.CategoryMapper;
 import com.god.thirdLine.service.ICategoryService;
+import com.god.thirdLine.service.SiteStatsCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements ICategoryService {
 
     private final ArticleMapper articleMapper;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     public Long saveCategory(CategoryDTO dto) {
@@ -48,7 +50,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
                 .setName(dto.getName())
                 .setSort(dto.getSort() == null ? 0 : dto.getSort());
         // createTime / updateTime 由 MetaObjectHandler 自动填充
-        this.save(category);
+        if (this.save(category)) {
+            siteStatsCache.evictAfterCommit();
+        }
         return category.getId();
     }
 
@@ -67,7 +71,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (refCount != null && refCount > 0) {
             throw new BusinessException(ResultCode.CATEGORY_IN_USE);
         }
-        this.removeById(id);
+        if (this.removeById(id)) {
+            siteStatsCache.evictAfterCommit();
+        }
     }
 
     @Override
@@ -93,7 +99,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             category.setSort(dto.getSort());
         }
         // updateTime 由 MetaObjectHandler 自动刷新
-        this.updateById(category);
+        if (this.updateById(category)) {
+            siteStatsCache.evictAfterCommit();
+        }
     }
 
     @Override

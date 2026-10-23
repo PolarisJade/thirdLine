@@ -5,6 +5,7 @@ import com.god.thirdLine.config.JwtProperties;
 import com.god.thirdLine.context.UserContext;
 import com.god.thirdLine.domain.entity.User;
 import com.god.thirdLine.exception.BusinessException;
+import com.god.thirdLine.mapper.UserMapper;
 import com.god.thirdLine.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
+    private final UserMapper userMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -57,15 +59,19 @@ public class JwtInterceptor implements HandlerInterceptor {
             throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
 
-        // 本拦截器只拦 /admin/**，非管理员角色（role != 0）的 token 一律拒绝
+        // 每次核对数据库，使禁用、删除及角色变更对已签发 token 同样生效。
+        User user = userMapper.selectById(userId);
+        if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "账号不存在或已被禁用，请重新登录");
+        }
         Integer role = jwtUtil.getRole(claims);
-        if (!User.ROLE_ADMIN.equals(role)) {
+        if (!User.ROLE_ADMIN.equals(role) || !User.ROLE_ADMIN.equals(user.getRole())) {
             throw new BusinessException(ResultCode.FORBIDDEN, "无管理后台权限");
         }
 
         // 滑动续期：剩余有效期不足阈值时签发新 token（保留角色声明），通过响应头返回给前端更新
         if (jwtUtil.needRefresh(claims)) {
-            String newToken = jwtUtil.generateToken(userId, jwtUtil.getUsername(claims), role);
+            String newToken = jwtUtil.generateToken(userId, user.getUsername(), user.getRole());
             response.setHeader(jwtProperties.getRefreshHeader(), newToken);
         }
 
