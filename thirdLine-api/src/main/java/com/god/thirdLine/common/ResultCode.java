@@ -64,6 +64,9 @@ public enum ResultCode {
     MUSIC_TITLE_REQUIRED(8002, "歌曲名不能为空"),
     MUSIC_AUDIO_REQUIRED(8003, "音频地址不能为空"),
 
+    /* 网站历程模块 9xxx */
+    SITE_HISTORY_NOT_FOUND(9001, "历程不存在或已删除"),
+
     /* 友链模块 10xxx */
     FRIEND_LINK_NOT_FOUND(10001, "友链不存在"),
     FRIEND_LINK_NAME_REQUIRED(10002, "站点名称不能为空"),
@@ -73,7 +76,13 @@ public enum ResultCode {
     FRIEND_LINK_SENSITIVE(10006, "内容含有敏感词，请修改后再提交"),
     FRIEND_LINK_AUDIT_STATUS_INVALID(10007, "审核结果只能是已通过或已拒绝"),
     FRIEND_LINK_REJECT_REASON_REQUIRED(10008, "拒绝时请填写拒绝原因"),
-    FRIEND_LINK_APPLY_DISABLED(10009, "当前暂未开放友链申请");
+    FRIEND_LINK_APPLY_DISABLED(10009, "当前暂未开放友链申请"),
+
+    /* 足迹模块 11xxx */
+    FOOTPRINT_NOT_FOUND(11001, "足迹城市不存在或未发布"),
+    FOOTPRINT_CITY_REQUIRED(11002, "城市名称不能为空"),
+    FOOTPRINT_CITY_INVALID(11003, "城市行政区划代码不合法"),
+    FOOTPRINT_CITY_DUPLICATE(11004, "该城市已存在足迹记录");
 
     private final Integer code;
     private final String message;

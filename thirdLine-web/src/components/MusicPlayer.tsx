@@ -1,250 +1,188 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { musicApi, type MusicVO } from '@/api'
+import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
+import { musicApi } from '@/api'
 import { useAsync } from '@/hooks/useAsync'
 import { Icon } from './Icon'
 import { cx } from '@/utils/format'
 import { musicCover, withFallback } from '@/utils/placeholder'
 
-/** 秒 -> mm:ss */
-function formatTime(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return '00:00'
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
+const playerLabels = {
+  player: '音乐播放控制', progressControl: '播放进度', volumeControl: '音量',
+  play: '播放', pause: '暂停', previous: '上一首', next: '下一首',
+  volume: '静音', volumeMute: '取消静音', loop: '关闭单曲循环', loopOff: '开启单曲循环',
 }
 
-/**
- * 全局悬浮音乐播放器。
- * 数据来源：GET /user/music/list（已上架音乐，按 sort 升序）。
- * 使用原生 Audio 元素播放 OSS / 外链音频，支持上一首、下一首、拖动进度、播放列表。
- */
-export function MusicPlayer() {
-  const { data: musics } = useAsync(() => musicApi.list(), [])
+const playerIcons = {
+  play: <Icon name="play" size={20} filled />,
+  pause: <Icon name="pause" size={20} filled />,
+  previous: <Icon name="skipBack" size={18} />,
+  next: <Icon name="skipForward" size={18} />,
+  volume: <Icon name="volume" size={17} />,
+  volumeMute: <Icon name="volumeMute" size={17} />,
+}
 
+/** 复用 React H5 Audio Player；收起和跨页导航始终保留同一个音频元素。 */
+export function MusicPlayer() {
+  const { data: musics } = useAsync(musicApi.list, [])
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
+  const [buffering, setBuffering] = useState(false)
+  const [error, setError] = useState(false)
   const [showList, setShowList] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const progressRef = useRef<HTMLDivElement>(null)
-
+  const player = useRef<AudioPlayer>(null)
+  const playerRef = useRef<HTMLElement>(null)
+  const listButtonRef = useRef<HTMLButtonElement>(null)
+  const listId = useId()
   const list = musics ?? []
-  const current: MusicVO | undefined = list[index]
-
-  /* -------------------------------------------------------- 音频元素事件 */
+  const current = list[index]
+  const playAfterChange = useRef(false)
 
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const onTime = () => setCurrentTime(audio.currentTime)
-    const onMeta = () => setDuration(audio.duration || 0)
-    const onEnded = () => {
-      // 播完自动下一首；到末尾则回到第一首并暂停
-      setIndex((prev) => {
-        if (prev + 1 < list.length) return prev + 1
-        setPlaying(false)
-        return 0
-      })
+    if (!showList) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !playerRef.current?.contains(event.target)) setShowList(false)
     }
-    const onError = () => setPlaying(false)
-
-    audio.addEventListener('timeupdate', onTime)
-    audio.addEventListener('loadedmetadata', onMeta)
-    audio.addEventListener('ended', onEnded)
-    audio.addEventListener('error', onError)
-
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowList(false)
+        listButtonRef.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
     return () => {
-      audio.removeEventListener('timeupdate', onTime)
-      audio.removeEventListener('loadedmetadata', onMeta)
-      audio.removeEventListener('ended', onEnded)
-      audio.removeEventListener('error', onError)
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
     }
-  }, [list.length])
+  }, [showList])
 
-  /** 切换歌曲后：重置进度，若处于播放态则续播 */
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !current) return
-
-    setCurrentTime(0)
-    setDuration(0)
-    audio.load()
-
-    if (playing) {
-      void audio.play().catch(() => setPlaying(false))
+  const selectTrack = (target: number, autoPlay = false) => {
+    const audio = player.current?.audio.current
+    if (!audio || !list[target]) return
+    playAfterChange.current = autoPlay || !audio.paused
+    setError(false)
+    setBuffering(false)
+    // 同一个音源不会触发组件的 src 变更，手动复位并保留播放意图。
+    if (list[target].audioUrl === current?.audioUrl) {
+      audio.currentTime = 0
+      if (playAfterChange.current) player.current?.playAudioPromise()
     }
-    // 仅在曲目切换时触发
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current?.audioUrl])
+    setIndex(target)
+  }
 
-  /** 播放/暂停：浏览器要求由用户手势触发，因此只在点击回调里调用 play() */
-  const togglePlay = useCallback(() => {
-    const audio = audioRef.current
-    if (!audio || !current) return
+  if (!current) return null
 
-    if (playing) {
-      audio.pause()
-      setPlaying(false)
-    } else {
-      void audio
-        .play()
-        .then(() => setPlaying(true))
-        .catch(() => setPlaying(false))
-    }
-  }, [playing, current])
-
-  const skip = useCallback(
-    (delta: number) => {
-      if (list.length === 0) return
-
-      setIndex((prev) => {
-        const next = (prev + delta + list.length) % list.length
-        // 切歌后保持播放态
-        window.setTimeout(() => {
-          const audio = audioRef.current
-          if (audio && playing) void audio.play().catch(() => setPlaying(false))
-        }, 30)
-        return next
-      })
-    },
-    [list.length, playing],
-  )
-
-  const seek = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      const audio = audioRef.current
-      const bar = progressRef.current
-      if (!audio || !bar || !duration) return
-
-      const rect = bar.getBoundingClientRect()
-      const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
-      audio.currentTime = ratio * duration
-      setCurrentTime(audio.currentTime)
-    },
-    [duration],
-  )
-
-  // 没有已上架音乐时不渲染播放器
-  if (list.length === 0 || !current) return null
-
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+  const status = error ? '音频加载失败，点击播放重试' : buffering ? '正在缓冲…' : playing ? '正在播放' : '已暂停'
 
   return (
-    <>
-      <audio ref={audioRef} src={current.audioUrl} preload="metadata" />
-
-      <div className={cx('music-player glass glass--strong', collapsed && 'music-player--collapsed')}>
-        <div className="music-player__bar">
-          <div className={cx('music-player__cover', playing && 'music-player__cover--spinning')}>
-            <img src={withFallback(current.coverImage, musicCover(current.id))} alt={current.title} />
-          </div>
-
-          <div className="music-player__info">
-            <span className="music-player__title" title={current.title}>
-              {current.title}
-            </span>
-            <span className="music-player__artist">{current.artist || '未知艺术家'}</span>
-          </div>
-
-          <div className="music-player__controls">
-            {!collapsed && (
-              <>
-                <button type="button" className="music-player__btn" onClick={() => skip(-1)} aria-label="上一首">
-                  <Icon name="skipBack" size={15} />
-                </button>
-                <button
-                  type="button"
-                  className="music-player__btn music-player__btn--play"
-                  onClick={togglePlay}
-                  aria-label={playing ? '暂停' : '播放'}
-                >
-                  <Icon name={playing ? 'pause' : 'play'} size={16} filled={!playing} />
-                </button>
-                <button type="button" className="music-player__btn" onClick={() => skip(1)} aria-label="下一首">
-                  <Icon name="skipForward" size={15} />
-                </button>
-                <button
-                  type="button"
-                  className="music-player__btn"
-                  onClick={() => setShowList((prev) => !prev)}
-                  aria-label="播放列表"
-                  title="播放列表"
-                >
-                  <Icon name="list" size={16} />
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              className="music-player__btn"
-              onClick={() => {
-                setCollapsed((prev) => !prev)
-                setShowList(false)
-              }}
-              aria-label={collapsed ? '展开播放器' : '收起播放器'}
-              title={collapsed ? '展开播放器' : '收起播放器'}
-            >
-              <Icon name={collapsed ? 'chevronUp' : 'chevronDown'} size={16} />
+    <section
+      ref={playerRef}
+      aria-label="随身听音乐播放器"
+      className={cx('music-player', collapsed && 'music-player--collapsed', playing && 'music-player--playing')}
+    >
+      {showList && !collapsed && (
+        <section id={listId} className="music-player__queue" aria-label="播放列表">
+          <header className="music-player__queue-heading">
+            <h2>接下来播放 <span>{list.length} 首</span></h2>
+            <button type="button" className="music-player__btn" onClick={() => { setShowList(false); listButtonRef.current?.focus() }} aria-label="关闭播放列表">
+              <Icon name="close" size={17} />
             </button>
+          </header>
+          <div className="music-player__list">
+            {list.map((music, itemIndex) => (
+              <button
+                type="button" key={music.id}
+                className={cx('music-player__item', itemIndex === index && 'music-player__item--active')}
+                aria-current={itemIndex === index ? 'true' : undefined}
+                onClick={() => selectTrack(itemIndex, true)}
+              >
+                <span className="music-player__item-index">{itemIndex === index && playing ? <Icon name="volume" size={14} /> : `${itemIndex + 1}`.padStart(2, '0')}</span>
+                <img className="music-player__item-cover" src={withFallback(music.coverImage, musicCover(music.id))} alt="" loading="lazy" />
+                <span className="music-player__item-text">
+                  <span className="music-player__item-title">{music.title}</span>
+                  <span className="music-player__item-artist">{music.artist || '未知艺术家'}</span>
+                </span>
+                {itemIndex === index && <span className="music-player__item-dot" aria-hidden="true" />}
+              </button>
+            ))}
           </div>
-        </div>
+          <Link to="/music" className="music-player__all" onClick={() => setShowList(false)}>查看全部音乐 <Icon name="arrowRight" size={14} /></Link>
+        </section>
+      )}
 
-        {!collapsed && (
-          <>
-            <div className="music-player__progress" ref={progressRef} onClick={seek}>
-              <div className="music-player__progress-fill" style={{ width: `${progress}%` }} />
-              <div className="music-player__progress-thumb" style={{ left: `${progress}%` }} />
-            </div>
-            <div className="music-player__time">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
+      <div className="music-player__shell">
+        <header className="music-player__track">
+          <img className="music-player__art" src={withFallback(current.coverImage, musicCover(current.id))} alt={`${current.title}的封面`} />
+          <div className="music-player__info">
+            <span className="music-player__title" title={current.title}>{current.title}</span>
+            <span className="music-player__artist" title={current.artist || '未知艺术家'}>{current.artist || '未知艺术家'}</span>
+          </div>
+          <button
+            type="button" className="music-player__btn music-player__resize"
+            aria-label={collapsed ? '展开播放器' : '收起播放器'} aria-expanded={!collapsed}
+            title={collapsed ? '展开播放器' : '收起播放器'}
+            onClick={() => { setCollapsed(!collapsed); setShowList(false) }}
+          >
+            <Icon name={collapsed ? 'chevronUp' : 'chevronDown'} size={17} />
+          </button>
+        </header>
 
-            {showList && (
-              <div className="music-player__list">
-                {list.map((music, itemIndex) => (
-                  <button
-                    type="button"
-                    key={music.id}
-                    className={cx('music-player__item', itemIndex === index && 'music-player__item--active')}
-                    onClick={() => {
-                      setIndex(itemIndex)
-                      setPlaying(true)
-                      // 等 src 更新后再播放
-                      window.setTimeout(() => {
-                        void audioRef.current?.play().catch(() => setPlaying(false))
-                      }, 40)
-                    }}
-                  >
-                    <span className="music-player__item-index">
-                      {itemIndex === index && playing ? <Icon name="volume" size={13} /> : itemIndex + 1}
-                    </span>
-                    <span className="music-player__item-text">
-                      <span className="music-player__item-title">{music.title}</span>
-                      <span className="music-player__item-artist">{music.artist || '未知艺术家'}</span>
-                    </span>
-                  </button>
-                ))}
+        <AudioPlayer
+          ref={player}
+          className="music-player__audio"
+          src={current.audioUrl}
+          autoPlay={false}
+          autoPlayAfterSrcChange={playAfterChange.current}
+          preload="metadata"
+          volume={0.7}
+          layout="stacked-reverse"
+          showSkipControls
+          showJumpControls={false}
+          showDownloadProgress={false}
+          showFilledVolume
+          progressUpdateInterval={250}
+          defaultCurrentTime="00:00"
+          defaultDuration="00:00"
+          timeFormat="mm:ss"
+          i18nAriaLabels={{ ...playerLabels, play: error ? '重试播放' : '播放' }}
+          customIcons={playerIcons}
+          customControlsSection={[
+            RHAP_UI.MAIN_CONTROLS,
+            RHAP_UI.VOLUME_CONTROLS,
+            <button
+              key="queue" ref={listButtonRef} type="button"
+              className={cx('music-player__btn music-player__queue-toggle', showList && 'music-player__btn--active')}
+              aria-label="播放列表" title="播放列表" aria-expanded={showList} aria-controls={listId}
+              onClick={() => setShowList(!showList)}
+            ><Icon name="list" size={19} /><span>{list.length}</span></button>,
+          ]}
+          onClickPrevious={() => selectTrack((index - 1 + list.length) % list.length)}
+          onClickNext={() => selectTrack((index + 1) % list.length)}
+          onPlay={() => { setPlaying(true); setError(false) }}
+          onPlaying={() => { setPlaying(true); setBuffering(false); setError(false) }}
+          onPause={() => { setPlaying(false); setBuffering(false) }}
+          onWaiting={() => { if (!player.current?.audio.current?.paused) setBuffering(true) }}
+          onError={() => { setPlaying(false); setBuffering(false); setError(true) }}
+          onPlayError={() => { setPlaying(false); setBuffering(false); setError(true) }}
+          onEnded={() => {
+            if (index + 1 < list.length) selectTrack(index + 1, true)
+            else {
+              playAfterChange.current = false
+              setPlaying(false)
+              setIndex(0)
+            }
+          }}
+        />
 
-                <div className="music-player__divider" />
-                <Link
-                  to="/music"
-                  className="music-player__item"
-                  style={{ fontSize: 13, color: 'var(--brand-600)', fontWeight: 600 }}
-                >
-                  <Icon name="arrowRight" size={14} />
-                  前往音乐页查看全部
-                </Link>
-              </div>
-            )}
-          </>
-        )}
+        <footer className="music-player__footer">
+          <span className={cx('music-player__status', error && 'music-player__status--error')} role="status">
+            <span className="music-player__equalizer" aria-hidden="true"><i /><i /><i /></span>{status}
+          </span>
+          <span className="music-player__collection">我的音乐收藏</span>
+        </footer>
       </div>
-    </>
+    </section>
   )
 }

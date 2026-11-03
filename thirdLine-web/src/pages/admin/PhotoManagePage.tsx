@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { photoApi, type PhotoDTO, type PhotoVO } from '@/api'
+import { footprintApi, photoApi, type PhotoDTO, type PhotoVO } from '@/api'
+import { useAsync } from '@/hooks/useAsync'
 import { usePaginatedList } from '@/hooks/usePaginatedList'
 import { useToast } from '@/components/ToastContext'
 import { Glass } from '@/components/Glass'
@@ -16,6 +17,7 @@ interface PhotoForm {
   id?: number
   title: string
   description: string
+  cityCode: string
   url: string
   width?: number
   height?: number
@@ -27,6 +29,7 @@ interface PhotoForm {
 const EMPTY_FORM: PhotoForm = {
   title: '',
   description: '',
+  cityCode: '',
   url: '',
   sort: '',
   visible: true,
@@ -43,6 +46,8 @@ export function PhotoManagePage() {
 
   const [status, setStatus] = useState<number | undefined>(undefined)
   const list = usePaginatedList<PhotoVO>((page, size) => photoApi.adminPage({ page, size, status }), [status], 10)
+  // 足迹城市下拉：把照片归属到某个城市，才会出现在该城市的足迹详情里
+  const cities = useAsync(footprintApi.options, [])
 
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<PhotoForm>(EMPTY_FORM)
@@ -63,6 +68,7 @@ export function PhotoManagePage() {
       id: photo.id,
       title: photo.title ?? '',
       description: photo.description ?? '',
+      cityCode: photo.cityCode ?? '',
       url: photo.url ?? '',
       width: photo.width ?? undefined,
       height: photo.height ?? undefined,
@@ -86,6 +92,8 @@ export function PhotoManagePage() {
     const dto: PhotoDTO = {
       title: form.title.trim() || undefined,
       description: form.description.trim() || undefined,
+      // 空串表示移出足迹（后端会转成 NULL）
+      cityCode: form.cityCode,
       url: form.url.trim(),
       width: form.width,
       height: form.height,
@@ -345,6 +353,27 @@ export function PhotoManagePage() {
               rows={3}
               placeholder="记录一下这张照片背后的故事…"
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+            />
+          </Field>
+
+          <Field
+            label="归属城市"
+            hint={
+              cities.error
+                ? `城市列表加载失败：${cities.error}`
+                : '选择后这张照片会出现在该城市的足迹详情里；留空则只在相册展示'
+            }
+          >
+            <Select
+              aria-label="归属城市"
+              placeholder="不归属城市（普通相册）"
+              options={(cities.data ?? []).map((city) => ({
+                label: `${city.provinceName} · ${city.cityName}`,
+                value: city.cityCode,
+              }))}
+              value={form.cityCode}
+              disabled={saving || cities.loading}
+              onChange={(event) => setForm((prev) => ({ ...prev, cityCode: event.target.value }))}
             />
           </Field>
 

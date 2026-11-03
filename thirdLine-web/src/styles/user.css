@@ -95,7 +95,7 @@
 /* 首页统计条 */
 .stats-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-4);
   margin-top: calc(var(--space-6) * -1);
   position: relative;

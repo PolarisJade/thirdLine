@@ -13,6 +13,7 @@ import com.god.thirdLine.exception.BusinessException;
 import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.service.IOssReferenceService;
 import com.god.thirdLine.service.IPhotoService;
+import com.god.thirdLine.service.SiteStatsCache;
 import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +36,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
 
+    /** 城市行政区划代码：6 位数字，与 tl_footprint.city_code 对齐 */
+    private static final Pattern ADCODE = Pattern.compile("\\d{6}");
+
     private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     public Long savePhoto(PhotoDTO dto) {
@@ -45,6 +51,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         Photo photo = new Photo()
                 .setTitle(dto.getTitle())
                 .setDescription(dto.getDescription())
+                .setCityCode(normalizeCityCode(dto.getCityCode()))
                 .setUrl(dto.getUrl())
                 .setWidth(dto.getWidth())
                 .setHeight(dto.getHeight())
@@ -53,7 +60,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         // createTime / updateTime 由 MetaObjectHandler 自动填充
         // sort 未指定时自增追加到末尾（当前最大 sort + 1）
         photo.setSort(dto.getSort() == null ? nextSort() : dto.getSort());
-        this.save(photo);
+        if (this.save(photo)) {
+            siteStatsCache.evictAfterCommit();
+        }
         return photo.getId();
     }
 
@@ -78,6 +87,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (dto.getDescription() != null) {
             photo.setDescription(dto.getDescription());
         }
+        // 传空串表示移出足迹、回到普通相册；不传（null）表示保持原归属
+        if (dto.getCityCode() != null) {
+            photo.setCityCode(normalizeCityCode(dto.getCityCode()));
+        }
         if (dto.getWidth() != null) {
             photo.setWidth(dto.getWidth());
         }
@@ -94,7 +107,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             photo.setStatus(dto.getStatus());
         }
         // updateTime 由 MetaObjectHandler 自动刷新
-        this.updateById(photo);
+        if (this.updateById(photo)) {
+            siteStatsCache.evictAfterCommit();
+        }
 
         // 换图后清理旧原图：确认无人引用才删，手填外链自动跳过
         if (StringUtils.hasText(dto.getUrl())) {
@@ -111,7 +126,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (photo == null) {
             throw new BusinessException(ResultCode.PHOTO_NOT_FOUND);
         }
-        this.removeById(id);
+        if (this.removeById(id)) {
+            siteStatsCache.evictAfterCommit();
+        }
         // 同步清理 OSS 上的原图（手填外链自动跳过）
         objectStorageUtil.deleteByUrl(photo.getUrl());
     }
@@ -164,6 +181,18 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             return 1;
         }
         return last.getSort() + 1;
+    }
+
+    /** 空值 / 空白统一转 null；非空时必须是 6 位数字 adcode */
+    private String normalizeCityCode(String cityCode) {
+        if (!StringUtils.hasText(cityCode)) {
+            return null;
+        }
+        String code = cityCode.trim();
+        if (!ADCODE.matcher(code).matches()) {
+            throw new BusinessException(ResultCode.PARAM_ERROR, "城市行政区划代码必须是 6 位数字");
+        }
+        return code;
     }
 
     private PhotoVO toVO(Photo photo) {

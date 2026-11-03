@@ -34,6 +34,8 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
       { to: '/admin/portfolio', label: '作品集管理', icon: 'grid' },
       { to: '/admin/photos', label: '相册管理', icon: 'image' },
       { to: '/admin/music', label: '音乐管理', icon: 'music' },
+      { to: '/admin/history', label: '历程管理', icon: 'clock' },
+      { to: '/admin/footprints', label: '足迹管理', icon: 'flag' },
     ],
   },
   {
@@ -44,7 +46,10 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   },
   {
     title: '系统',
-    items: [{ to: '/admin/settings', label: '账号设置', icon: 'settings' }],
+    items: [
+      { to: '/admin/users', label: '用户管理', icon: 'users' },
+      { to: '/admin/settings', label: '账号设置', icon: 'settings' },
+    ],
   },
 ]
 

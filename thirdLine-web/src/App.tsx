@@ -46,6 +46,13 @@ const FriendLinkManagePage = lazy(() =>
   import('./pages/admin/FriendLinkManagePage').then((m) => ({ default: m.FriendLinkManagePage })),
 )
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })))
+const UserManagePage = lazy(() => import('./pages/admin/UserManagePage').then((m) => ({ default: m.UserManagePage })))
+const SiteHistoryManagePage = lazy(() => import('./pages/admin/SiteHistoryManagePage').then((m) => ({ default: m.SiteHistoryManagePage })))
+const FootprintManagePage = lazy(() => import('./pages/admin/FootprintManagePage').then((m) => ({ default: m.FootprintManagePage })))
+const SiteHistoryPage = lazy(() => import('./pages/user/SiteHistoryPage').then((m) => ({ default: m.SiteHistoryPage })))
+// 足迹页依赖 echarts（约 1MB），单独分包，只有访问 /footprint 时才下载
+const FootprintPage = lazy(() => import('./pages/user/FootprintPage').then((m) => ({ default: m.FootprintPage })))
+const ArticleArchivePage = lazy(() => import('./pages/user/ArticleArchivePage').then((m) => ({ default: m.ArticleArchivePage })))
 
 /**
  * 路由表。
@@ -60,12 +67,22 @@ export function App() {
       <Route element={<UserLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/articles" element={<ArticleListPage />} />
+        <Route path="/articles/archive" element={<Suspense fallback={<RouteFallback />}><ArticleArchivePage /></Suspense>} />
         <Route path="/articles/:id" element={<ArticleDetailPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route
+          path="/footprint"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <FootprintPage />
+            </Suspense>
+          }
+        />
         <Route path="/music" element={<MusicPage />} />
         <Route path="/links" element={<FriendLinksPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/history" element={<Suspense fallback={<RouteFallback />}><SiteHistoryPage /></Suspense>} />
         <Route
           path="/profile"
           element={
@@ -111,6 +128,9 @@ export function App() {
         <Route path="music" element={<MusicManagePage />} />
         <Route path="friend-links" element={<FriendLinkManagePage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="users" element={<UserManagePage />} />
+        <Route path="history" element={<SiteHistoryManagePage />} />
+        <Route path="footprints" element={<FootprintManagePage />} />
         <Route path="*" element={<NotFoundPage admin />} />
       </Route>
     </Routes>

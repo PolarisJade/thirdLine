@@ -1,7 +1,11 @@
 node_modules
 dist
+# 构建地图数据时临时解压的 geodata 包（约 22MB，不入库）
+.cache
 dist-ssr
 *.local
+.env.local
+.env.*.local
 .DS_Store
 .vite
 *.log

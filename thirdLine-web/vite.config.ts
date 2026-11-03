@@ -9,6 +9,8 @@ import react from '@vitejs/plugin-react'
  *   X-Refresh-Token 续期响应头（同源下无 expose 限制）。
  * - 生产环境由 nginx 等把 /api 反向代理到后端即可，无需改前端代码。
  *   如需直连后端，把 .env.production 里的 VITE_API_BASE 改成完整域名。
+ * - 备案号等隐私变量放在 thirdLine-web/.env.local（已被 *.local 规则忽略，
+ *   不上传 GitHub），Vite 构建时自动内联进 import.meta.env.VITE_*。
  */
 export default defineConfig({
   plugins: [react()],
@@ -38,6 +40,8 @@ export default defineConfig({
         manualChunks: {
           // 富文本编辑器体积较大，单独分包，避免拖慢用户端首屏
           editor: ['@wangeditor/editor', '@wangeditor/editor-for-react'],
+          // 中国地图只在足迹页用到，单独分包，别拖慢前台首屏
+          echarts: ['echarts'],
           vendor: ['react', 'react-dom', 'react-router-dom', 'axios'],
         },
       },

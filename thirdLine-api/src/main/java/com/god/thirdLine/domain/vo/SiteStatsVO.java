@@ -27,4 +27,7 @@ public class SiteStatsVO implements Serializable {
 
     /** 相册照片总数（仅统计显示状态） */
     private Long photoCount;
+
+    /** 用户总数（包含管理员、普通用户及已禁用账号） */
+    private Long userCount;
 }

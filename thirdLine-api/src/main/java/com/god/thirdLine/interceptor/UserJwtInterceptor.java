@@ -3,7 +3,9 @@ package com.god.thirdLine.interceptor;
 import com.god.thirdLine.common.ResultCode;
 import com.god.thirdLine.config.JwtProperties;
 import com.god.thirdLine.context.UserContext;
+import com.god.thirdLine.domain.entity.User;
 import com.god.thirdLine.exception.BusinessException;
+import com.god.thirdLine.mapper.UserMapper;
 import com.god.thirdLine.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ public class UserJwtInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
+    private final UserMapper userMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -55,9 +58,14 @@ public class UserJwtInterceptor implements HandlerInterceptor {
             throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
 
-        // 滑动续期：与后台拦截器一致，登录用户前台写操作也能顺延 token 有效期
+        User user = userMapper.selectById(userId);
+        if (user == null || !Integer.valueOf(1).equals(user.getStatus())) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "账号不存在或已被禁用，请重新登录");
+        }
+
+        // 续期使用数据库中的当前账号与角色。
         if (jwtUtil.needRefresh(claims)) {
-            String newToken = jwtUtil.generateToken(userId, jwtUtil.getUsername(claims), jwtUtil.getRole(claims));
+            String newToken = jwtUtil.generateToken(userId, user.getUsername(), user.getRole());
             response.setHeader(jwtProperties.getRefreshHeader(), newToken);
         }
 

@@ -14,6 +14,8 @@ import com.god.thirdLine.domain.entity.ArticleTag;
 import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleTagVO;
+import com.god.thirdLine.domain.vo.ArticleArchiveVO;
+import com.god.thirdLine.domain.vo.ArticleArchiveEntryVO;
 import com.god.thirdLine.domain.vo.ArticleVO;
 import com.god.thirdLine.domain.vo.TagVO;
 import com.god.thirdLine.exception.BusinessException;
@@ -23,6 +25,7 @@ import com.god.thirdLine.mapper.CategoryMapper;
 import com.god.thirdLine.mapper.TagMapper;
 import com.god.thirdLine.service.IArticleService;
 import com.god.thirdLine.service.IOssReferenceService;
+import com.god.thirdLine.service.SiteStatsCache;
 import com.god.thirdLine.util.ObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,8 +34,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +60,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final CategoryMapper categoryMapper;
     private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
+    private final SiteStatsCache siteStatsCache;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -86,7 +92,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (Integer.valueOf(1).equals(article.getStatus())) {
             article.setPublishedTime(now);
         }
-        this.save(article);
+        if (this.save(article)) {
+            siteStatsCache.evictAfterCommit();
+        }
 
         // 关联标签
         saveArticleTags(article.getId(), dto.getTagIds());
@@ -148,6 +156,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public List<ArticleArchiveVO> listArticleArchive() {
+        List<ArticleArchiveEntryVO> articles = baseMapper.selectPublishedArticlesForArchive();
+        if (articles.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<LocalDate, List<ArticleArchiveEntryVO>> grouped = new LinkedHashMap<>();
+        for (ArticleArchiveEntryVO article : articles) {
+            grouped.computeIfAbsent(article.getPublishedTime().toLocalDate(), key -> new ArrayList<>())
+                    .add(article);
+        }
+        return grouped.entrySet().stream().map(entry -> {
+            ArticleArchiveVO archive = new ArticleArchiveVO();
+            archive.setDate(entry.getKey());
+            archive.setArticles(entry.getValue());
+            return archive;
+        }).toList();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteArticle(Long id) {
         if (id == null) {
@@ -158,7 +186,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new BusinessException(ResultCode.ARTICLE_NOT_FOUND);
         }
         // 删除文章
-        this.removeById(id);
+        if (this.removeById(id)) {
+            siteStatsCache.evictAfterCommit();
+        }
         // 级联删除标签关联
         articleTagMapper.delete(Wrappers.<ArticleTag>lambdaQuery().eq(ArticleTag::getArticleId, id));
         // 同步清理 OSS 上的封面图（手填外链自动跳过）
@@ -211,7 +241,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
         // updatedTime 由 MetaObjectHandler 自动刷新
-        this.updateById(article);
+        if (this.updateById(article)) {
+            siteStatsCache.evictAfterCommit();
+        }
 
         // tagIds 非 null 时整体覆盖标签关联
         if (dto.getTagIds() != null) {

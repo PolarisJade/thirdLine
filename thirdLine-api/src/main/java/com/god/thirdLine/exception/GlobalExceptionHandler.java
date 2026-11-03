@@ -3,11 +3,14 @@ package com.god.thirdLine.exception;
 import com.god.thirdLine.common.Result;
 import com.god.thirdLine.common.ResultCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -51,6 +54,17 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         log.warn("参数绑定失败: {}", msg);
         return Result.error(ResultCode.PARAM_ERROR, msg);
+    }
+
+    /**
+     * 静态资源/未知路径 404：浏览器直接访问后端根路径时会自动请求 /favicon.ico 等，属正常现象，
+     * 只记一条简要日志，避免落入兜底处理器打出 ERROR 堆栈
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Result<Void> handleNoResourceFound(NoResourceFoundException e) {
+        log.debug("资源不存在: {}", e.getResourcePath());
+        return Result.error(HttpStatus.NOT_FOUND.value(), "资源不存在");
     }
 
     /**

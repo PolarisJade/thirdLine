@@ -22,7 +22,7 @@ public class SiteStatsController {
     private final ISiteStatsService siteStatsService;
 
     /**
-     * 网站基本信息统计：文章总数 / 分类总数 / 标签总数 / 相册照片总数（读操作，放行）
+     * 网站基本信息统计：文章总数 / 分类总数 / 标签总数 / 相册照片总数 / 用户总数（读操作，放行）
      */
     @GetMapping("/stats")
     public Result<SiteStatsVO> stats() {

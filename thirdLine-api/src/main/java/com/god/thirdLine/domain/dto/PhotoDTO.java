@@ -26,6 +26,9 @@ public class PhotoDTO implements Serializable {
     /** 照片描述 */
     private String description;
 
+    /** 所属城市行政区划代码；为空表示普通相册照片 */
+    private String cityCode;
+
     /** 原图访问URL（新增必填） */
     private String url;
 

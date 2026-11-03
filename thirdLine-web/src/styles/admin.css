@@ -751,6 +751,56 @@
   color: var(--text-tertiary);
 }
 
+/* ============================================================== 用户管理 */
+.user-management {
+  gap: var(--space-5);
+}
+
+.user-management__filters {
+  padding: var(--space-4) var(--space-5);
+}
+
+.user-management__filters .input-group {
+  flex: 1 1 17rem;
+  max-width: 24rem;
+}
+
+.user-management__filters .select {
+  width: 9rem;
+}
+
+.user-management__table {
+  min-width: 68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.user-management__actions-head {
+  text-align: right;
+}
+
+.user-management__email {
+  max-width: 18rem;
+  overflow-wrap: anywhere;
+}
+
+.user-management__danger {
+  color: var(--danger);
+}
+
+.user-management__form,
+.user-management__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.user-management__fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 /* ============================================================== 响应式 */
 @media (max-width: 1180px) {
   .dash-columns {

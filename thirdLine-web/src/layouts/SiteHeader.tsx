@@ -12,11 +12,14 @@ import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
 const NAV_ITEMS = [
   { to: '/', label: '首页', icon: 'home' as const },
   { to: '/articles', label: '文章', icon: 'article' as const },
+  { to: '/articles/archive', label: '归档', icon: 'clock' as const },
   { to: '/portfolio', label: '作品集', icon: 'grid' as const },
   { to: '/gallery', label: '相册', icon: 'image' as const },
+  { to: '/footprint', label: '足迹', icon: 'flag' as const },
   { to: '/music', label: '音乐', icon: 'music' as const },
   { to: '/links', label: '友链', icon: 'link' as const },
   { to: '/about', label: '关于', icon: 'user' as const },
+  { to: '/history', label: '历程', icon: 'clock' as const },
 ]
 
 export function SiteHeader() {
@@ -68,7 +71,7 @@ export function SiteHeader() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.to === '/' || item.to === '/articles'}
                 className={({ isActive }) => cx('main-nav__link', isActive && 'main-nav__link--active')}
               >
                 {item.label}
@@ -182,7 +185,7 @@ export function SiteHeader() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.to === '/' || item.to === '/articles'}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) => cx('mobile-nav__link', isActive && 'mobile-nav__link--active')}
               >

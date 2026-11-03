@@ -1,0 +1,136 @@
+/* 足迹页：地图 + 城市详情抽屉，沿用站点的明暗主题令牌。 */
+.footprint-page { padding-bottom: var(--space-7); }
+/* 地图不套玻璃面板：直接以页面背景为底，横向铺满整个页面 */
+.footprint-map-panel { position: relative; width: 100%; margin-top: var(--space-4); padding: 0; overflow: hidden; }
+.footprint-map { width: 100%; height: clamp(520px, 76vh, 880px); }
+.footprint-map__mask {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: transparent;
+  backdrop-filter: blur(3px);
+  border-radius: inherit;
+}
+.footprint-map__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  max-width: min(90%, 420px);
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+.footprint-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-3) 0 0;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+.footprint-drawer {
+  position: fixed;
+  inset: 0;
+  /* 与站点模态层一致，位于导航与播放器之上、照片预览之下。 */
+  z-index: 300;
+  display: flex;
+  justify-content: flex-end;
+  background: var(--overlay);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: footprint-mask-in var(--duration-base) var(--ease-out);
+}
+.footprint-drawer__panel {
+  width: min(560px, 100%);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--surface);
+  border-left: 1px solid var(--line-strong);
+  box-shadow: -24px 0 64px -24px var(--overlay);
+  animation: footprint-drawer-in var(--duration-slow) var(--ease-out);
+}
+.footprint-drawer__heading { min-width: 0; overflow-wrap: anywhere; }
+.footprint-drawer__grabber { display: none; }
+.footprint-drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.footprint-drawer__eyebrow { color: var(--brand-600); font-size: 12px; font-weight: 600; }
+:root[data-theme='dark'] .footprint-drawer__eyebrow { color: var(--brand-400); }
+.footprint-drawer__title { margin: 7px 0 0; font-size: 30px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.25; }
+.footprint-drawer__meta { margin: 10px 0 0; font-size: 13px; color: var(--text-tertiary); line-height: 1.7; }
+.footprint-drawer__body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-5) var(--space-6) var(--space-6); }
+.footprint-drawer__content {
+  margin: 0 0 var(--space-6);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+  color: var(--text-secondary);
+}
+.footprint-drawer__section-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.footprint-drawer__section-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.footprint-drawer__section-head span { color: var(--text-tertiary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.footprint-drawer__loading { padding: var(--space-7) 0; }
+.footprint-drawer__feedback { display: grid; justify-items: start; gap: var(--space-3); margin-top: var(--space-4); }
+.footprint-drawer__empty { margin: var(--space-4) 0 0; padding: var(--space-5); border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text-tertiary); line-height: 1.8; }
+.footprint-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.footprint-photos__item {
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.footprint-photos__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.footprint-photos__item:hover img { transform: scale(1.04); }
+.footprint-photos__item:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 3px; }
+
+@keyframes footprint-mask-in { from { background: transparent; } }
+@keyframes footprint-drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes footprint-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+@media (max-width: 640px) {
+  .footprint-map { height: clamp(340px, 56vh, 520px); }
+  .footprint-map-panel { margin-top: var(--space-3); }
+  .footprint-tip { align-items: flex-start; line-height: 1.8; }
+  .footprint-tip > svg { margin-top: 4px; }
+  .footprint-drawer { align-items: flex-end; }
+  .footprint-drawer__panel { width: 100%; height: min(88dvh, 860px); border-radius: var(--radius-xl) var(--radius-xl) 0 0; border-left: 0; border-top: 1px solid var(--line-strong); animation-name: footprint-sheet-in; }
+  .footprint-drawer__grabber { display: block; flex-shrink: 0; width: 36px; height: 4px; border-radius: var(--radius-pill); margin: 10px auto 0; background: var(--line-strong); }
+  .footprint-drawer__head { padding: var(--space-4) var(--space-5) var(--space-5); }
+  .footprint-drawer__title { font-size: 26px; }
+  .footprint-drawer__body { padding: var(--space-5); padding-bottom: max(var(--space-6), env(safe-area-inset-bottom)); }
+  .footprint-photos { gap: var(--space-2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footprint-drawer, .footprint-drawer__panel { animation: none; }
+  .footprint-photos__item img { transition: none; }
+}

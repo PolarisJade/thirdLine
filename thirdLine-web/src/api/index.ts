@@ -1,6 +1,13 @@
 import { api } from './client'
 import type {
+  SiteHistoryVO,
+  SiteHistoryAdminVO,
+  SiteHistoryDTO,
+  SiteHistoryQuery,
+  SiteHistoryOptionsVO,
+  AdminUserDTO,
   ArticlePageQuery,
+  ArticleArchiveVO,
   ArticleQuery,
   ArticleSaveDTO,
   ArticleUpdateDTO,
@@ -14,6 +21,11 @@ import type {
   FriendLinkDTO,
   FriendLinkQuery,
   FriendLinkVO,
+  FootprintAdminVO,
+  FootprintCityOptionVO,
+  FootprintDTO,
+  FootprintQuery,
+  FootprintVO,
   LoginDTO,
   LoginVO,
   MusicDTO,
@@ -35,6 +47,7 @@ import type {
   TechStackDTO,
   TechStackVO,
   UserUpdateDTO,
+  UserQuery,
   UserVO,
 } from './types'
 
@@ -61,6 +74,16 @@ export const userApi = {
   updatePassword: (dto: PasswordUpdateDTO) => api.put<void>('/admin/user/password', dto),
 }
 
+/** 管理员维护用户账号。 */
+export const adminUserApi = {
+  page: (query: UserQuery) => api.get<PageResult<UserVO>>('/admin/user/page', query),
+  create: (dto: AdminUserDTO) => api.post<number>('/admin/user', dto),
+  update: (dto: AdminUserDTO) => api.put<UserVO>('/admin/user', dto),
+  resetPassword: (id: number, newPassword: string) =>
+    api.put<void>(`/admin/user/${id}/password`, { newPassword }),
+  remove: (id: number) => api.delete<void>(`/admin/user/${id}`),
+}
+
 /* ================================================================== 文章 */
 
 export const articleApi = {
@@ -69,6 +92,9 @@ export const articleApi = {
 
   /** 前台文章详情（GET /user/article/{id}），含正文与标签 */
   detail: (id: number) => api.get<ArticleVO>(`/user/article/${id}`),
+
+  /** 前台日期归档（GET /user/article/archive） */
+  archive: () => api.get<ArticleArchiveVO[]>('/user/article/archive'),
 
   /** 后台游标分页（GET /admin/article/page），可按 status 过滤草稿 */
   adminPage: (query: ArticleQuery) => api.get<CursorPage<ArticleVO>>('/admin/article/page', query),
@@ -292,3 +318,49 @@ export const fileApi = {
 }
 
 export * from './types'
+
+/* ================================================================== 足迹 */
+
+export const footprintApi = {
+  /** 前台城市列表（GET /user/footprint/list），已发布且显示，按到访日期升序 */
+  list: () => api.get<FootprintVO[]>('/user/footprint/list'),
+
+  /** 某城市下显示中的照片（GET /user/footprint/{cityCode}/photos），点击城市后再加载 */
+  cityPhotos: (cityCode: string) => api.get<PhotoVO[]>(`/user/footprint/${cityCode}/photos`),
+
+  /** 后台分页（GET /admin/footprint/page） */
+  adminPage: (query: FootprintQuery) => api.get<PageResult<FootprintAdminVO>>('/admin/footprint/page', query),
+
+  /** 后台城市下拉选项（GET /admin/footprint/options），供相册录入照片时选择归属城市 */
+  options: () => api.get<FootprintCityOptionVO[]>('/admin/footprint/options'),
+
+  /** 新增足迹（POST /admin/footprint），cityCode 唯一 */
+  create: (dto: FootprintDTO) => api.post<number>('/admin/footprint', dto),
+
+  /** 修改足迹（PUT /admin/footprint） */
+  update: (dto: FootprintDTO) => api.put<void>('/admin/footprint', dto),
+
+  /** 切换发布状态（PUT /admin/footprint/{id}/publish-status?publishStatus=0|1） */
+  changePublishStatus: (id: number, publishStatus: number) =>
+    api.put<void>(`/admin/footprint/${id}/publish-status`, undefined, { publishStatus }),
+
+  /** 切换显示状态（PUT /admin/footprint/{id}/status?status=0|1） */
+  changeStatus: (id: number, status: number) =>
+    api.put<void>(`/admin/footprint/${id}/status`, undefined, { status }),
+
+  /** 删除足迹（DELETE /admin/footprint/{id}），照片保留在相册中 */
+  remove: (id: number) => api.delete<void>(`/admin/footprint/${id}`),
+}
+
+export const siteHistoryApi = {
+  list: () => api.get<SiteHistoryVO[]>('/user/site-history/list'),
+  adminPage: (query: SiteHistoryQuery) => api.get<PageResult<SiteHistoryAdminVO>>('/admin/site-history/page', query),
+  options: () => api.get<SiteHistoryOptionsVO>('/admin/site-history/options'),
+  create: (dto: SiteHistoryDTO) => api.post<number>('/admin/site-history', dto),
+  update: (dto: SiteHistoryDTO) => api.put<void>('/admin/site-history', dto),
+  changePublishStatus: (id: number, publishStatus: number) =>
+    api.put<void>(`/admin/site-history/${id}/publish-status`, undefined, { publishStatus }),
+  changeStatus: (id: number, status: number) =>
+    api.put<void>(`/admin/site-history/${id}/status`, undefined, { status }),
+  remove: (id: number) => api.delete<void>(`/admin/site-history/${id}`),
+}

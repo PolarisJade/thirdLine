@@ -23,6 +23,9 @@ public class PhotoVO implements Serializable {
 
     private String description;
 
+    /** 所属城市行政区划代码；为空表示普通相册照片 */
+    private String cityCode;
+
     private String url;
 
     private Integer width;

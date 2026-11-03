@@ -6,6 +6,7 @@ import com.god.thirdLine.domain.entity.Article;
 import com.god.thirdLine.domain.query.ArticlePageQuery;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleVO;
+import com.god.thirdLine.domain.vo.ArticleArchiveEntryVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -41,4 +42,9 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * 根据ID查询文章详情（含正文、作者昵称、分类名称）
      */
     ArticleVO selectArticleDetail(@Param("id") Long id);
+
+    /**
+     * 查询所有已发布且有发布时间的文章，供前台日期归档使用。
+     */
+    List<ArticleArchiveEntryVO> selectPublishedArticlesForArchive();
 }

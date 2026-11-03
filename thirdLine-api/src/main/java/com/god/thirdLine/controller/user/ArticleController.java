@@ -5,12 +5,15 @@ import com.god.thirdLine.common.CursorPage;
 import com.god.thirdLine.common.Result;
 import com.god.thirdLine.domain.query.ArticleQuery;
 import com.god.thirdLine.domain.vo.ArticleVO;
+import com.god.thirdLine.domain.vo.ArticleArchiveVO;
 import com.god.thirdLine.service.IArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * <p>
@@ -43,5 +46,13 @@ public class ArticleController {
     @GetMapping("/page")
     public Result<CursorPage<ArticleVO>> page(ArticleQuery query) {
         return Result.success(articleService.pageArticles(query));
+    }
+
+    /**
+     * 按发布日期返回文章归档（年 / 月 / 日由前端展示层分组）。
+     */
+    @GetMapping("/archive")
+    public Result<List<ArticleArchiveVO>> archive() {
+        return Result.success(articleService.listArticleArchive());
     }
 }
