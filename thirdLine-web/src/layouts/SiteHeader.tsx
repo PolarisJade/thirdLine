@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/articles/archive', label: '归档', icon: 'clock' as const },
   { to: '/portfolio', label: '作品集', icon: 'grid' as const },
   { to: '/gallery', label: '相册', icon: 'image' as const },
+  { to: '/footprint', label: '足迹', icon: 'flag' as const },
   { to: '/music', label: '音乐', icon: 'music' as const },
   { to: '/links', label: '友链', icon: 'link' as const },
   { to: '/about', label: '关于', icon: 'user' as const },

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements IPhotoService {
 
+    /** 城市行政区划代码：6 位数字，与 tl_footprint.city_code 对齐 */
+    private static final Pattern ADCODE = Pattern.compile("\\d{6}");
+
     private final ObjectStorageUtil objectStorageUtil;
     private final IOssReferenceService ossReferenceService;
     private final SiteStatsCache siteStatsCache;
@@ -47,6 +51,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         Photo photo = new Photo()
                 .setTitle(dto.getTitle())
                 .setDescription(dto.getDescription())
+                .setCityCode(normalizeCityCode(dto.getCityCode()))
                 .setUrl(dto.getUrl())
                 .setWidth(dto.getWidth())
                 .setHeight(dto.getHeight())
@@ -81,6 +86,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         if (dto.getDescription() != null) {
             photo.setDescription(dto.getDescription());
+        }
+        // 传空串表示移出足迹、回到普通相册；不传（null）表示保持原归属
+        if (dto.getCityCode() != null) {
+            photo.setCityCode(normalizeCityCode(dto.getCityCode()));
         }
         if (dto.getWidth() != null) {
             photo.setWidth(dto.getWidth());
@@ -172,6 +181,18 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             return 1;
         }
         return last.getSort() + 1;
+    }
+
+    /** 空值 / 空白统一转 null；非空时必须是 6 位数字 adcode */
+    private String normalizeCityCode(String cityCode) {
+        if (!StringUtils.hasText(cityCode)) {
+            return null;
+        }
+        String code = cityCode.trim();
+        if (!ADCODE.matcher(code).matches()) {
+            throw new BusinessException(ResultCode.PARAM_ERROR, "城市行政区划代码必须是 6 位数字");
+        }
+        return code;
     }
 
     private PhotoVO toVO(Photo photo) {

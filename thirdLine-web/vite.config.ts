@@ -40,6 +40,8 @@ export default defineConfig({
         manualChunks: {
           // 富文本编辑器体积较大，单独分包，避免拖慢用户端首屏
           editor: ['@wangeditor/editor', '@wangeditor/editor-for-react'],
+          // 中国地图只在足迹页用到，单独分包，别拖慢前台首屏
+          echarts: ['echarts'],
           vendor: ['react', 'react-dom', 'react-router-dom', 'axios'],
         },
       },

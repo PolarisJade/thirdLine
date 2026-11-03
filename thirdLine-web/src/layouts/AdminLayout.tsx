@@ -35,6 +35,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
       { to: '/admin/photos', label: '相册管理', icon: 'image' },
       { to: '/admin/music', label: '音乐管理', icon: 'music' },
       { to: '/admin/history', label: '历程管理', icon: 'clock' },
+      { to: '/admin/footprints', label: '足迹管理', icon: 'flag' },
     ],
   },
   {

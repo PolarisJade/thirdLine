@@ -21,6 +21,11 @@ import type {
   FriendLinkDTO,
   FriendLinkQuery,
   FriendLinkVO,
+  FootprintAdminVO,
+  FootprintCityOptionVO,
+  FootprintDTO,
+  FootprintQuery,
+  FootprintVO,
   LoginDTO,
   LoginVO,
   MusicDTO,
@@ -313,6 +318,39 @@ export const fileApi = {
 }
 
 export * from './types'
+
+/* ================================================================== 足迹 */
+
+export const footprintApi = {
+  /** 前台城市列表（GET /user/footprint/list），已发布且显示，按到访日期升序 */
+  list: () => api.get<FootprintVO[]>('/user/footprint/list'),
+
+  /** 某城市下显示中的照片（GET /user/footprint/{cityCode}/photos），点击城市后再加载 */
+  cityPhotos: (cityCode: string) => api.get<PhotoVO[]>(`/user/footprint/${cityCode}/photos`),
+
+  /** 后台分页（GET /admin/footprint/page） */
+  adminPage: (query: FootprintQuery) => api.get<PageResult<FootprintAdminVO>>('/admin/footprint/page', query),
+
+  /** 后台城市下拉选项（GET /admin/footprint/options），供相册录入照片时选择归属城市 */
+  options: () => api.get<FootprintCityOptionVO[]>('/admin/footprint/options'),
+
+  /** 新增足迹（POST /admin/footprint），cityCode 唯一 */
+  create: (dto: FootprintDTO) => api.post<number>('/admin/footprint', dto),
+
+  /** 修改足迹（PUT /admin/footprint） */
+  update: (dto: FootprintDTO) => api.put<void>('/admin/footprint', dto),
+
+  /** 切换发布状态（PUT /admin/footprint/{id}/publish-status?publishStatus=0|1） */
+  changePublishStatus: (id: number, publishStatus: number) =>
+    api.put<void>(`/admin/footprint/${id}/publish-status`, undefined, { publishStatus }),
+
+  /** 切换显示状态（PUT /admin/footprint/{id}/status?status=0|1） */
+  changeStatus: (id: number, status: number) =>
+    api.put<void>(`/admin/footprint/${id}/status`, undefined, { status }),
+
+  /** 删除足迹（DELETE /admin/footprint/{id}），照片保留在相册中 */
+  remove: (id: number) => api.delete<void>(`/admin/footprint/${id}`),
+}
 
 export const siteHistoryApi = {
   list: () => api.get<SiteHistoryVO[]>('/user/site-history/list'),

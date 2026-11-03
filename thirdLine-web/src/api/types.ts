@@ -272,6 +272,8 @@ export interface PhotoVO {
   id: number
   title: string | null
   description: string | null
+  /** 所属城市行政区划代码；为空表示普通相册照片 */
+  cityCode: string | null
   url: string
   width: number | null
   height: number | null
@@ -295,6 +297,8 @@ export interface PhotoDTO {
   id?: number
   title?: string
   description?: string
+  /** 所属城市行政区划代码；传空串表示移出足迹 */
+  cityCode?: string
   /** 新增必填 */
   url?: string
   width?: number
@@ -535,4 +539,63 @@ export interface SiteHistoryOptionsVO {
   updateTypes: Array<{ value: number; label: string }>
   publishStatuses: Array<{ value: number; label: string }>
   statuses: Array<{ value: number; label: string }>
+}
+
+/* ------------------------------------------------------------------ 足迹 */
+
+/** FootprintVO —— 前台城市足迹，照片单独按城市加载 */
+export interface FootprintVO {
+  id: number
+  /** 市级行政区划代码，前端按它匹配地图区域 */
+  cityCode: string
+  cityName: string
+  provinceCode: string
+  provinceName: string
+  /** 首次/代表性到访日期，可为空 */
+  visitDate: string | null
+  /** 城市评价，纯文本 */
+  content: string | null
+  photoCount: number
+  /** 关联照片中 sort 最小的一张，用作城市卡片封面 */
+  coverPhotoUrl: string | null
+}
+
+/** FootprintAdminVO —— 后台管理对象，多出发布 / 显隐状态与审计字段 */
+export interface FootprintAdminVO extends FootprintVO {
+  publishStatus: number
+  status: number
+  createTime: string
+  updateTime: string
+}
+
+/** FootprintDTO */
+export interface FootprintDTO {
+  id?: number
+  cityCode: string
+  cityName: string
+  provinceCode: string
+  provinceName: string
+  visitDate?: string | null
+  content?: string
+  /** 0 草稿 / 1 已发布，新增缺省为草稿 */
+  publishStatus?: number
+  /** 0 隐藏 / 1 显示，新增缺省为显示 */
+  status?: number
+}
+
+/** FootprintQuery */
+export interface FootprintQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  publishStatus?: number
+  status?: number
+}
+
+/** 城市下拉选项：后台相册录入照片时选择所属城市 */
+export interface FootprintCityOptionVO {
+  id: number
+  cityCode: string
+  cityName: string
+  provinceName: string
 }

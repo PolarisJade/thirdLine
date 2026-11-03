@@ -5,7 +5,7 @@ tl:
     url: jdbc:mysql://localhost:3306/third_line?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
   redis:
     host: localhost
-    password:          # 本地 Redis 未设置密码，留空，否则 Lettuce 会发送 AUTH 导致报错
+    password: 134679          # 本地 Redis 未设置密码，留空，否则 Lettuce 会发送 AUTH 导致报错
     database: 0
   mail:
     username: lunarriverside@163.com
@@ -14,9 +14,7 @@ tl:
     nickname: PolarisJade
     email: lunarriverside@163.com
     github: https://github.com/PolarisJade
-    avatar: https://third-line.oss-cn-wuhan-lr.aliyuncs.com/blog/avatar/2026/09/21/46117d08f680456ba8cb9661832c16ca.jpg
-    # 本站运行起始日期（yyyy-MM-dd）：映射 HostProperties.startTime，
-    # 供 GET /user/site/profile 返回，前端据此显示「第 N 天」与「始于 …」
+    avatar: ${AVATAR}
     start-time: 2026-10-01
   oss:
     site: minio    # 填写minio或者aliyun
@@ -25,5 +23,4 @@ tl:
       access-key: minio
       secret-key: ${MINIO_SECRET_KEY}
       bucket-name: third-line
-      url-prefix: http://${IP}:19000/third-line
-
+      url-prefix: https://thirdline.top/third-line    # 与 dev 保持一致，本地上传的图片链接同样走域名 HTTPS

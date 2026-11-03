@@ -48,7 +48,10 @@ const FriendLinkManagePage = lazy(() =>
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 const UserManagePage = lazy(() => import('./pages/admin/UserManagePage').then((m) => ({ default: m.UserManagePage })))
 const SiteHistoryManagePage = lazy(() => import('./pages/admin/SiteHistoryManagePage').then((m) => ({ default: m.SiteHistoryManagePage })))
+const FootprintManagePage = lazy(() => import('./pages/admin/FootprintManagePage').then((m) => ({ default: m.FootprintManagePage })))
 const SiteHistoryPage = lazy(() => import('./pages/user/SiteHistoryPage').then((m) => ({ default: m.SiteHistoryPage })))
+// 足迹页依赖 echarts（约 1MB），单独分包，只有访问 /footprint 时才下载
+const FootprintPage = lazy(() => import('./pages/user/FootprintPage').then((m) => ({ default: m.FootprintPage })))
 const ArticleArchivePage = lazy(() => import('./pages/user/ArticleArchivePage').then((m) => ({ default: m.ArticleArchivePage })))
 
 /**
@@ -68,6 +71,14 @@ export function App() {
         <Route path="/articles/:id" element={<ArticleDetailPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route
+          path="/footprint"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <FootprintPage />
+            </Suspense>
+          }
+        />
         <Route path="/music" element={<MusicPage />} />
         <Route path="/links" element={<FriendLinksPage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -119,6 +130,7 @@ export function App() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="users" element={<UserManagePage />} />
         <Route path="history" element={<SiteHistoryManagePage />} />
+        <Route path="footprints" element={<FootprintManagePage />} />
         <Route path="*" element={<NotFoundPage admin />} />
       </Route>
     </Routes>
