@@ -88,6 +88,7 @@ export function Textarea({ showCount, maxLength, value, className, ...rest }: Te
 export interface SelectOption {
   label: string
   value: string | number
+  icon?: IconName
 }
 
 /** Radix 的 Item 不接受空字符串，用哨兵值表示"未选择"，对外仍然回传空字符串 */
@@ -153,8 +154,11 @@ export function Select({
             )}
 
             {options.map((option) => (
-              <RadixSelect.Item key={option.value} value={String(option.value)} className="select-popover__item">
-                <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
+              <RadixSelect.Item key={option.value} value={String(option.value)} textValue={option.label} className="select-popover__item">
+                <RadixSelect.ItemText><span className="select-option-label">
+                  {option.icon && <Icon name={option.icon} size={18} />}
+                  {option.label}
+                </span></RadixSelect.ItemText>
                 <RadixSelect.ItemIndicator className="select-popover__check">
                   <Icon name="check" size={14} />
                 </RadixSelect.ItemIndicator>

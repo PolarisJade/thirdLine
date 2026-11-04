@@ -15,6 +15,8 @@ export interface RichEditorProps {
   minHeight?: number
   /** 是否只读 */
   readOnly?: boolean
+  /** 小记模式：只显示正文输入区，文字以纯文本粘贴，图片沿用粘贴上传。 */
+  simple?: boolean
 }
 
 /**
@@ -26,7 +28,7 @@ export interface RichEditorProps {
  *    本地上传失败时会提示，避免静默丢失。
  *  - 支持粘贴图片自动上传（base64LimitSize 设为 0，不保留 base64，统一走 OSS）。
  */
-export function RichEditor({ value, onChange, placeholder = '请输入内容…', minHeight = 460, readOnly = false }: RichEditorProps) {
+export function RichEditor({ value, onChange, placeholder = '请输入内容…', minHeight = 460, readOnly = false, simple = false }: RichEditorProps) {
   const toast = useToast()
   const [editor, setEditor] = useState<IDomEditor | null>(null)
 
@@ -38,6 +40,12 @@ export function RichEditor({ value, onChange, placeholder = '请输入内容…'
       }
     }
   }, [editor])
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    if (readOnly) editor.disable()
+    else editor.enable()
+  }, [editor, readOnly])
 
   /**
    * 自定义上传。
@@ -66,10 +74,23 @@ export function RichEditor({ value, onChange, placeholder = '请输入内容…'
     () => ({
       placeholder,
       readOnly,
+      ...(simple ? {
+        hoverbarKeys: Object.fromEntries(['text', 'link', 'image', 'pre', 'table', 'divider', 'video'].map((key) => [key, { menuKeys: [] }])),
+        customPaste: (instance: IDomEditor, event: ClipboardEvent) => {
+          const clipboard = event.clipboardData
+          if (!clipboard) return true
+          // 截图、复制的图片交给编辑器原生粘贴流程上传。
+          if (Array.from(clipboard.items).some((item) => item.type.startsWith('image/'))) return true
+          event.preventDefault()
+          instance.insertText(clipboard.getData('text/plain'))
+          return false
+        },
+      } : {}),
       // 设为 0 表示任何图片都不使用 base64，全部走自定义上传
       MENU_CONF: {
         uploadImage: {
           customUpload: handleUpload,
+          base64LimitSize: 0,
         },
         uploadVideo: {
           customUpload: handleUpload,
@@ -80,7 +101,7 @@ export function RichEditor({ value, onChange, placeholder = '请输入内容…'
         },
       },
     }),
-    [placeholder, readOnly, handleUpload],
+    [placeholder, readOnly, handleUpload, simple],
   )
 
   /** 工具栏配置：按博客写作场景精简，去掉用不到的多媒体菜单 */
@@ -92,8 +113,8 @@ export function RichEditor({ value, onChange, placeholder = '请输入内容…'
   )
 
   return (
-    <div className="editor-shell">
-      {!readOnly && (
+    <div className={simple ? 'editor-shell editor-shell--simple' : 'editor-shell'}>
+      {!readOnly && !simple && (
         <Toolbar
           editor={editor}
           defaultConfig={toolbarConfig}

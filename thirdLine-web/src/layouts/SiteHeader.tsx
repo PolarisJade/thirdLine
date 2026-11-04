@@ -12,6 +12,7 @@ import { avatarPlaceholder, withFallback } from '@/utils/placeholder'
 const NAV_ITEMS = [
   { to: '/', label: '首页', icon: 'home' as const },
   { to: '/articles', label: '文章', icon: 'article' as const },
+  { to: '/notes', label: '小记', icon: 'article' as const },
   { to: '/articles/archive', label: '归档', icon: 'clock' as const },
   { to: '/portfolio', label: '作品集', icon: 'grid' as const },
   { to: '/gallery', label: '相册', icon: 'image' as const },
