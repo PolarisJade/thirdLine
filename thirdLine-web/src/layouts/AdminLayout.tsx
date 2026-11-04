@@ -28,6 +28,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
     title: '内容',
     items: [
       { to: '/admin/articles', label: '文章管理', icon: 'article' },
+      { to: '/admin/notes', label: '小记管理', icon: 'article' },
       { to: '/admin/categories', label: '分类管理', icon: 'folder' },
       { to: '/admin/tags', label: '标签管理', icon: 'tag' },
       { to: '/admin/tech-stacks', label: '技术栈管理', icon: 'code' },

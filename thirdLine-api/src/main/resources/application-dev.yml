@@ -15,7 +15,6 @@ tl:
     email: lunarriverside@163.com
     github: https://github.com/PolarisJade
     avatar: ${AVATAR}
-    # 本站运行起始日期（yyyy-MM-dd），与 local 环境保持一致
     start-time: 2026-10-01
   oss:
     site: minio    # 填写minio或者aliyun
@@ -24,4 +23,4 @@ tl:
       access-key: minio
       secret-key: ${MINIO_SECRET_KEY}
       bucket-name: third-line
-      url-prefix: https://${IP}:19000/third-line
+      url-prefix: https://thirdline.top/third-line    # 走域名反代，与 HTTPS 页面同协议，避免浏览器 Mixed Content 拦截

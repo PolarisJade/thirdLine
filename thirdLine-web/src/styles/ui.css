@@ -1385,3 +1385,4 @@ button.select {
     transition: none;
   }
 }
+.select-option-label { display: inline-flex; align-items: center; gap: 8px; }

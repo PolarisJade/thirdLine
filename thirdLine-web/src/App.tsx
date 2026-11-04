@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import './styles/daily-note.css'
 import { Route, Routes } from 'react-router-dom'
 import { UserLayout } from './layouts/UserLayout'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -23,6 +24,8 @@ import { NotFoundPage } from './pages/NotFoundPage'
    全部按需加载（React.lazy）：管理端页面与富文本编辑器（约 280KB gzip）
    不再进入前台首屏包，只有访问 /admin/** 时才下载对应 chunk。 */
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })))
+const DailyNotePage = lazy(() => import('./pages/user/DailyNotePage').then((m) => ({ default: m.DailyNotePage })))
+const DailyNoteManagePage = lazy(() => import('./pages/admin/DailyNoteManagePage').then((m) => ({ default: m.DailyNoteManagePage })))
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const ArticleManagePage = lazy(() =>
   import('./pages/admin/ArticleManagePage').then((m) => ({ default: m.ArticleManagePage })),
@@ -67,6 +70,7 @@ export function App() {
       <Route element={<UserLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/articles" element={<ArticleListPage />} />
+        <Route path="/notes" element={<Suspense fallback={<RouteFallback />}><DailyNotePage /></Suspense>} />
         <Route path="/articles/archive" element={<Suspense fallback={<RouteFallback />}><ArticleArchivePage /></Suspense>} />
         <Route path="/articles/:id" element={<ArticleDetailPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
@@ -118,6 +122,7 @@ export function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="articles" element={<ArticleManagePage />} />
+        <Route path="notes" element={<DailyNoteManagePage />} />
         <Route path="articles/new" element={<ArticleEditorPage />} />
         <Route path="articles/:id/edit" element={<ArticleEditorPage />} />
         <Route path="categories" element={<CategoryManagePage />} />

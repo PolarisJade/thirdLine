@@ -3,11 +3,13 @@ package com.god.thirdLine.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.god.thirdLine.config.HostProperties;
 import com.god.thirdLine.domain.entity.Article;
+import com.god.thirdLine.domain.entity.DailyNote;
 import com.god.thirdLine.domain.entity.Music;
 import com.god.thirdLine.domain.entity.Photo;
 import com.god.thirdLine.domain.entity.Portfolio;
 import com.god.thirdLine.domain.entity.User;
 import com.god.thirdLine.mapper.ArticleMapper;
+import com.god.thirdLine.mapper.DailyNoteMapper;
 import com.god.thirdLine.mapper.MusicMapper;
 import com.god.thirdLine.mapper.PhotoMapper;
 import com.god.thirdLine.mapper.PortfolioMapper;
@@ -44,6 +46,7 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
     private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s\"'<>()\\\\,;]+");
 
     private final ArticleMapper articleMapper;
+    private final DailyNoteMapper dailyNoteMapper;
     private final PhotoMapper photoMapper;
     private final PortfolioMapper portfolioMapper;
     private final MusicMapper musicMapper;
@@ -57,6 +60,11 @@ public class OssReferenceServiceImpl implements IOssReferenceService {
             return false;
         }
         String target = url.trim();
+
+        if (exists(dailyNoteMapper.selectCount(Wrappers.<DailyNote>lambdaQuery()
+                .like(DailyNote::getContent, target)))) {
+            return true;
+        }
 
         // 1) 站主头像来自配置文件 tl.host.avatar，不在数据库里，必须单独保护
         if (equalsUrl(target, hostProperties.getAvatar())) {

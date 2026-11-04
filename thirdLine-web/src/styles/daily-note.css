@@ -1,0 +1,45 @@
+.daily-note-page { max-width: 1200px; padding-bottom: 64px; }
+.daily-note-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
+.daily-note-layout .daily-note-sidebar { position: sticky; top: 100px; padding: 20px 16px; }
+.daily-note-sidebar__heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px 16px; border-bottom: 1px solid var(--line); }
+.daily-note-sidebar__heading > span:first-child { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.daily-note-sidebar__heading > span:last-child { font-size: 12px; color: var(--text-tertiary); }
+.daily-note-dates { max-height: calc(100dvh - 220px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 8px 4px 0; }
+.daily-note-year > summary { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; font-weight: 600; list-style: none; cursor: pointer; }
+.daily-note-year > summary::-webkit-details-marker { display: none; }
+.daily-note-year:not([open]) > summary svg { transform: rotate(-90deg); }
+.daily-note-month h3 { display: flex; justify-content: space-between; margin: 8px 4px; font-size: 13px; color: var(--text-secondary); }
+.daily-note-month h3 span { font-weight: 400; font-size: 12px; color: var(--text-tertiary); }
+.daily-note-month ul { list-style: none; padding: 0; margin: 0 0 16px; }
+.daily-note-month a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; text-decoration: none; }
+.daily-note-month a:hover { background: color-mix(in srgb, var(--brand-400) 9%, transparent); }
+.daily-note-month a[aria-current='date'] { background: color-mix(in srgb, var(--brand-400) 16%, transparent); color: var(--brand-600); font-weight: 600; }
+.daily-note-month a:focus-visible, .daily-note-year summary:focus-visible, .daily-note-paging a:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
+.daily-note-date-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .5; flex-shrink: 0; }
+.daily-note-month a[aria-current='date'] .daily-note-date-dot { opacity: 1; }
+.daily-note-date-latest { margin-left: auto; font-size: 11px; font-weight: 400; }
+.daily-note-content { min-width: 0; }
+.daily-note-paging { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+.daily-note-paging a { display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 13px; text-decoration: none; }
+.daily-note-paging a:hover { color: var(--brand-600); }
+@media (max-width: 760px) {
+  .daily-note-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .daily-note-layout .daily-note-sidebar { position: static; }
+  .daily-note-dates { max-height: 200px; }
+}
+.daily-note { padding: clamp(20px, 4vw, 40px); }
+.daily-note__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.daily-note__header h2 { margin: 0; font-size: clamp(20px, 3vw, 28px); font-variant-numeric: tabular-nums; }
+.daily-note .rich-text { overflow-wrap: anywhere; }
+.daily-note .rich-text img { max-width: 100%; height: auto; }
+.daily-note__footer { margin-top: 24px; font-size: 12px; opacity: .65; }
+.note-form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
+.daily-note-label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.daily-note-labels { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.editor-shell--simple .w-e-text-container [data-slate-editor] { min-height: 320px; }
+.editor-shell--simple,
+.editor-shell--simple .w-e-text-container,
+.editor-shell--simple .w-e-scroll,
+.editor-shell--simple .w-e-text-container [data-slate-editor],
+.editor-shell--simple .w-e-text-placeholder { cursor: text; }
+@media (max-width: 640px) { .note-form-grid { grid-template-columns: 1fr; } }
