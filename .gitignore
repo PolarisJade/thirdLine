@@ -9,6 +9,7 @@ target/
 *.class
 *.jar
 **/application-dev.yml
+**/sql
 
 # Node / 前端
 node_modules/
